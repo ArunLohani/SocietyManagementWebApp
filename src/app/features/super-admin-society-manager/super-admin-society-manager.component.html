@@ -1,0 +1,316 @@
+<!-- super-admin-society-manager.component.html -->
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+   <div class="flex justify-between">  <h1 class="text-4xl font-bold text-stone-900 dark:text-stone-100 mb-2">
+      Society Management
+    </h1>   <button
+            (click)="toggleCreateTenant()"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#FF521B] hover:bg-[#e64a18] text-white shadow-sm
+                   focus:outline-none focus:ring-2 focus:ring-[#ffb69a] transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            + Create Society
+          </button></div>
+    <p class="text-lg text-stone-600 dark:text-stone-400">
+      Manage societies and assign admins
+    </p>
+  </div>
+
+  <!-- Success Alert -->
+  @if (successMessage()) {
+    <div class="mb-6 bg-[#fff4ec] dark:bg-stone-900/30 border border-[#ffd5bf] dark:border-stone-800 rounded-2xl p-4 flex items-center animate-slideDown">
+      <svg class="w-5 h-5 text-[#FF521B] dark:text-[#ff8a5f] mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      </svg>
+      <span class="text-stone-800 dark:text-stone-200">{{ successMessage() }}</span>
+    </div>
+  }
+
+  <!-- Error Alert -->
+  @if (errorMessage()) {
+    <div class="mb-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-4 flex items-center animate-slideDown">
+      <svg class="w-5 h-5 text-rose-600 dark:text-rose-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+      </svg>
+      <span class="text-rose-800 dark:text-rose-200">{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- Initial Loading -->
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center py-16">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF521B] dark:border-[#ff8a5f] mb-4"></div>
+      <p class="text-stone-600 dark:text-stone-400">Loading data...</p>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @if (!loading()) {
+    
+
+     
+
+
+  
+
+    <!-- Society Selection Card -->
+    <div class="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-100 dark:border-stone-800 mb-6 overflow-hidden">
+      <div class="border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-900/40 px-6 py-4">
+        <h2 class="text-xl font-semibold text-stone-900 dark:text-stone-100">Select Society</h2>
+      </div>
+      <div class="p-6">
+        <div class="mb-4">
+          <label for="tenantSelect" class="flex items-center gap-2 text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+            <svg class="w-5 h-5 text-[#FF521B] dark:text-[#ff8a5f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            Choose a society to manage users
+          </label>
+          <select
+            id="tenantSelect"
+            [value]="selectedTenantId() || ''"
+            (change)="onTenantSelect($event)"
+            class="w-full px-4 py-3 text-base border border-stone-200 dark:border-stone-700 rounded-lg
+                   bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100
+                   focus:ring-2 focus:ring-[#ffb69a] focus:border-[#FF521B]
+                   transition duration-150 ease-in-out cursor-pointer">
+            <option value="">-- Select a Society --</option>
+            @for (tenant of tenants(); track tenant.id) {
+              <option [value]="tenant.id">{{ tenant.name }}</option>
+            }
+          </select>
+        </div>
+
+        @if (selectedTenant()) {
+          <div class="flex items-start gap-3 p-4 bg-[#fff6f1] dark:bg-stone-900/20 border border-[#ffe6d9] dark:border-stone-800 rounded-lg">
+            <svg class="w-5 h-5 text-[#FF521B] dark:text-[#ff8a5f] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <div>
+              <p class="font-semibold text-stone-900 dark:text-stone-100 mb-1">Managing: {{ selectedTenant()!.name }}</p>
+              <p class="text-sm text-stone-600 dark:text-stone-400">{{ totalUsers() }} users found in this society</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Users Section -->
+    @if (selectedTenantId()) {
+      @if (loadingUsers()) {
+        <div class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF521B] dark:border-[#ff8a5f] mb-4"></div>
+          <p class="text-stone-600 dark:text-stone-400">Loading users...</p>
+        </div>
+      }
+
+      @if (!loadingUsers() && users().length > 0) {
+        <div class="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-100 dark:border-stone-800 overflow-hidden">
+          <div class="divide-y divide-stone-200 dark:divide-stone-800">
+            @for (user of users(); track user.id) {
+              <div class="p-6 hover:bg-[#fff7f3] dark:hover:bg-stone-800/50 transition-colors duration-150">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4 flex-1">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#FF521B] hover:bg-[#e64a18]
+                                flex items-center justify-center text-white font-bold text-lg">
+                      {{ user.name.charAt(0).toUpperCase() }}
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <p class="font-medium text-stone-900 dark:text-stone-100 truncate">
+                          {{ user.name }}
+                        </p>
+                        @if (isAdmin(user)) {
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                       bg-[#fff0e6] dark:bg-[#4a1f12]/20 text-[#FF521B] dark:text-[#ffb69a]">
+                          
+                            Admin
+                          </span>
+                        }
+                      </div>
+                      <p class="text-sm text-stone-600 dark:text-stone-400 truncate">
+                        {{ user.email }}
+                      </p>
+                      @if (user.phoneNumber) {
+                        <p class="text-xs text-stone-500 dark:text-stone-500">
+                          {{ user.phoneNumber }}
+                        </p>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="ml-4">
+                    @if (!isAdmin(user)) {
+                      <button
+                        (click)="assignAdmin(user)"
+                        [disabled]="processingUserId() === user.id"
+                        class="px-4 py-2  text-white font-semibold rounded-lg
+                             bg-[#FF521B] hover:bg-[#e64a18]disabled:opacity-50 disabled:cursor-not-allowed
+                               shadow-md hover:shadow-lg transition-all duration-200
+                               flex items-center gap-2">
+                        @if (processingUserId() === user.id) {
+                          <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          <span>Processing...</span>
+                        } @else {
+                      
+                          <span>Assign Admin</span>
+                        }
+                      </button>
+                    } @else {
+                      <button
+                        (click)="removeAdmin(user)"
+                        [disabled]="processingUserId() === user.id"
+                        class="disabled:cursor-not-allowed">
+                        <span class="px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300
+                                     font-semibold rounded-lg flex items-center gap-2">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                          </svg>
+                          Current Admin
+                        </span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Pagination -->
+          @if (totalPages() > 1) {
+            <div class="px-6 py-4 bg-stone-50 dark:bg-stone-900/40 border-t border-stone-100 dark:border-stone-800">
+              <div class="flex items-center justify-between">
+                <button
+                  (click)="previousPage()"
+                  [disabled]="currentPage() === 0"
+                  class="px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-300
+                         bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg
+                         hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-all duration-200">
+                  ← Previous
+                </button>
+
+                <span class="text-sm font-medium text-stone-700 dark:text-stone-300">
+                  Page {{ currentPage() + 1 }} of {{ totalPages() }}
+                </span>
+
+                <button
+                  (click)="nextPage()"
+                  [disabled]="currentPage() >= totalPages() - 1"
+                  class="px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-300
+                         bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg
+                         hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-all duration-200">
+                  Next →
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Results Info -->
+          <div class="px-6 py-3 text-center text-sm text-stone-600 dark:text-stone-400 bg-stone-50 dark:bg-stone-900/40 border-t border-stone-100 dark:border-stone-800">
+            Showing <span class="font-semibold text-stone-900 dark:text-stone-100">{{ filteredUsersCount }}</span> users
+          </div>
+        </div>
+      }
+
+      <!-- No Results -->
+      @if (!loadingUsers() && users().length === 0) {
+        <div class="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-100 dark:border-stone-800 p-12">
+          <div class="flex flex-col items-center justify-center text-center">
+            <svg class="w-16 h-16 text-stone-400 dark:text-stone-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <h3 class="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">No users found</h3>
+            <p class="text-stone-600 dark:text-stone-400">
+              @if (searchName() || searchEmail()) {
+                Try adjusting your search criteria
+              } @else {
+                No users in this society yet
+              }
+            </p>
+
+          
+          </div>
+        </div>
+
+
+
+      }
+    }
+
+            @if (showCreateTenant()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div
+      class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity"
+      (click)="toggleCreateTenant()"
+    ></div>
+
+    <!-- Modal Content -->
+    <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden ring-1 ring-stone-100 dark:ring-stone-800">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-stone-900 dark:text-stone-100">Create New Society</h2>
+          <button
+            (click)="toggleCreateTenant()"
+            class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition duration-150"
+          >
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body (Form) -->
+        <p class="text-sm text-stone-500 dark:text-stone-400 mb-4">
+          Enter the name for your new society or organization.
+        </p>
+
+        <form (ngSubmit)="createTenant()" class="space-y-4">
+          <div>
+            <label for="tenantName" class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+              Society Name
+            </label>
+            <input
+              type="text"
+              id="tenantName"
+              [(ngModel)]="newTenantName"
+              name="tenantName"
+              required
+              placeholder="Enter society name"
+              class="w-full px-4 py-3 text-base border border-stone-200 dark:border-stone-700 rounded-lg
+                     bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100
+                     focus:ring-2 focus:ring-[#ffb69a] focus:border-[#FF521B]
+                     transition duration-150 ease-in-out"
+              (keydown.enter)="createTenant()"
+              >
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              (click)="toggleCreateTenant()"
+              class="px-4 py-2 text-sm font-medium text-stone-700 bg-stone-100 border border-stone-200 rounded-lg hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:border-stone-700 dark:hover:bg-stone-700"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="!newTenantName().trim()"
+              class="px-4 py-2 text-sm font-medium text-white bg-[#ff521b] rounded-lg hover:bg-[#e64a18] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#ff7a54] dark:hover:bg-[#ff6a3e]"
+            >
+              Create Society
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+  }
+</div>

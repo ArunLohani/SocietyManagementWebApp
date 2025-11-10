@@ -66,7 +66,7 @@ export class Register {
   }
 
   errorMessage = ''
-  onRegister = (formData: any) => {
+  onRegister = (formData: any) => {``
 
     if(this.registerData.password != this.confirmPassword){
       this.errorMessage = "Passwords do not match."
