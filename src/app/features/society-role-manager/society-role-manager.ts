@@ -9,7 +9,7 @@ import { FormsModule, NgModel } from '@angular/forms';
 @Component({
   selector: 'app-society-role-manager',
   standalone: true,
-  imports: [CommonModule , FormsModule],
+  imports: [CommonModule , FormsModule,],
   templateUrl: './society-role-manager.html',
   styleUrl: './society-role-manager.css'
 })
@@ -59,8 +59,8 @@ export class SocietyRoleManager implements OnInit {
       next: (results) => {
         results.forEach((result, index) => {
           if (result.data && result.data.length > 0) {
+          
             this.tenants[index].assignedRoles = result.data
-              .filter(tr => tr.active)
               .map(tr => tr.role.id);
           }
         });
@@ -74,6 +74,7 @@ export class SocietyRoleManager implements OnInit {
     });
   }
   hasRole(tenant: TenantWithRoles, roleId: number): boolean {
+    console.log("hasRole",tenant)
     return tenant.assignedRoles?.includes(roleId) || false;
   }
   toggleRole(tenant: TenantWithRoles, role: Role): void {

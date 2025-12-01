@@ -36,6 +36,13 @@ export class AuthService {
     return null;
   }
 
+  getUserIdFromToken() : number | null {
+       if (this.isAuthenticated() && this.token) {
+      return Number(this.decodeToken(this.token).sub);
+    }
+    return null;
+  }
+
   getRolesFromToken() : string[] | null {
 
      if (this.isAuthenticated() && this.token) {
@@ -43,6 +50,16 @@ export class AuthService {
       return this.decodeToken(this.token).roles.split(",");
     }
     return null;
+
+  }
+
+  getTenantIdFromToken() : number | null {
+         if (this.isAuthenticated() && this.token) {
+      console.log(this.decodeToken(this.token).roles)
+      return this.decodeToken(this.token).tenantId;
+    }
+    return null;
+
 
   }
 

@@ -9,11 +9,11 @@ import { Role, Tenant, User, UserDetails, UserWithRoles } from '../../types/type
 import { forkJoin } from 'rxjs';
 import { TenantRoleService } from '../../core/service/tenant-role.service';
 import { UserService } from '../../core/service/user.service';
-
+import { PaginatorModule } from 'primeng/paginator';
 @Component({
   selector: 'app-user-role-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule , PaginatorModule],
   templateUrl: './user-role-manager.html',
   styleUrl: './user-role-manager.css'
 })

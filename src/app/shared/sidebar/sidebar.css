@@ -18,7 +18,7 @@
   background: transparent;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-  background-color: whitesmoke;
+  background-color: #161a29;
   border-radius: 10px;
 }
 .custom-scroll::-webkit-scrollbar {
@@ -28,7 +28,7 @@
   background: transparent;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-  background-color:whitesmoke;
+  background-color:#161a29;
   border-radius: 10px;
 }
 

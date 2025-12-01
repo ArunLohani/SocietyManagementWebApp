@@ -1,23 +1,23 @@
 export type LoginRequestData = {
 
-    email: string,
-    password: string
+  email: string,
+  password: string
 
 
 }
 
 export type ApiResponse<T> = {
 
-    success: boolean,
-    message: string,
-    data: T
+  success: boolean,
+  message: string,
+  data: T
 }
 
 
 
 export type AuthSuccessData = {
-    token: string,
-    user: User
+  token: string,
+  user: User
 }
 
 export interface User {
@@ -30,30 +30,31 @@ export interface User {
 }
 
 export type RegisterRequestData = {
-    name : string,
-    email:string,
-    password : string,
-    phoneNumber:string,
-    roles:Array<string>
+  name: string,
+  email: string,
+  password: string,
+  phoneNumber: string,
+  roles: Array<string>
 }
 
 export type JwtPayload = {
 
-    email : string,
-    id : string,
-    roles:string
+  email: string,
+  sub: string,
+  roles: string,
+  tenantId: number
 }
 
 export type Tenant = {
-    name : string,
-    id:number;
-    active : boolean;
+  name: string,
+  id: number;
+  isActive: boolean;
 }
 export interface TenantRoles {
   id: number;
   tenant: Tenant;
   role: Role;
-  active: boolean;
+  isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -62,22 +63,22 @@ export interface TenantWithRoles extends Tenant {
 }
 
 export type Role = {
-    role : string,
-    id:number
+  role: string,
+  id: number
 }
 
 export type UserWithRoles = {
-       id: number,
-    name : string,
-email : string,
-    phoneNumber : string,
-    assignedRoleIds : Array<number>,
-     assignedRoleNames : Array<string>,
+  id: number,
+  name: string,
+  email: string,
+  phoneNumber: string,
+  assignedRoleIds: Array<number>,
+  assignedRoleNames: Array<string>,
 }
 
 export type RoleAssignmentReques = {
-    userId:number,
-    roleId:number
+  userId: number,
+  roleId: number
 }
 
 
@@ -91,11 +92,11 @@ export interface Menu {
   updatedDate?: string;
   createdBy?: string;
   updatedBy?: string;
-   active?:boolean;
+  isActive?: boolean;
 
 }
 
-export interface MenuCreateRequest  {
+export interface MenuCreateRequest {
   menuName: string;
   menuDescription?: string;
 }
@@ -107,14 +108,14 @@ export interface Action {
   updatedDate?: string;
   createdBy?: string;
   updatedBy?: string;
-  active?:boolean;
+  isActive?: boolean;
 }
 
 export interface TenantRoles {
   id: number;
   tenant: Tenant;
   role: Role;
-  active: boolean;
+  isActive: boolean;
   createdDate?: string;
   updatedDate?: string;
   createdBy?: string;
@@ -125,7 +126,7 @@ export interface TenantRoleMenu {
   id: number;
   tenantRoles: TenantRoles;
   menu: Menu;
-  active: boolean;
+  isActive: boolean;
   createdDate?: string;
   updatedDate?: string;
   createdBy?: string;
@@ -136,7 +137,7 @@ export interface TenantRoleMenuAction {
   id: number;
   tenantRoleMenu: TenantRoleMenu;
   action: Action;
-  active: boolean;
+  isActive: boolean;
   createdDate?: string;
   updatedDate?: string;
   createdBy?: string;
@@ -160,7 +161,7 @@ export interface ActionPermission {
 
 export type PaginatedResponse<T> = {
 
-    content : T[]
+  content: T[]
 
 }
 
@@ -191,4 +192,213 @@ export interface Page<T> {
   number: number;
   numberOfElements: number;
   empty: boolean;
+}
+
+export interface Notice {
+  id: number;
+  title: string;
+  message: string;
+  category: string;
+  tenant: Tenant;
+  isPublic: boolean;
+  isExpired: boolean;
+  priority: "LOW" | "NORMAL" | "URGENT"
+}
+
+
+export interface NoticeCreationRequest {
+  title: string;
+  message: string;
+  category: string;
+  isPublic: boolean;
+  isExpired: boolean;
+}
+
+export interface NoticeFilter {
+  id?: number,
+  title?: string;
+  message?: string;
+  category?: string;
+  isPublic?: boolean;
+  isExpired?: boolean;
+  isActive?: boolean;
+  tenantId?: number,
+}
+
+export interface Event {
+  id: number,
+  name: string;
+  description: string;
+  location: string;
+  startDateTime: Date;
+  endDateTime: Date;
+  isPublic: boolean;
+  isExpired: boolean;
+  status: "PUBLISHED" | "CANCELLED" | "COMPLETED";
+  tenant: Tenant;
+  organizedBy: User;
+  registrationRequired: boolean;
+  maxParticipants: number;
+  participants: User[]
+}
+
+export interface EventCreationRequest {
+  name: string;
+  description: string;
+  location: string;
+  startDateTime: Date;
+  endDateTime: Date;
+  isPublic: boolean;
+  isExpired: boolean;
+  status: "PUBLISHED" | "CANCELLED" | "COMPLETED";
+  organizedBy: number;
+  registrationRequired: boolean;
+  maxParticipants: number;
+
+}
+
+export interface EventResponse {
+  name: string;
+  description: string;
+  location: string;
+  startDateTime: Date;
+  endDateTime: Date;
+  isPublic: boolean;
+  isExpired: boolean;
+  status: "PUBLISHED" | "CANCELLED" | "COMPLETED";
+  organizedBy: User;
+  registrationRequired: boolean;
+  maxParticipants: number;
+}
+
+
+export interface EventFilter {
+  id?: number,
+  name?: string;
+  description?: string;
+  startDateTime?: Date;
+  endDateTime?: Date;
+  organizedBy?: number
+  isActive?: boolean;
+  status?: string;
+  location?: string;
+  tenantId?: number,
+}
+
+export interface Complaints {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "REJECTED"
+  tenant: Tenant;
+  raisedByUser: User;
+  assignedToUser: User | null;
+  priority: "LOW" | "NORMAL" | "URGENT";
+  resolutionNotes: string
+}
+
+export interface ComplaintIssuingRequest {
+  title: string;
+  description: string;
+  category: string;
+  raisedByUser: number;
+  priority: "LOW" | "NORMAL" | "URGENT";
+}
+
+export interface ComplaintsFilter {
+  id?: number
+  title?: string;
+  description?: string;
+  category?: string;
+  raisedByUser?: number;
+  assignedToUser?: number;
+  isActive?: boolean,
+  tenantId?: number,
+  status?: string;
+  priority?: string;
+}
+
+
+export interface Vehicle {
+  id: number
+  registrationNumber: string;
+  vehicleType: string;
+  brand: string;
+  model: string;
+  owner: User;
+  image?: string;
+}
+
+export interface VehicleCreationRequest {
+  registrationNumber: string;
+  vehicleType: string;
+  brand: string;
+  model: string;
+}
+
+export interface VehicleFilter {
+  id?: number;
+  registrationNumber?: string;
+  vehicleType?: string;
+  brand?: string;
+  model?: string;
+  owner?: number;
+}
+
+export enum ParkingSlotStatus {
+  AVAILABLE,
+  OCCUPIED,
+  RESERVED,
+  OUT_OF_SERVICE
+}
+
+export interface ParkingSlot {
+  id: number,
+  area: string;
+  slotNumber: string;
+  status: ParkingSlotStatus;
+  user?: User;
+  tenant?: Tenant;
+}
+
+export interface ParkingSlotFilter {
+  id?: number;
+  area?: string;
+  slotNumber?: string;
+  status?: string;
+  user?: number;
+  tenant?: number;
+}
+
+export interface ParkingSlotRegisterRequest {
+  area: string;
+  slotNumber: string;
+}
+
+export enum ParkingRequestStatus {
+  PENDING,
+  APPROVED,
+  REJECTED
+}
+
+export interface ParkingRequest {
+  id:number
+  user: User;
+  requestedSlot: ParkingSlot;
+  status: ParkingRequestStatus;
+  adminComment?: string;
+}
+
+export interface ParkingBookingRequest {
+  parkingSlotId: number;
+
+}
+
+export interface ParkingRequestFilter{
+     id?: number;
+     user? : number;
+     requestedSlot? : number;
+     status?:string;
+     adminComment?:string;
 }

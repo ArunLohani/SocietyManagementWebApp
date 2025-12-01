@@ -1,0 +1,284 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-lg">Events</h3>
+      <p class="text-xs text-gray-500">Manage and organize events.</p>
+    </div>
+
+    @if (this.permission === "CREATE") {
+    <p-button label="Add Event" icon="pi pi-plus" size="small"
+      (onClick)="toggleCreateModal()" severity="contrast"></p-button>
+    }
+  </div>
+
+  <!-- Filters -->
+  <div class="mt-4">
+    <p-card>
+      <p class="text-sm font-semibold">All Events</p>
+      <p-divider />
+
+      <div class="flex flex-wrap gap-3 items-end">
+
+        <p-floatlabel variant="on">
+          <input pInputText id="eventName" [(ngModel)]="filter.name" />
+          <label for="eventName">Search by name</label>
+        </p-floatlabel>
+
+        <p-floatlabel variant="on">
+          <input pInputText id="location" [(ngModel)]="filter.location" />
+          <label for="location">Location</label>
+        </p-floatlabel>
+
+        <p-select class="w-56"
+          [options]="statusOptions"
+          [(ngModel)]="filter.status"
+          optionLabel="name" optionValue="code"
+          [showClear]="true"
+          placeholder="Select Status">
+        </p-select>
+
+        <p-button label="Search" icon="pi pi-search" size="small"
+          (onClick)="searchEvents()" severity="contrast"></p-button>
+
+        <p-button label="Clear" icon="pi pi-times" size="small"
+          (onClick)="clearFilters()" severity="secondary"></p-button>
+
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Cards Grid -->
+  @if (!loading && eventsPage) {
+  <div class="flex flex-wrap gap-4 mt-6">
+
+    @for (event of eventsPage.content; track $index) {
+    <p-card [style]="{ width: '22rem', overflow: 'hidden' }">
+
+      <ng-template #header>
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-32 flex items-center justify-center">
+          <i class="pi pi-calendar text-white text-6xl"></i>
+        </div>
+      </ng-template>
+
+      <div class="flex justify-between items-center mb-2">
+        <p class="font-semibold text-lg">{{ event.name }}</p>
+        <p-badge 
+          [value]="event.status" 
+          [severity]="getStatusSeverity(event.status)">
+        </p-badge>
+      </div>
+
+      <p-divider />
+
+      <div class="flex flex-col gap-2 text-xs mb-3">
+
+        <div class="flex items-start gap-2">
+          <i class="pi pi-map-marker text-gray-400 mt-0.5"></i>
+          <span class="font-bold">{{ event.location }}</span>
+        </div>
+
+        <div class="flex items-start gap-2">
+          <i class="pi pi-clock text-gray-400 mt-0.5"></i>
+          <div class="flex flex-col">
+            <span class="font-semibold">{{ event.startDateTime | date:'medium' }}</span>
+            <span class="text-gray-500">to {{ event.endDateTime | date:'short' }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2">
+          <i class="pi pi-info-circle text-gray-400 mt-0.5"></i>
+          <span class="text-gray-600 line-clamp-2">{{ event.description }}</span>
+        </div>
+
+      </div>
+
+      <ng-template #footer>
+        <div class="flex justify-end gap-2">
+          <p-button icon="pi pi-eye" size="small" label="View" variant="outlined" 
+            (onClick)="goToEvent(event.id)" severity="secondary"></p-button>
+          <p-button icon="pi pi-users" size="small" label="Participants" 
+            (onClick)="openParticipants(event.id, event.name)" severity="info"></p-button>
+        </div>
+      </ng-template>
+
+    </p-card>
+    }
+
+    <!-- Pagination -->
+    <div class="w-full">
+      <p-paginator [first]="page * pageSize" [rows]="pageSize"
+        [totalRecords]="eventsPage.totalElements"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+
+  </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && eventsPage?.content?.length === 0) {
+  <p-card class="text-center py-20 mt-6">
+    <h3 class="text-xl font-bold mb-1">No events found</h3>
+    <p class="text-gray-500 mb-4">Create your first event to get started.</p>
+    @if (this.permission === "CREATE") {
+    <p-button label="Add Event" icon="pi pi-plus" severity="contrast"
+      (onClick)="toggleCreateModal()"></p-button>
+    }
+  </p-card>
+  }
+
+</div>
+
+<!-- Create Event Modal -->
+<p-dialog
+  [(visible)]="showCreateModal"
+  [modal]="true"
+  [style]="{ width: '35rem' }"
+  [draggable]="false"
+  header="Create Event"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-4 mt-2">
+
+    <p-floatlabel variant="on">
+      <input pInputText id="newName" [(ngModel)]="newEvent.name" class="w-full" />
+      <label for="newName">Event Name</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <textarea pInputTextarea id="newDesc" [(ngModel)]="newEvent.description" 
+        rows="3" class="w-full"></textarea>
+      <label for="newDesc">Description</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <input pInputText id="newLoc" [(ngModel)]="newEvent.location" class="w-full" />
+      <label for="newLoc">Location</label>
+    </p-floatlabel>
+
+    <div class="grid grid-cols-2 gap-3">
+      <p-floatlabel variant="on">
+        <!-- <p-calendar 
+          [(ngModel)]="newEvent.startDateTime" 
+          [showTime]="true" 
+          dateFormat="mm/dd/yy"
+          inputId="startDate"
+          styleClass="w-full"
+          [inputStyle]="{ width: '100%' }">
+        </p-calendar> -->
+        <p-datepicker [(ngModel)]="newEvent.startDateTime" [showTime]="true"  />
+        <label for="startDate">Start Date & Time</label>
+      </p-floatlabel>
+
+      <p-floatlabel variant="on">
+        <!-- <p-calendar 
+          [(ngModel)]="newEvent.endDateTime" 
+          [showTime]="true" 
+          dateFormat="mm/dd/yy"
+          inputId="endDate"
+          styleClass="w-full"
+          [inputStyle]="{ width: '100%' }">
+        </p-calendar> -->
+         <p-datepicker [(ngModel)]="newEvent.endDateTime" [showTime]="true"  />
+        <label for="endDate">End Date & Time</label>
+      </p-floatlabel>
+    </div>
+
+    <div class="flex gap-4">
+      <p-checkbox 
+        [(ngModel)]="newEvent.isPublic" 
+        [binary]="true" 
+        inputId="isPublic"
+        label="Public">
+      </p-checkbox>
+
+      <p-checkbox 
+        [(ngModel)]="newEvent.registrationRequired" 
+        [binary]="true" 
+        inputId="regRequired"
+        label="Requires Registration">
+      </p-checkbox>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="toggleCreateModal()" 
+        severity="secondary"
+        [text]="true"
+        class="px-4"
+      ></p-button>
+
+      <p-button 
+        label="Create" 
+        (click)="createEvent()" 
+        severity="contrast"
+        class="px-4"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Participants Modal -->
+<p-dialog
+  [(visible)]="showParticipantsModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  [header]="'Participants — ' + selectedEventName"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div *ngIf="loadingParticipants" class="flex justify-center py-10">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <div *ngIf="!loadingParticipants" class="flex flex-col gap-3 mt-2">
+    <div *ngFor="let p of participants" 
+         class="flex justify-between items-center border-b pb-3">
+      <div>
+        <div class="font-semibold text-sm">{{ p.name }}</div>
+        <div class="text-xs text-gray-500">{{ p.email }}</div>
+      </div>
+      <p-button 
+        icon="pi pi-trash" 
+        size="small" 
+        [text]="true"
+        severity="danger"
+        (onClick)="removeParticipant(selectedEventId!, p.id)">
+      </p-button>
+    </div>
+
+    <div *ngIf="participants.length === 0" class="text-center py-10 text-gray-500">
+      No participants yet
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Close" 
+        (click)="closeParticipants()" 
+        severity="secondary"
+        class="px-4"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>

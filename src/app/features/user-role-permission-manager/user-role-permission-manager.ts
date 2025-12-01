@@ -18,11 +18,12 @@ import {
   TenantRoleMenu,
   MenuCreateRequest
 } from '../../types/types';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 
 @Component({
   selector: 'app-user-role-permission-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginatorModule],
   templateUrl: './user-role-permission-manager.html',
   styleUrl: './user-role-permission-manager.css'
 })
@@ -33,8 +34,8 @@ export class UserRolePermissionManager implements OnInit {
   allMenus: Array<Menu> = [];
   allActions: Array<Action> = [];
   menusWithActions: Array<MenuWithActions> = [];
-  menuName : string = "";
-  menuDescription : string = "";
+  menuName: string = "";
+  menuDescription: string = "";
   menuIsActive = true
 
   // Selected state
@@ -50,7 +51,10 @@ export class UserRolePermissionManager implements OnInit {
   errorMessage: string = '';
   processingMenuId: number | null = null;
   processingActionId: number | null = null;
-  showMenuAddModal : boolean = false;
+  showMenuAddModal: boolean = false;
+  row: number = 6;
+  first: number = 0;
+  totalRecords: number = 0;
 
   // Search & Filter
   searchTerm: string = '';
@@ -63,7 +67,7 @@ export class UserRolePermissionManager implements OnInit {
     private actionService: ActionService,
     private tenantRoleMenuService: TenantRoleMenuService,
     private tenantRoleMenuActionService: TenantRoleMenuActionService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -81,9 +85,12 @@ export class UserRolePermissionManager implements OnInit {
       actions: this.actionService.getAllActions()
     }).subscribe({
       next: (result) => {
-        this.tenants = result.tenants.data.filter(t => t.active);
-        this.allMenus = result.menus.content.filter(m => m.active);
-        this.allActions = result.actions.data.filter(a => a.active);
+        this.tenants = result.tenants.data.filter(t => t.isActive);
+        this.allMenus = result.menus.content.filter(m => m.isActive);
+        this.allActions = result.actions.data.filter(a => a.isActive);
+        this.row = result.menus.numberOfElements;
+
+        this.totalRecords = result.menus.totalElements;
         this.loading = false;
       },
       error: (err) => {
@@ -94,6 +101,31 @@ export class UserRolePermissionManager implements OnInit {
     });
   }
 
+  loadMenus(event: PaginatorState): void {
+
+    this.loading = true;
+    this.menuService.getAllMenusPaginated(event.page).subscribe({
+      next: (response) => {
+        this.allMenus = response.content.filter(m => m.isActive);
+        this.loading = false;
+        this.refreshPermissions();
+      },
+      error: (err) => {
+        this.showError('Failed to load menu');
+        this.loading = false;
+        console.error('Error loading data:', err);
+      },
+    })
+
+  }
+
+  onPageChange(event: PaginatorState) {
+    console.log("BEFORE", this.row, this.totalRecords)
+    this.loadMenus(event)
+    this.row = event.rows ?? 6;
+    this.first = event.first ?? 0;
+
+  }
   /**
    * Handle tenant selection
    */
@@ -123,7 +155,7 @@ export class UserRolePermissionManager implements OnInit {
 
     this.tenantRoleService.getRolesForTenant(tenantId).subscribe({
       next: (response) => {
-        this.tenantRoles = response.data.filter(tr => tr.active);
+        this.tenantRoles = response.data.filter(tr => tr.isActive);
         this.loadingPermissions = false;
 
         if (this.tenantRoles.length === 0) {
@@ -166,7 +198,7 @@ export class UserRolePermissionManager implements OnInit {
 
     this.tenantRoleMenuService.getMenusForTenantRole(tenantRoleId).subscribe({
       next: (response) => {
-        const assignedMenus = response.data.filter(trm => trm.active);
+        const assignedMenus = response.data.filter(trm => trm.isActive);
         this.buildMenuActionsStructure(assignedMenus);
         this.loadingPermissions = false;
       },
@@ -216,8 +248,8 @@ export class UserRolePermissionManager implements OnInit {
   loadActionsForMenu(tenantRoleMenuId: number, menuWithActions: MenuWithActions): void {
     this.tenantRoleMenuActionService.getActionsForTenantRoleMenu(tenantRoleMenuId).subscribe({
       next: (response) => {
-        const grantedActions = response.data.filter(trma => trma.active);
-        
+        const grantedActions = response.data.filter(trma => trma.isActive);
+
         menuWithActions.actions = this.allActions.map(action => {
           const granted = grantedActions.find(
             ga => ga.action.id === action.id
@@ -270,7 +302,7 @@ export class UserRolePermissionManager implements OnInit {
         next: (response) => {
           menuWithActions.hasMenuAccess = true;
           menuWithActions.tenantRoleMenuId = response.data.id;
-          
+
           // Initialize actions as not granted
           menuWithActions.actions = this.allActions.map(action => ({
             action: action,
@@ -279,6 +311,7 @@ export class UserRolePermissionManager implements OnInit {
           }));
 
           this.processingMenuId = null;
+          this.refreshPermissions();
           this.showSuccess(`Menu "${menuWithActions.menu.menuName}" access granted`);
         },
         error: (err) => {
@@ -301,7 +334,7 @@ export class UserRolePermissionManager implements OnInit {
         next: () => {
           menuWithActions.hasMenuAccess = false;
           menuWithActions.tenantRoleMenuId = null;
-          
+
           // Reset all actions
           menuWithActions.actions = this.allActions.map(action => ({
             action: action,
@@ -310,6 +343,7 @@ export class UserRolePermissionManager implements OnInit {
           }));
 
           this.processingMenuId = null;
+          this.refreshPermissions();
           this.showSuccess(`Menu "${menuWithActions.menu.menuName}" access revoked`);
         },
         error: (err) => {
@@ -385,6 +419,7 @@ export class UserRolePermissionManager implements OnInit {
     actionPermission: ActionPermission
   ): void {
     if (!menuWithActions.tenantRoleMenuId) return;
+    console.log("INREVOKEACTION");
 
     this.tenantRoleMenuActionService
       .removeActionFromTenantRoleMenu(
@@ -392,7 +427,10 @@ export class UserRolePermissionManager implements OnInit {
         actionPermission.action.id
       )
       .subscribe({
+
         next: () => {
+          console.log("INSUBSCRIBE");
+
           actionPermission.granted = false;
           actionPermission.tenantRoleMenuActionId = null;
           this.processingActionId = null;
@@ -401,10 +439,11 @@ export class UserRolePermissionManager implements OnInit {
           );
         },
         error: (err) => {
-          this.showError(`Failed to revoke permission: ${err.error?.message || 'Unknown error'}`);
+          console.log(err)
           this.processingActionId = null;
           this.refreshPermissions();
-        }
+          this.showError(`Failed to revoke permission: ${err.error?.message || 'Unknown error'}`);
+        },
       });
   }
 
@@ -506,22 +545,22 @@ export class UserRolePermissionManager implements OnInit {
       this.errorMessage = '';
     }, 5000);
   }
-  
 
-    toggleAddMenuModal = ()=>{
+
+  toggleAddMenuModal = () => {
     this.showMenuAddModal = !this.showMenuAddModal;
   }
 
-  addMenu(menuName : string,menuDescription : string):void{
-     this.loading = true;
-     const menuPayload : MenuCreateRequest = {
-   
-      menuName : menuName,
-      menuDescription : menuDescription,
-     }
+  addMenu(menuName: string, menuDescription: string): void {
+    this.loading = true;
+    const menuPayload: MenuCreateRequest = {
+
+      menuName: menuName,
+      menuDescription: menuDescription,
+    }
     this.menuService.createMenu(menuPayload).subscribe({
       next: (response) => {
-        const tenantId:number = this.selectedTenantId || 0
+        const tenantId: number = this.selectedTenantId || 0
         this.loadPermissionsForRole(tenantId);
         this.loading = false;
         this.toggleAddMenuModal();

@@ -13,7 +13,9 @@ import {
   faKey,
   faUsers,
   faChartLine,
-  faBars
+  faBars,
+  faCross,
+  faX
 } from '@fortawesome/free-solid-svg-icons';
 import { MenuService } from '../../core/service/menu.service';
 
@@ -39,28 +41,25 @@ export class Sidebar {
   usersIcon = faUsers;
   dashboardIcon = faChartLine
   menuIcon = faBars
-
+  showMenu = false
   menuItems: Array<Menu> = [];
-
+  toggleMenuIcon = faX
   constructor(private authService: AuthService,private menuService : MenuService) {
 
     const userMenus : Menu = {
       label : "Menus",
       route : "#",
       icon : this.menuIcon,
+      toggleIcon : this.toggleMenuIcon,
       children : []
 
     }
-    this.menuItems.push({
-      label: 'Overview',
-      route: '/',
-      icon: this.dashboardIcon,
-    })
+  
     this.menuService.getAllMenus().subscribe({next : (response)=> {
           response.data.map(menu => 
             userMenus.children?.push({
               label : menu.menuName,
-              route : `/${menu.menuName.toLowerCase().split(" ").join("_")}`,
+              route : `/menu/${menu.menuName.toLowerCase().split(" ").join("_")}`,
               icon :""
             })
           )
@@ -98,7 +97,10 @@ export class Sidebar {
   }
 
 
-  
+  toggleMenu(){
+    console.log("SHOWMENU",this.showMenu)
+    this.showMenu = !this.showMenu
+  }
 
   toggleSidebar() {
     this.collapsed = !this.collapsed;
@@ -122,5 +124,6 @@ type Menu = {
   label: string;
   route: string;
   icon: any;
+  toggleIcon? : any;
   children? : Menu[]
 };

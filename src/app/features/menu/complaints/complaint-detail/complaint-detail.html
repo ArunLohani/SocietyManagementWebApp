@@ -1,0 +1,261 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Complaint Detail -->
+  <div *ngIf="!loading && complaint" class="max-w-5xl mx-auto">
+
+    <!-- Header Card -->
+    <p-card class="mb-4">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <h1 class="text-2xl font-bold">{{ complaint.title }}</h1>
+            <p-badge 
+              [value]="complaint.status" 
+              [severity]="getStatusSeverity(complaint.status)">
+            </p-badge>
+          </div>
+          
+          <div class="flex items-center gap-4 text-sm text-gray-600 mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-tag"></i>
+              <span>{{ complaint.category }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-flag"></i>
+              <p-badge 
+                [value]="complaint.priority" 
+                [severity]="getPrioritySeverity(complaint.priority)"
+                size="small">
+              </p-badge>
+            </div>
+          </div>
+
+          <p class="text-gray-700">{{ complaint.description }}</p>
+        </div>
+
+        <div class="ml-6 text-right min-w-[200px]">
+          <div class="mb-3">
+            <p class="text-xs text-gray-500 mb-1">Raised by</p>
+            <p class="font-semibold text-sm">{{ complaint.raisedByUser.name }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Assigned to</p>
+            <p class="font-semibold text-sm">{{ complaint.assignedToUser?.name || '—' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 flex-wrap">
+        <p-button 
+          label="Back" 
+          icon="pi pi-arrow-left" 
+          size="small"
+          (onClick)="backToList()" 
+          severity="secondary">
+        </p-button>
+
+        <p-button 
+          *ngIf="!editMode"
+          label="Edit" 
+          icon="pi pi-pencil" 
+          size="small"
+          (onClick)="enterEdit()" 
+          severity="secondary">
+        </p-button>
+
+        <p-button 
+          *ngIf="editMode"
+          label="Save" 
+          icon="pi pi-check" 
+          size="small"
+          (onClick)="saveEdit()" 
+          severity="success">
+        </p-button>
+
+        <p-button 
+          *ngIf="editMode"
+          label="Cancel" 
+          icon="pi pi-times" 
+          size="small"
+          (onClick)="cancelEdit()" 
+          severity="secondary"
+          [text]="true">
+        </p-button>
+
+        <div class="ml-auto flex gap-2">
+          <p-button 
+            *ngIf="complaint.status === 'OPEN'"
+            label="Start" 
+            icon="pi pi-play" 
+            size="small"
+            (onClick)="changeStatus('IN_PROGRESS')" 
+            severity="warn">
+          </p-button>
+
+          <p-button 
+            *ngIf="complaint.status !== 'RESOLVED'"
+            label="Resolve" 
+            icon="pi pi-check-circle" 
+            size="small"
+            (onClick)="changeStatus('RESOLVED')" 
+            severity="success">
+          </p-button>
+
+          <p-button 
+            *ngIf="complaint.status !== 'REJECTED'"
+            label="Reject" 
+            icon="pi pi-ban" 
+            size="small"
+            (onClick)="changeStatus('REJECTED')" 
+            severity="danger">
+          </p-button>
+        </div>
+      </div>
+
+      <!-- Edit Form -->
+      <div *ngIf="editMode" class="mt-4">
+        <p-divider></p-divider>
+        <div class="flex flex-col gap-4">
+
+          <p-floatlabel variant="on">
+            <input pInputText id="editTitle" [(ngModel)]="editModel.title" class="w-full" />
+            <label for="editTitle">Title</label>
+          </p-floatlabel>
+
+          <p-floatlabel variant="on">
+            <textarea pInputTextarea id="editDesc" [(ngModel)]="editModel.description" 
+              rows="4" class="w-full"></textarea>
+            <label for="editDesc">Description</label>
+          </p-floatlabel>
+
+          <div class="grid grid-cols-2 gap-3">
+            <p-floatlabel variant="on">
+              <input pInputText id="editCat" [(ngModel)]="editModel.category" class="w-full" />
+              <label for="editCat">Category</label>
+            </p-floatlabel>
+
+            <p-select
+              [options]="priorityOptions"
+              [(ngModel)]="editModel.priority"
+              optionLabel="name"
+              optionValue="code"
+              placeholder="Select Priority"
+              styleClass="w-full"
+              appendTo="body"
+            ></p-select>
+          </div>
+
+        </div>
+      </div>
+
+    </p-card>
+
+    <!-- Assignment Card -->
+    <p-card class="mb-4">
+      <ng-template #header>
+        <div class="px-6 pt-6 pb-3">
+          <h3 class="text-lg font-semibold flex items-center gap-2">
+            <i class="pi pi-users"></i>
+            Assignment
+          </h3>
+        </div>
+      </ng-template>
+
+      <div class="flex flex-col gap-3">
+        <p-floatlabel variant="on">
+          <input 
+            pInputText 
+            id="searchAssign" 
+            [(ngModel)]="assignSearch"
+            (input)="searchAssignableUsers(assignSearch)"
+            class="w-full" 
+          />
+          <label for="searchAssign">Search users to assign</label>
+        </p-floatlabel>
+
+        <div *ngIf="loadingUsers" class="flex justify-center py-4">
+          <p-progressSpinner [style]="{ width: '40px', height: '40px' }"></p-progressSpinner>
+        </div>
+
+        <div *ngIf="!loadingUsers && availableUsers.length > 0" 
+             class="max-h-64 overflow-y-auto border rounded-lg">
+          <div *ngFor="let u of availableUsers" 
+               class="flex justify-between items-center p-3 border-b hover:bg-gray-50">
+            <div>
+              <div class="font-semibold text-sm">{{ u.name }}</div>
+              <div class="text-xs text-gray-500">{{ u.email }}</div>
+            </div>
+            <p-button 
+              label="Assign" 
+              size="small"
+              (onClick)="assignToUser(u.id)" 
+              severity="contrast">
+            </p-button>
+          </div>
+        </div>
+
+        <div *ngIf="!loadingUsers && availableUsers.length === 0 && assignSearch" 
+             class="text-center py-6 text-gray-500 text-sm">
+          No users found
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Resolution Notes Card -->
+    <p-card>
+      <ng-template #header>
+        <div class="px-6 pt-6 pb-3">
+          <h3 class="text-lg font-semibold flex items-center gap-2">
+            <i class="pi pi-file-edit"></i>
+            Resolution Notes
+          </h3>
+        </div>
+      </ng-template>
+
+      <div class="flex flex-col gap-4">
+
+        <div *ngIf="complaint.resolutionNotes" 
+             class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p class="text-sm font-semibold text-blue-900 mb-2">Current Notes</p>
+          <p class="text-sm text-gray-700">{{ complaint.resolutionNotes }}</p>
+        </div>
+
+        <p-floatlabel variant="on">
+          <textarea pInputTextarea id="resNote" [(ngModel)]="resolutionNote" 
+            rows="3" class="w-full"></textarea>
+          <label for="resNote">Add a resolution note...</label>
+        </p-floatlabel>
+
+        <div class="flex justify-end gap-2">
+          <p-button 
+            label="Clear" 
+            icon="pi pi-times" 
+            size="small"
+            (onClick)="resolutionNote = ''" 
+            severity="secondary"
+            [text]="true">
+          </p-button>
+
+          <p-button 
+            label="Add Note" 
+            icon="pi pi-plus" 
+            size="small"
+            (onClick)="addResolutionNotes()" 
+            severity="contrast">
+          </p-button>
+        </div>
+
+      </div>
+    </p-card>
+
+  </div>
+
+</div>

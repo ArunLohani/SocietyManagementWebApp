@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
-import { ApiResponse, Menu, PaginatedResponse ,MenuCreateRequest} from '../../types/types';
+import { ApiResponse, Menu, PaginatedResponse ,MenuCreateRequest, Page} from '../../types/types';
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +14,8 @@ export class MenuService {
 
   constructor(private httpClient: HttpClient) {}
 
-  getAllMenusPaginated(): Observable<PaginatedResponse<Menu>> {
-    return this.httpClient.get<PaginatedResponse<Menu>>(`${this.url}`);
+  getAllMenusPaginated(page : number = 0): Observable<Page<Menu>> {
+    return this.httpClient.get<Page<Menu>>(`${this.url}?page=${page}`);
   }
 
     getAllMenus(): Observable<ApiResponse<Menu[]>> {

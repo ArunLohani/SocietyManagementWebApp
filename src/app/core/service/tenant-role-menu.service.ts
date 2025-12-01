@@ -81,5 +81,20 @@ export class TenantRoleMenuService {
       { params }
     );
   }
+
+  canAccess(menuName : string): Observable<ApiResponse<boolean>> {
+    const params = new HttpParams()
+      .set('menu', menuName.toString());
+    return this.httpClient.get<ApiResponse<boolean>>(
+      `${this.url}/canAccess`,
+      { params }
+    );
+  }
+
+  getPriority(menuName:string) : Observable<ApiResponse<number>> {
+    return this.httpClient.get<ApiResponse<number>>(
+      `${this.url}/getPriority/${menuName}`
+    );
+  }
 }
 

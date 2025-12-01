@@ -1,87 +1,111 @@
-<div
-  class="h-screen bg-[#468faf] fixed  text-white flex flex-col shadow-2xl transition-all duration-300 ease-in-out"
-  [ngClass]="{ 'w-64': !collapsed, 'w-20': collapsed }"
->
+<div class=" col-span-1  bg-[#020617] sticky top-0 h-screen
+   text-white flex flex-col shadow-2xl transition-all duration-300 ease-in-out rounded-tr-2xl rounded-br-2xl ">
   <!-- Header / Branding -->
   <div class="flex items-center justify-between px-4 py-6 border-b border-white">
     <div *ngIf="!collapsed" class="text-xl font-bold tracking-wide"><a href="/">Homely</a></div>
-    <button
-      
-      (click)="toggleSidebar()"
-     
-      matTooltipPosition="right"
-      class="text-white hover:text-white transition"
-    >   
-    @if(collapsed){
-    <fa-icon [icon]="chevron_right" />
-    }
-    @else{
-    <fa-icon [icon]="chevron_left" />
-    }
-     
-    </button>
+
+
+
   </div>
   <!-- User Profile -->
   <!-- <div *ngIf="!collapsed" class="flex items-center gap-3 px-4 py-4 border-b border-white"> -->
-    <!-- <img src={{user.picture}} class="w-10 h-10 rounded-full" alt="User avatar" /> -->
-    <!-- <div>
+  <!-- <img src={{user.picture}} class="w-10 h-10 rounded-full" alt="User avatar" /> -->
+  <!-- <div>
       <p class="text-sm font-medium">{{user.name}}</p>
       <p class="text-xs text-[#ffffffb3]">{{user.role}}</p>
     </div> -->
   <!-- </div> -->
   <!-- Navigation -->
   <nav class="flex-1 overflow-y-auto px-2 py-4 custom-scroll flex flex-col gap-2">
-    @for (item of menuItems; track $index) {
-      @if (item.children) {
-<div   class="group flex items-center gap-4 px-4 py-3 rounded-md transition-all duration-200 border-l-4 border-transparent hover:bg-[#2a6f97] hover:text-white relative">
 
-         <fa-icon [icon]="item.icon"/>
-        <!-- Label (hidden if collapsed) -->
-        <span *ngIf="!collapsed" class="text-sm font-medium">{{ item.label }}</span>
-</div>
-           @for (child of item.children; track $index) {
+  <!-- Loop all menu items -->
+  @for (item of menuItems; track $index) {
 
-                 <a
-        [routerLink]="child.route"
-        [routerLinkActiveOptions]="{ exact: true }"
-        routerLinkActive=" bg-white text-black border-l-4 border-primary"
-        class="group ml-4 flex items-center gap-4 px-4 py-1 rounded-md transition-all duration-200 border-l-4 border-transparent hover:bg-[#2a6f97] hover:text-white relative"
+    <!-- If item has children -->
+    @if (item.children) {
+
+      <!-- Parent clickable item -->
+      <div
+        class="group flex items-center gap-4 px-4 py-3 rounded-md 
+               transition-all duration-200 border-l-4 border-transparent
+               hover:bg-[#161a29] hover:text-white cursor-pointer"
+        (click)="toggleMenu()"
       >
-           <!-- <fa-icon [icon]="child.icon"/> -->
-        <!-- Label (hidden if collapsed) -->
-        <span *ngIf="!collapsed" class="text-sm font-medium">{{ child.label }}</span>
-      </a>
-           }
 
+        <!-- Change icon when expanded -->
+        <fa-icon 
+          [icon]="showMenu ? item.toggleIcon : item.icon"
+          class="transition-all duration-300"
+        />
 
-     
-      }
-      @else {
-          <a
-        [routerLink]="item.route"
-        [routerLinkActiveOptions]="{ exact: true }"
-        routerLinkActive="bg-white text-black border-l-4 border-primary"
-        class="group flex items-center gap-4 px-4 py-3 rounded-md transition-all duration-200 border-l-4 border-transparent hover:bg-[#2a6f97] hover:text-white relative"
-      >
-        <fa-icon [icon]="item.icon"/>
-        <!-- Label (hidden if collapsed) -->
+        <!-- Label -->
         <span *ngIf="!collapsed" class="text-sm font-medium">{{ item.label }}</span>
-      </a>
-      }
+      </div>
+
+      <!-- Submenu with slide animation -->
+      <div
+        class="ml-4  transition-all duration-300"
+        [class.max-h-0]="!showMenu"
+        [class.max-h-96]="showMenu"
+      >
+        <div class="flex flex-col gap-2 py-2">
+
+          <!-- Child links -->
+          @for (child of item.children; track $index) {
+            <a
+              [routerLink]="child.route"
+              routerLinkActive="bg-white text-black border-l-4 border-primary"
+              class="group ml-4 flex items-center gap-4 px-4 py-1 rounded-md 
+                     transition-all duration-200 border-l-4 border-transparent 
+                     hover:bg-[#161a29] hover:text-white
+                     opacity-0 translate-y-2"
+              [class.opacity-100]="showMenu"
+              [class.opacity-0]="!showMenu"
+              [class.translate-y-0]="showMenu"
+              [class.translate-y-2]="!showMenu"
+            >
+              <span *ngIf="!collapsed" class="text-sm font-medium">{{ child.label }}</span>
+            </a>
+          }
+
+        </div>
+      </div>
+
     }
-    <!-- Logout -->
-    <div class="mt-8 border-t  border-white pt-4">
+
+    <!-- ELSE — normal menu item without children -->
+    @else {
+
       <a
-        (click)="logout()"
-        class="group flex items-center gap-4 px-4 py-3 rounded-md text-white hover:bg-white hover:text-black transition-all duration-200 border-l-4 border-transparent "
+        [routerLink]="item.route"
+        routerLinkActive="bg-white text-black border-l-4 border-primary"
+        class="group flex items-center gap-4 px-4 py-3 rounded-md 
+               transition-all duration-200 border-l-4 border-transparent 
+               hover:bg-[#161a29] hover:text-white"
       >
-       
-          <fa-icon [icon]="power_off"/>
-     
-        <span *ngIf="!collapsed" class="text-sm font-medium">Logout</span>
+        <fa-icon [icon]="item.icon" />
+        <span *ngIf="!collapsed" class="text-sm font-medium">{{ item.label }}</span>
       </a>
-    </div>
-  </nav>
+
+    }
+
+  }
+
+  <!-- Logout -->
+  <div class="mt-8 border-t border-white pt-4">
+    <a
+      (click)="logout()"
+      class="group flex items-center gap-4 px-4 py-3 rounded-md text-white 
+             hover:bg-white hover:text-black transition-all duration-200 
+             border-l-4 border-transparent cursor-pointer"
+    >
+      <fa-icon [icon]="power_off" />
+      <span *ngIf="!collapsed" class="text-sm font-medium">Logout</span>
+    </a>
+  </div>
+
+</nav>
+
   <!-- Footer -->
   <div class="p-4 border-t  text-[11px] border-white text-center">
     <p *ngIf="!collapsed">© 2025 Homely</p>
