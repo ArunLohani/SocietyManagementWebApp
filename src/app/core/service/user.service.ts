@@ -40,6 +40,24 @@ export class UserService {
   }
 
 
+  searchUsersList(
+    name?: string,
+    email?: string
+  ): Observable<ApiResponse<User>> {
+    let params = new HttpParams()
+
+    if (name) {
+      params = params.set('name', name);
+    }
+    if (email) {
+      params = params.set('email', email);
+    }
+
+    return this.httpClient.get<ApiResponse<User>>(`${this.url}/search-list`, { params });
+  }
+
+
+
   updateUser(id: number, user: User): Observable<ApiResponse<UserDetails>> {
     return this.httpClient.put<ApiResponse<UserDetails>>(`${this.url}/${id}`, user);
   }

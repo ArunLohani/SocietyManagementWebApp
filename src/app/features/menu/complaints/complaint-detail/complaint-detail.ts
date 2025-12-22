@@ -16,6 +16,8 @@ import { ComplaintsService } from '../../../../core/service/complaint.service';
 import { UserService } from '../../../../core/service/user.service';
 import { Complaints, ComplaintIssuingRequest, User } from '../../../../types/types';
 import { AuthService } from '../../../../core/service/auth.service';
+import { TenantRoleMenuService } from '../../../../core/service/tenant-role-menu.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-complaint-detail',
@@ -60,19 +62,51 @@ export class ComplaintDetailComponent implements OnInit {
   resolutionNote = '';
 
   currentUserId: number | null = null;
-
+  // permission
+  permission: "READ" | "EDIT" | "CREATE" = "READ";
   constructor(
     private route: ActivatedRoute,
     private complaintsService: ComplaintsService,
     private userService: UserService,
     private auth: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private tenantRoleMenuService : TenantRoleMenuService,
+    private toastrService : ToastrService
+  ) {
+this.tenantRoleMenuService.getPriority("Complaints").subscribe({
+      next: (res) => {
+        console.log(res)
+        this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+      },
+      error: (err) => {
+        this.permission = "READ";
+      },
+    });
+  
+
+  }
 
   ngOnInit(): void {
     this.complaintId = Number(this.route.snapshot.paramMap.get('id'));
     this.currentUserId = this.auth.getUserIdFromToken?.() ?? null;
     this.loadComplaint();
+    if(this.isAdmin()){
+  this.searchAssignableUsers("")
+    }
+  }
+
+  isAdmin(){
+    return this.auth.isUserAdmin();
+  }
+
+  isAuthor(){
+    return this.complaint?.raisedByUser.id === this.auth.getUserIdFromToken()
+  }
+
+  isAssigned(){
+      if(this.complaint?.assignedToUser) 
+        this.complaint?.assignedToUser.id === this.auth.getUserIdFromToken()
+      return false;
   }
 
   loadComplaint() {
@@ -117,7 +151,7 @@ export class ComplaintDetailComponent implements OnInit {
 
   searchAssignableUsers(q: string) {
     this.loadingUsers = true;
-    this.userService.searchUsers(q, undefined, 0, 50).subscribe({
+    this.userService.searchUsersList(q, undefined).subscribe({
       next: (res) => {
         this.availableUsers = (res as any).content ?? (res as any).data ?? res;
         this.loadingUsers = false;
@@ -129,20 +163,20 @@ export class ComplaintDetailComponent implements OnInit {
   assignToUser(userId: number) {
     this.complaintsService.assignComplaint(this.complaintId, userId).subscribe({
       next: () => this.loadComplaint(),
-      error: (err) => alert('Failed to assign: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) =>    this.toastrService.error('Failed to assgin user : ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
   changeStatus(status: string) {
     this.complaintsService.changeComplaintStatus(this.complaintId, status).subscribe({
       next: () => this.loadComplaint(),
-      error: (err) => alert('Failed to change status: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) =>     this.toastrService.error('Failed to change status: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
   addResolutionNotes() {
     if (!this.resolutionNote.trim()) {
-      alert('Please enter a resolution note.');
+          this.toastrService.error('Please enter a resolution note.')
       return;
     }
     this.complaintsService.addResolutionNotes(this.complaintId, this.resolutionNote).subscribe({
@@ -150,7 +184,7 @@ export class ComplaintDetailComponent implements OnInit {
         this.resolutionNote = '';
         this.loadComplaint();
       },
-      error: (err) => alert('Failed to add resolution note: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) =>     this.toastrService.error('Failed to add resolution note: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 

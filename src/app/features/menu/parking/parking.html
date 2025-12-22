@@ -7,8 +7,11 @@
       <p class="text-xs text-gray-500">Monitor and manage parking slots.</p>
     </div>
 
-    <p-button label="Add Parking Slot" icon="pi pi-plus" size="small"
+    @if (permission === 'CREATE') {  
+       <p-button label="Add Parking Slot" icon="pi pi-plus" size="small"
       (onClick)="openCreateModal()" severity="contrast"></p-button>
+    }
+ 
   </div>
 
   <!-- Filters -->
@@ -86,7 +89,7 @@
         </div>
 
       </div>
-
+     @if (permission !== 'READ') { 
       <ng-template #footer>
         <div class="flex flex-col gap-2">
           <div class="flex justify-end gap-2">
@@ -110,7 +113,7 @@
           </div>
         </div>
       </ng-template>
-
+    }
     </p-card>
     }
 
@@ -129,9 +132,11 @@
   @if (!loading && parkingSlotsPage?.content?.length === 0) {
   <p-card class="text-center py-20">
     <h3 class="text-xl font-bold mb-1">No parking slots found</h3>
+     @if (permission === 'CREATE') {  
     <p class="text-gray-500 mb-4">Create your first parking slot to start managing your parking facility.</p>
     <p-button label="Add Parking Slot" icon="pi pi-plus" severity="contrast"
       (onClick)="openCreateModal()"></p-button>
+     }
   </p-card>
   }
 

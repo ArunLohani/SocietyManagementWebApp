@@ -37,7 +37,7 @@
       <p-divider></p-divider>
 
       <!-- Action Buttons -->
-      @if (this.permission != "READ") {
+    
       <div class="flex gap-2 flex-wrap">
         <p-button 
           label="Back" 
@@ -46,8 +46,9 @@
           (onClick)="backToList()" 
           severity="secondary">
         </p-button>
+        
 
-        <p-button 
+         <p-button 
           [label]="isUserParticipant ? 'Leave' : 'Join'" 
           [icon]="isUserParticipant ? 'pi pi-sign-out' : 'pi pi-sign-in'"
           size="small"
@@ -55,6 +56,7 @@
           [severity]="isUserParticipant ? 'danger' : 'success'">
         </p-button>
 
+@if (this.permission != "READ") {
         <p-button 
           *ngIf="!editMode"
           label="Edit" 
@@ -100,8 +102,9 @@
             severity="success">
           </p-button>
         </div>
+       }
       </div>
-
+  @if (this.permission != "READ") {
       <!-- Edit Form -->
       <div *ngIf="editMode" class="mt-4">
         <p-divider></p-divider>
@@ -113,7 +116,7 @@
           </p-floatlabel>
 
           <p-floatlabel variant="on">
-            <textarea pInputTextarea id="editDesc" [(ngModel)]="editModel.description" 
+            <textarea pInputText id="editDesc" [(ngModel)]="editModel.description" 
               rows="3" class="w-full"></textarea>
             <label for="editDesc">Description</label>
           </p-floatlabel>
@@ -152,19 +155,25 @@
           </div>
 
           <div class="flex gap-4">
-            <p-checkbox 
-              [(ngModel)]="editModel.isPublic" 
-              [binary]="true" 
-              inputId="editPublic"
-              label="Public">
-            </p-checkbox>
+           <div>
+        <p-checkbox 
+        [(ngModel)]="editModel.isPublic" 
+        [binary]="true" 
+        inputId="isPublic"
+        label="Public">
+      </p-checkbox>
+   <label for="regRequired" class="ml-2"> Public </label>
+    </div>
 
-            <p-checkbox 
-              [(ngModel)]="editModel.registrationRequired" 
-              [binary]="true" 
-              inputId="editReg"
-              label="Registration Required">
-            </p-checkbox>
+    <div>
+        <p-checkbox 
+        [(ngModel)]="editModel.registrationRequired" 
+        [binary]="true" 
+        inputId="regRequired"
+        label="Requires Registration">
+      </p-checkbox>
+          <label for="regRequired" class="ml-2"> Requires Registration </label>
+    </div>
           </div>
 
         </div>

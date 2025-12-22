@@ -18,8 +18,12 @@ export class ParkingBookingService {
   }
 
 
-  requestParkingSlot(parkingSlotId: number): Observable<ApiResponse<ParkingRequest>> {
-    return this.httpClient.post<ApiResponse<ParkingRequest>>(`${this.url}`, parkingSlotId);
+  requestParkingSlot(parkingSlotId: number,flatId : string): Observable<ApiResponse<ParkingRequest>> {
+    return this.httpClient.post<ApiResponse<ParkingRequest>>(`${this.url}/${flatId}`, parkingSlotId);
+  }
+
+  deleteParkingRequest(parkingRequestId : number) : Observable<ApiResponse<ParkingRequest>>{
+    return this.httpClient.delete<ApiResponse<ParkingRequest>>(`${this.url}/${parkingRequestId}`);
   }
 
   acceptParkingSlotRequest(id: number): Observable<ApiResponse<ParkingRequest>> {

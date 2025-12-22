@@ -17,6 +17,8 @@ import { ComplaintsService } from '../../../core/service/complaint.service';
 import { UserService } from '../../../core/service/user.service';
 import { Complaints, ComplaintIssuingRequest, ComplaintsFilter, Page, User } from '../../../types/types';
 import { AuthService } from '../../../core/service/auth.service';
+import { TenantRoleMenuService } from '../../../core/service/tenant-role-menu.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-complaints',
@@ -89,12 +91,28 @@ export class ComplaintsManagerComponent implements OnInit {
   // current user
   currentUserId = 1;
 
+  // permission
+  permission: "READ" | "EDIT" | "CREATE" = "READ";
+
   constructor(
     private complaintsService: ComplaintsService,
     private userService: UserService,
     private auth: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private tenantRoleMenuService : TenantRoleMenuService,
+    private toastrService : ToastrService
+  ) { 
+    this.tenantRoleMenuService.getPriority("Complaints").subscribe({
+      next: (res) => {
+        console.log(res)
+        this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+      },
+      error: (err) => {
+        this.permission = "READ";
+      },
+    });
+  
+  }
 
   ngOnInit(): void {
     try {
@@ -103,6 +121,10 @@ export class ComplaintsManagerComponent implements OnInit {
     } catch {}
     this.newComplaint.raisedByUser = this.currentUserId;
     this.loadComplaints(0);
+  }
+
+  isAdmin():boolean {
+    return this.auth.isUserAdmin();
   }
 
   loadComplaints(page: number = 0) {
@@ -147,7 +169,8 @@ export class ComplaintsManagerComponent implements OnInit {
 
   createComplaint() {
     if (!this.newComplaint.title || !this.newComplaint.description || !this.newComplaint.category) {
-      alert('Please fill required fields.');
+
+      this.toastrService.error('Please fill required fields.')
       return;
     }
     this.complaintsService.issueComplaint(this.newComplaint as ComplaintIssuingRequest).subscribe({
@@ -155,7 +178,9 @@ export class ComplaintsManagerComponent implements OnInit {
         this.toggleCreateModal();
         this.loadComplaints(this.page);
       },
-      error: (err) => alert('Failed to create complaint: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) =>
+           this.toastrService.error('Failed to create complaint: ' + (err.error?.message || err.message || 'Unknown'))
+      
     });
   }
 
@@ -195,14 +220,16 @@ export class ComplaintsManagerComponent implements OnInit {
         this.closeAssignModal();
         this.loadComplaints(this.page);
       },
-      error: (err) => alert('Failed to assign complaint: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) => 
+            this.toastrService.error('Failed to assign complaint: ' + (err.error?.message || err.message || 'Unknown'))
+     
     });
   }
 
   changeStatus(complaintId: number, status: string) {
     this.complaintsService.changeComplaintStatus(complaintId, status).subscribe({
       next: () => this.loadComplaints(this.page),
-      error: (err) => alert('Failed to change status: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) =>     this.toastrService.error('Failed to change complaint: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 

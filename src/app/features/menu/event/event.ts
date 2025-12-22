@@ -20,6 +20,7 @@ import { EventsService } from '../../../core/service/event.service';
 import { Event, EventCreationRequest, EventFilter, Page, User } from '../../../types/types';
 import { AuthService } from '../../../core/service/auth.service';
 import { TenantRoleMenuService } from '../../../core/service/tenant-role-menu.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-events',
@@ -81,17 +82,18 @@ export class EventsManagerComponent implements OnInit {
     private eventsService: EventsService,
     private auth: AuthService,
     private router: Router,
-    private tenantRoleMenuService: TenantRoleMenuService
-  ) {
-    this.tenantRoleMenuService.getPriority("Events").subscribe({
-      next: (res) => {
-        console.log(res)
-        this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
-      },
-      error: (err) => {
-        this.permission = "READ";
-      },
-    });
+      private tenantRoleMenuService: TenantRoleMenuService,
+      private toastrService : ToastrService
+    ) {
+      this.tenantRoleMenuService.getPriority("Events").subscribe({
+        next: (res) => {
+          console.log(res)
+          this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+        },
+        error: (err) => {
+          this.permission = "READ";
+        },
+      });
   }
 
   ngOnInit(): void {
@@ -159,7 +161,7 @@ export class EventsManagerComponent implements OnInit {
 
   createEvent(): void {
     if (!this.newEvent.name || !this.newEvent.location || !this.newEvent.startDateTime || !this.newEvent.endDateTime) {
-      alert('Please fill required fields');
+      this.toastrService.error('Please fill required fields');
       return;
     }
     this.newEvent.organizedBy = this.currentUserId;
@@ -172,7 +174,8 @@ export class EventsManagerComponent implements OnInit {
         this.toggleCreateModal();
         this.loadEvents(this.page);
       },
-      error: err => alert('Failed to create event: ' + (err.error?.message || err.message || 'Unknown'))
+      error: err => 
+           this.toastrService.error('Failed to create event: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
@@ -205,7 +208,7 @@ export class EventsManagerComponent implements OnInit {
   removeParticipant(eventId: number, userId: number) {
     this.eventsService.removeParticipant(eventId, userId).subscribe({
       next: () => this.loadParticipants(eventId),
-      error: err => alert('Failed to remove participant: ' + (err.error?.message || 'Unknown'))
+      error: err =>  this.toastrService.error('Failed to remove participant: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 

@@ -14,6 +14,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { NoticesService } from '../../../../core/service/notice.service';
 import { Notice, NoticeCreationRequest } from '../../../../types/types';
 import { AuthService } from '../../../../core/service/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-notice-detail',
@@ -49,7 +50,8 @@ export class NoticeDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private noticesService: NoticesService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private toastrService : ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -99,21 +101,21 @@ export class NoticeDetailComponent implements OnInit {
         this.editMode = false;
         this.loadNotice();
       },
-      error: (err) => alert('Failed to update notice: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) => this.toastrService.error('Failed to update notice: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
   togglePublic() {
     this.noticesService.togglePublic(this.noticeId).subscribe({
       next: () => this.loadNotice(),
-      error: (err) => alert('Failed to toggle public: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) => this.toastrService.error('Failed to toggle public: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
   toggleExpired() {
     this.noticesService.toggleExpired(this.noticeId).subscribe({
       next: () => this.loadNotice(),
-      error: (err) => alert('Failed to toggle expired: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) => this.toastrService.error('Failed to toggle expired: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 

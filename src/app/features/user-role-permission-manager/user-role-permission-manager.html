@@ -1,470 +1,275 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
   <!-- Header -->
-  <div class="mb-8">
-    <div class="flex justify-between ">
-      <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-        Permission Management
-      </h1>
-
-      <button (click)="toggleAddMenuModal()" class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white 
-                    bg-[#FF521B] hover:bg-[#e64a18]
-                     rounded-lg transition duration-150 ease-in-out">
-
-        + Add Menu
-      </button>
+  <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-2xl">Permission Management</h3>
+      <p class="text-sm text-gray-500">Configure menu and action permissions for roles in your societies</p>
     </div>
-    <p class="text-lg text-gray-600 dark:text-gray-400">
-      Configure menu and action permissions for roles in your societies
-    </p>
+    <p-button label="Add Menu" icon="pi pi-plus" size="small" (onClick)="toggleAddMenuModal()" 
+              severity="contrast"></p-button>
   </div>
 
-  <!-- Success Alert -->
-  @if (successMessage) {
-  <div
-    class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center animate-slideDown">
-    <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd"
-        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-        clip-rule="evenodd" />
-    </svg>
-    <span class="text-green-800 dark:text-green-200">{{ successMessage }}</span>
-  </div>
-  }
 
-  <!-- Error Alert -->
-  @if (errorMessage) {
-  <div
-    class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center animate-slideDown">
-    <svg class="w-5 h-5 text-red-600 dark:text-red-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-      <path fill-rule="evenodd"
-        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-        clip-rule="evenodd" />
-    </svg>
-    <span class="text-red-800 dark:text-red-200">{{ errorMessage }}</span>
-  </div>
-  }
 
   <!-- Initial Loading -->
   @if (loading) {
-  <div class="flex flex-col items-center justify-center py-16">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mb-4"></div>
-    <p class="text-gray-600 dark:text-gray-400">Loading data...</p>
+  <div class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
   </div>
   }
 
   <!-- Main Content -->
+  @if (!loading) {
   <!-- Selection Card -->
-  <div
-    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 overflow-hidden">
-    <div class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-6 py-4">
-      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Select Society & Role</h2>
-    </div>
-    <div class="p-6 space-y-4">
-      <!-- Tenant Selection -->
+  <p-card styleClass="mb-4">
+    <ng-template pTemplate="header">
+      <div class="px-6 py-4 border-b">
+        <h3 class="text-lg font-semibold">Select Society & Role</h3>
+      </div>
+    </ng-template>
+
+    <div class="flex flex-col gap-4">
+      <!-- Tenant Display -->
       <div>
-        <label for="tenantSelect"
-          class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
+        <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <i class="pi pi-building text-orange-600"></i>
           Society
         </label>
-        <select id="tenantSelect" [value]="selectedTenantId || ''" (change)="onTenantSelect($event)" class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg
-                   bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                   focus:ring-2 focus:ring-orange-500 focus:border-orange-500
-                   transition duration-150 ease-in-out cursor-pointer">
-          <option value="">-- Select a Society --</option>
-          @for (tenant of tenants; track tenant.id) {
-          <option [value]="tenant.id">{{ tenant.name }}</option>
-          }
-        </select>
+        <div class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+          <span class="font-medium">{{ selectedTenant?.name }}</span>
+        </div>
       </div>
 
       <!-- Role Selection -->
       @if (selectedTenantId) {
       <div>
-        <label for="roleSelect"
-          class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
+        <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <i class="pi pi-users text-orange-600"></i>
           Role
         </label>
-        <select id="roleSelect" [value]="selectedTenantRoleId || ''" (change)="onRoleSelect($event)" class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                     focus:ring-2 focus:ring-orange-500 focus:border-orange-500
-                     transition duration-150 ease-in-out cursor-pointer">
-          <option value="">-- Select a Role --</option>
-          @for (tenantRole of tenantRoles; track tenantRole.id) {
-          <option [value]="tenantRole.id">{{ tenantRole.role.role }}</option>
-          }
-        </select>
+        <p-select 
+          [options]="tenantRoles" 
+          [(ngModel)]="selectedTenantRoleId"
+          (onChange)="onRoleSelect($event)"
+          optionLabel="role.role" 
+          optionValue="id"
+          placeholder="-- Select a Role --"
+          [showClear]="true"
+          styleClass="w-full"
+          appendTo="body"
+        ></p-select>
       </div>
       }
 
       <!-- Selection Info -->
       @if (selectedTenant && selectedTenantRole) {
-      <div
-        class="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <svg class="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" fill="currentColor"
-          viewBox="0 0 20 20">
-          <path fill-rule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clip-rule="evenodd" />
-        </svg>
-        <div>
-          <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">
-            Managing: {{ selectedTenant.name }} - {{ selectedTenantRole.role.role }}
-          </p>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            {{ menusWithAccessCount }} of {{ allMenus.length }} menus accessible •
-            {{ totalPermissionsGranted }} total permissions granted
-          </p>
+      <p-message severity="info" styleClass="w-full">
+        <div class="flex items-start gap-3">
+          <div class="flex-1">
+            <p class="font-semibold mb-1">
+              Managing: {{ selectedTenant.name }} - {{ selectedTenantRole.role.role }}
+            </p>
+            <p class="text-sm">
+              {{ menusWithAccessCount }} of {{ allMenus.length }} menus accessible •
+              {{ totalPermissionsGranted }} total permissions granted
+            </p>
+          </div>
         </div>
-      </div>
+      </p-message>
       }
     </div>
-  </div>
+  </p-card>
 
   <!-- Permissions Section -->
   @if (selectedTenantRoleId) {
-  <!-- Filters and Actions -->
-  <!-- <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 p-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div class="flex flex-col sm:flex-row gap-3 flex-1">
-           
-            <div class="relative flex-1">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input
-                type="text"
-                placeholder="Search menus..."
-                [(ngModel)]="searchTerm"
-                class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       placeholder-gray-500 dark:placeholder-gray-400
-                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                       transition duration-150 ease-in-out">
-            </div>
-
-            <label class="flex items-center gap-2 px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg
-                          bg-white dark:bg-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600
-                          transition duration-150 ease-in-out whitespace-nowrap">
-              <input
-                type="checkbox"
-                [(ngModel)]="showOnlyGranted"
-                class="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700
-                       border-gray-300 dark:border-gray-600 rounded
-                       focus:ring-2 focus:ring-blue-500 cursor-pointer">
-              <span class="text-gray-700 dark:text-gray-300">Show only granted</span>
-            </label>
-          </div>
-
-          <div class="flex gap-3">
-            @if (searchTerm || showOnlyGranted) {
-              <button
-                (click)="clearFilters()"
-                class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300
-                       bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600
-                       border border-gray-300 dark:border-gray-600 rounded-lg
-                       transition duration-150 ease-in-out">
-                Clear Filters
-              </button>
-            }
-            <button
-              (click)="refreshPermissions()"
-              class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white
-                     bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600
-                     rounded-lg transition duration-150 ease-in-out">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-              </svg>
-              Refresh
-            </button>
-          </div>
-        </div>
-      </div> -->
-
+  
   <!-- Loading Permissions -->
   @if (loadingPermissions) {
-  <div class="flex flex-col items-center justify-center py-16">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mb-4"></div>
-    <p class="text-gray-600 dark:text-gray-400">Loading permissions...</p>
+  <div class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
   </div>
   }
 
   <!-- Permissions Grid -->
   @if (!loadingPermissions && filteredMenus.length > 0) {
-  <div class="space-y-4">
+  <div class="flex flex-col gap-4">
     @for (menuWithActions of filteredMenus; track menuWithActions.menu.id) {
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden
-                        transition-all duration-200 hover:shadow-md">
+    <p-card>
       <!-- Menu Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700
-                          bg-gray-50 dark:bg-gray-800/50">
-        <div class="flex items-center gap-4 flex-1 min-w-0">
-          <label class="inline-flex items-center cursor-pointer">
-            <input type="checkbox" [checked]="menuWithActions.hasMenuAccess"
+      <ng-template pTemplate="header">
+        <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+          <div class="flex items-center gap-4 flex-1 min-w-0">
+            <p-checkbox 
+              [binary]="true"
+              [(ngModel)]="menuWithActions.hasMenuAccess"
               [disabled]="processingMenuId === menuWithActions.menu.id"
-              (change)="toggleMenuAccess(menuWithActions, $event)" class="w-5 h-5 text-orange-600 bg-gray-100 dark:bg-gray-700
-                             border-gray-300 dark:border-gray-600 rounded
-                             focus:ring-2 focus:ring-orange-500
-                             cursor-pointer transition duration-150
-                             disabled:opacity-50 disabled:cursor-not-allowed">
-          </label>
+              (onChange)="toggleMenuAccess(menuWithActions, $event)"
+            ></p-checkbox>
 
-          <div class="flex-1 min-w-0">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-              {{ menuWithActions.menu.menuName }}
-            </h3>
-            @if (menuWithActions.menu.menuDescription) {
-            <p class="text-sm text-gray-600 dark:text-gray-400 truncate">
-              {{ menuWithActions.menu.menuDescription }}
-            </p>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-gray-900">
+                {{ menuWithActions.menu.menuName }}
+              </h3>
+              @if (menuWithActions.menu.menuDescription) {
+              <p class="text-sm text-gray-600">
+                {{ menuWithActions.menu.menuDescription }}
+              </p>
+              }
+            </div>
+
+            @if (processingMenuId === menuWithActions.menu.id) {
+            <i class="pi pi-spin pi-spinner text-blue-600"></i>
             }
           </div>
 
-          @if (processingMenuId === menuWithActions.menu.id) {
-          <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          @if (menuWithActions.hasMenuAccess) {
+          <p-badge 
+            [value]="getGrantedActionsCount(menuWithActions) + '/' + allActions.length + ' actions'" 
+            severity="contrast"
+          ></p-badge>
           }
         </div>
-
-        @if (menuWithActions.hasMenuAccess) {
-        <div class="flex items-center gap-2 ml-4">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 
-                                 text-orange-700 dark:text-orange-300 text-sm font-medium rounded-full">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clip-rule="evenodd" />
-            </svg>
-            {{ getGrantedActionsCount(menuWithActions) }}/{{ allActions.length }} actions
-          </span>
-        </div>
-        }
-      </div>
+      </ng-template>
 
       <!-- Actions Grid -->
       @if (menuWithActions.hasMenuAccess && menuWithActions.actions.length > 0) {
-      <div class="p-6">
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          @for (actionPermission of menuWithActions.actions; track actionPermission.action.id) {
-          <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700
-                                    cursor-pointer transition-all duration-150
-                                    hover:bg-gray-50 dark:hover:bg-gray-700/50
-                                    [&:has(input:checked)]:border-orange-500 dark:[&:has(input:checked)]:border-orange-400
-                                    [&:has(input:checked)]:bg-orange-50 dark:[&:has(input:checked)]:bg-orange-900/20">
-            <input type="checkbox" [checked]="actionPermission.granted"
-              [disabled]="processingActionId === actionPermission.action.id"
-              (change)="toggleAction(menuWithActions, actionPermission, $event)" class="w-4 h-4 text-orange-600 bg-gray-100 dark:bg-gray-700
-                                 border-gray-300 dark:border-gray-600 rounded
-                                 focus:ring-2 focus:ring-orange-500
-                                 cursor-pointer transition duration-150
-                                 disabled:opacity-50 disabled:cursor-not-allowed">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-6">
+        @for (actionPermission of menuWithActions.actions; track actionPermission.action.id) {
+        <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-all"
+             [ngClass]="{'border-orange-500 bg-orange-50': actionPermission.granted}">
+          <p-checkbox 
+            [binary]="true"
+            [(ngModel)]="actionPermission.granted"
+            [disabled]="processingActionId === actionPermission.action.id"
+            (onChange)="toggleAction(menuWithActions, actionPermission, $event)"
+          ></p-checkbox>
 
-            <div class="flex items-center gap-2 flex-1 min-w-0">
-              @if (processingActionId === actionPermission.action.id) {
-              <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-600 dark:border-orange-400"></div>
-              }
-              <span class="text-sm font-medium truncate" [ngClass]="actionPermission.granted ? 
-                                  'text-gray-900 dark:text-gray-100' : 
-                                  'text-gray-600 dark:text-gray-400'">
-                {{ actionPermission.action.action }}
-              </span>
-            </div>
-          </label>
-          }
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            @if (processingActionId === actionPermission.action.id) {
+            <i class="pi pi-spin pi-spinner text-xs text-orange-600"></i>
+            }
+            <span class="text-sm font-medium truncate"
+                  [ngClass]="actionPermission.granted ? 'text-gray-900' : 'text-gray-600'">
+              {{ actionPermission.action.action }}
+            </span>
+          </div>
         </div>
+        }
       </div>
       }
 
       <!-- No Actions Message -->
       @if (menuWithActions.hasMenuAccess && menuWithActions.actions.length === 0) {
-      <div class="p-6 text-center text-gray-500 dark:text-gray-400">
-        <p class="text-sm">No actions available for this menu</p>
+      <div class="p-6 text-center">
+        <p class="text-sm text-gray-500">No actions available for this menu</p>
       </div>
       }
 
       <!-- Menu Locked Message -->
       @if (!menuWithActions.hasMenuAccess) {
-      <div class="p-6 text-center bg-gray-50 dark:bg-gray-900/20">
-        <svg class="w-8 h-8 text-gray-400 dark:text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+      <div class="p-6 text-center bg-gray-50">
+        <i class="pi pi-lock text-4xl text-gray-400 mb-2"></i>
+        <p class="text-sm text-gray-600">
           Enable menu access to configure action permissions
         </p>
       </div>
       }
-    </div>
+    </p-card>
     }
-  </div>
 
-<div class="mt-2">
-     <p-paginator [first]="first" [rows]="row" [totalRecords]="totalRecords" (onPageChange)="onPageChange($event)">
-  </p-paginator>
+    <!-- Pagination -->
+    <div class="mt-2">
+      <p-paginator 
+        [first]="first" 
+        [rows]="row" 
+        [totalRecords]="totalRecords" 
+        (onPageChange)="onPageChange($event)"
+      ></p-paginator>
+    </div>
 
-</div>
-  
-  <!-- Results Info -->
-  <div class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-    Showing <span class="font-semibold text-gray-900 dark:text-gray-100">{{ filteredMenus.length }}</span>
-    of <span class="font-semibold text-gray-900 dark:text-gray-100">{{ menusWithActions.length }}</span> menus
+    <!-- Results Info -->
+    <div class="text-center text-sm text-gray-600">
+      Showing <span class="font-semibold text-gray-900">{{ filteredMenus.length }}</span>
+      of <span class="font-semibold text-gray-900">{{ menusWithActions.length }}</span> menus
+    </div>
   </div>
   }
 
   <!-- No Results -->
   @if (!loadingPermissions && filteredMenus.length === 0 && menusWithActions.length > 0) {
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12">
-    <div class="flex flex-col items-center justify-center text-center">
-      <svg class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor"
-        viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No menus match your filters</h3>
-      <p class="text-gray-600 dark:text-gray-400 mb-6">Try adjusting your search or filter criteria</p>
-      <button (click)="clearFilters()" class="px-6 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700
-                     dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition duration-150">
-        Clear Filters
-      </button>
-    </div>
-  </div>
+  <p-card class="text-center py-12">
+    <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
+    <h3 class="text-xl font-bold mb-2">No menus match your filters</h3>
+    <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
+    <p-button label="Clear Filters" icon="pi pi-times" (onClick)="clearFilters()" 
+              severity="secondary"></p-button>
+  </p-card>
   }
 
   <!-- No Menus Available -->
   @if (!loadingPermissions && menusWithActions.length === 0) {
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12">
-    <div class="flex flex-col items-center justify-center text-center">
-      <svg class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor"
-        viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-      </svg>
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No menus available</h3>
-      <p class="text-gray-600 dark:text-gray-400">Add menus to the system to configure permissions</p>
-    </div>
-  </div>
+  <p-card class="text-center py-12">
+    <i class="pi pi-th-large text-6xl text-gray-400 mb-4"></i>
+    <h3 class="text-xl font-bold mb-2">No menus available</h3>
+    <p class="text-gray-500">Add menus to the system to configure permissions</p>
+  </p-card>
   }
   }
-
-  <!-- @if (!selectedTenantRoleId) {
-      <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6">
-        <div class="flex gap-4">
-          <svg class="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Getting Started</h4>
-            <p class="text-gray-700 dark:text-gray-300 mb-4">
-              Select a society and role from the dropdowns above to manage permissions.
-              You can control which menus the role can access and what actions they can perform on each menu.
-            </p>
-            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Grant or revoke access to entire menus
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Configure granular action permissions (CREATE, READ, UPDATE, DELETE, etc.)
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                View permission statistics and granted access counts
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Search and filter menus easily
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Changes take effect immediately
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    }
-   -->
-
-  @if (this.showMenuAddModal) {
-
-
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-
-
-    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity"
-      (click)="toggleAddMenuModal()"></div>
-
-
-    <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-md mx-auto overflow-hidden">
-      <div class="p-6">
-
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Create New Role</h2>
-          <button (click)="toggleAddMenuModal()"
-            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition duration-150">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Modal Body -->
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Enter a unique Menu for the Your society (e.g., "DASHBOARD", "GARDEN", "PARKING").
-        </p>
-
-        <div class="mb-6">
-          <label for="menuName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Menu
-            Name</label>
-          <input type="text" id="menuName" [(ngModel)]="menuName" placeholder="Enter Menu name"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-        </div>
-
-
-        <div class="mb-6">
-          <label for="roleName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Menu
-            Description</label>
-          <input type="text" id="roleName" [(ngModel)]="menuDescription" placeholder="Enter Menu Description"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-        </div>
-
-
-
-        <div class="flex justify-end gap-3">
-          <button (click)="toggleAddMenuModal()"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
-            Cancel
-          </button>
-          <button (click)="addMenu(menuName,menuDescription)" [disabled]="!menuName.trim() || !menuDescription"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600">
-            Create Menu
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
   }
-
 
 </div>
+
+<!-- Add Menu Modal -->
+<p-dialog 
+  [(visible)]="showMenuAddModal" 
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Create New Menu"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+>
+  <p class="text-sm text-gray-500 mb-4">
+    Enter a unique menu name and description for your society.
+  </p>
+
+  <div class="flex flex-col gap-5">
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="menuName" 
+        [(ngModel)]="menuName"
+        class="w-full"
+      />
+      <label for="menuName">Menu Name</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="menuDescription" 
+        [(ngModel)]="menuDescription"
+        class="w-full"
+      />
+      <label for="menuDescription">Menu Description</label>
+    </p-floatlabel>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Cancel" 
+        (onClick)="toggleAddMenuModal()" 
+        severity="secondary"
+        [text]="true"
+      ></p-button>
+      <p-button 
+        label="Create Menu" 
+        (onClick)="addMenu(menuName, menuDescription)" 
+        [disabled]="!menuName.trim() || !menuDescription"
+        severity="contrast"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

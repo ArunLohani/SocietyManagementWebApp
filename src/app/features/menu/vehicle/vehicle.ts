@@ -6,7 +6,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { Router, RouterModule } from '@angular/router';
 import { Vehicle } from '../../../core/service/vehicle.service';
 import { UserService } from '../../../core/service/user.service';
-import { VehicleCreationRequest, VehicleFilter, Page, User, UserDetails, Vehicle as Vehicles } from '../../../types/types';
+import { VehicleCreationRequest, VehicleFilter, Page, User, UserDetails, Vehicle as Vehicles, Flat } from '../../../types/types';
 import { AuthService } from '../../../core/service/auth.service';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -20,21 +20,51 @@ import { FileUploadHandlerEvent, FileUploadModule } from 'primeng/fileupload';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { FileUploadEvent } from "primeng/fileupload";
 import { ToastrService } from 'ngx-toastr';
+import { TenantRoleMenuService } from '../../../core/service/tenant-role-menu.service';
+import { FlatService } from '../../../core/service/flat.service';
+import { Message } from 'primeng/message';
+import { TabsModule } from 'primeng/tabs';
 
 @Component({
   selector: 'app-vehicles',
   templateUrl: './vehicle.html',
   styleUrls: ['./vehicle.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginatorModule, RouterModule, ButtonModule, CardModule, FloatLabel, DividerModule, InputTextModule, SelectModule, BadgeModule, DialogModule, ProgressSpinnerModule, FileUploadModule]
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    PaginatorModule, 
+    RouterModule, 
+    ButtonModule, 
+    CardModule, 
+    FloatLabel, 
+    DividerModule, 
+    InputTextModule, 
+    SelectModule, 
+    BadgeModule, 
+    DialogModule, 
+    ProgressSpinnerModule, 
+    FileUploadModule,
+    Message,
+    TabsModule
+  ]
 })
 export class VehiclesManagerComponent implements OnInit {
-  vehiclesPage: Page<Vehicles> | null = null;
+  // Tab management
+  activeTab = 0;
+  isAdmin = false;
+  currentUserId: number | null = null;
+
+  // Vehicles data
+  userVehiclesPage: Page<Vehicles> | null = null;
+  societyVehiclesPage: Page<Vehicles> | null = null;
   loading = false;
 
   // filters
-  filter: VehicleFilter = {};
-  page = 0;
+  userFilter: VehicleFilter = {};
+  societyFilter: VehicleFilter = {};
+  userPage = 0;
+  societyPage = 0;
   pageSize = 8;
 
   // create/edit modal
@@ -58,26 +88,61 @@ export class VehiclesManagerComponent implements OnInit {
   availableUsers: UserDetails[] = [];
   loadingUsers = false;
   searchUserQuery = '';
-
+  loadingFlats = false;
+  userFlats: Flat[] = [];
+  
   vehicleTypes = [
     { name: "Car", code: "CAR" },
     { name: "Bike", code: "BIKE" },
-    { name: "Truck", code: "TRUCK" },
-    { name: "Van", code: "VAN" },
-    { name: "Bus", code: "BUS" },
     { name: "Scooter", code: "SCOOTER" }
   ];
+
+  // permission
+  permission: "READ" | "EDIT" | "CREATE" = "READ";
 
   constructor(
     private vehicleService: Vehicle,
     private userService: UserService,
     private auth: AuthService,
     private router: Router,
-    private toastr: ToastrService
-  ) { }
+    private toastr: ToastrService,
+    private tenantRoleMenuService: TenantRoleMenuService,
+    private flatService: FlatService
+  ) {
+    this.isAdmin = this.auth.isUserAdmin();
+    this.currentUserId = this.auth.getUserIdFromToken();
+    
+    this.tenantRoleMenuService.getPriority("Vehicle").subscribe({
+      next: (res) => {
+        this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+      },
+      error: (err) => {
+        this.permission = "READ";
+      },
+    });
+  }
 
   ngOnInit(): void {
-    this.loadVehicles(0);
+    this.loadUserVehicles(0);
+    if (this.isAdmin) {
+      this.loadSocietyVehicles(0);
+    }
+  }
+
+  loadUserFlats() {
+    if (!this.currentUserId) return;
+
+    this.loadingFlats = true;
+    this.flatService.searchFlatList({ member: this.currentUserId }).subscribe({
+      next: (res) => {
+        this.userFlats = res.data || [];
+        this.loadingFlats = false;
+      },
+      error: (err) => {
+        this.loadingFlats = false;
+        this.toastr.error('Failed to load your flats', 'Error');
+      }
+    });
   }
 
   getEmptyVehicleForm(): VehicleCreationRequest {
@@ -85,36 +150,70 @@ export class VehiclesManagerComponent implements OnInit {
       registrationNumber: '',
       vehicleType: '',
       brand: '',
-      model: ''
+      model: '',
+      flat: ''
     };
   }
 
-  loadVehicles(page: number = 0) {
+  loadUserVehicles(page: number = 0) {
+    if (!this.currentUserId) return;
+
     this.loading = true;
-    this.vehicleService.searchVehicle(this.filter, page, this.pageSize).subscribe({
+    this.userFilter.user = this.currentUserId;
+    
+    this.vehicleService.searchVehicle(this.userFilter, page, this.pageSize).subscribe({
       next: (res) => {
-        this.vehiclesPage = res;
-        this.page = page;
+        this.userVehiclesPage = res;
+        this.userPage = page;
         this.loading = false;
       },
       error: (err) => {
         this.loading = false;
-        this.toastr.error(err.error?.message || 'Failed to load vehicles', 'Error');
+        this.toastr.error(err.error?.message || 'Failed to load your vehicles', 'Error');
       }
     });
   }
 
-  onPageChange(e: PaginatorState) {
-    this.loadVehicles(e.page);
+  loadSocietyVehicles(page: number = 0) {
+    this.loading = true;
+    
+    this.vehicleService.searchVehicle(this.societyFilter, page, this.pageSize).subscribe({
+      next: (res) => {
+        this.societyVehiclesPage = res;
+        this.societyPage = page;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastr.error(err.error?.message || 'Failed to load society vehicles', 'Error');
+      }
+    });
   }
 
-  applyFilters() {
-    this.loadVehicles(0);
+  onUserPageChange(e: PaginatorState) {
+    this.loadUserVehicles(e.page);
   }
 
-  clearFilters() {
-    this.filter = {};
-    this.loadVehicles(0);
+  onSocietyPageChange(e: PaginatorState) {
+    this.loadSocietyVehicles(e.page);
+  }
+
+  applyUserFilters() {
+    this.loadUserVehicles(0);
+  }
+
+  clearUserFilters() {
+    this.userFilter = { user: this.currentUserId! };
+    this.loadUserVehicles(0);
+  }
+
+  applySocietyFilters() {
+    this.loadSocietyVehicles(0);
+  }
+
+  clearSocietyFilters() {
+    this.societyFilter = {};
+    this.loadSocietyVehicles(0);
   }
 
   // Modal operations
@@ -123,16 +222,19 @@ export class VehiclesManagerComponent implements OnInit {
     this.editingVehicleId = null;
     this.vehicleForm = this.getEmptyVehicleForm();
     this.showVehicleModal = true;
+    this.loadUserFlats();
   }
 
   openEditModal(vehicle: any) {
+    this.loadUserFlats();
     this.isEditMode = true;
     this.editingVehicleId = vehicle.id;
     this.vehicleForm = {
       registrationNumber: vehicle.registrationNumber,
       vehicleType: vehicle.vehicleType,
       brand: vehicle.brand,
-      model: vehicle.model
+      model: vehicle.model,
+      flat: vehicle.owner.id
     };
     this.showVehicleModal = true;
   }
@@ -161,7 +263,10 @@ export class VehiclesManagerComponent implements OnInit {
           'Success'
         );
         this.closeVehicleModal();
-        this.loadVehicles(this.page);
+        this.loadUserVehicles(this.userPage);
+        if (this.isAdmin) {
+          this.loadSocietyVehicles(this.societyPage);
+        }
       },
       error: (err) => {
         this.toastr.error(
@@ -190,7 +295,10 @@ export class VehiclesManagerComponent implements OnInit {
       next: () => {
         this.toastr.success('Vehicle deleted successfully', 'Success');
         this.closeDeleteModal();
-        this.loadVehicles(this.page);
+        this.loadUserVehicles(this.userPage);
+        if (this.isAdmin) {
+          this.loadSocietyVehicles(this.societyPage);
+        }
       },
       error: (err) => {
         this.toastr.error(
@@ -201,38 +309,6 @@ export class VehiclesManagerComponent implements OnInit {
     });
   }
 
-  // Owner assignment
-  openOwnerModal(vehicleId: number) {
-    this.assigningVehicleId = vehicleId;
-    this.showOwnerModal = true;
-    this.loadAvailableUsers();
-  }
-
-  closeOwnerModal() {
-    this.showOwnerModal = false;
-    this.assigningVehicleId = null;
-    this.availableUsers = [];
-    this.searchUserQuery = '';
-  }
-
-  loadAvailableUsers(query: string = '') {
-    this.loadingUsers = true;
-    this.userService.searchUsers(query, undefined, 0, 50).subscribe({
-      next: (res) => {
-        this.availableUsers = (res as any).content ?? (res as any).data ?? [];
-        this.loadingUsers = false;
-      },
-      error: (err) => {
-        this.loadingUsers = false;
-        this.toastr.error('Failed to load users', 'Error');
-      }
-    });
-  }
-
-  searchUsers() {
-    this.loadAvailableUsers(this.searchUserQuery);
-  }
-
   viewDetail(vehicleId: number) {
     this.router.navigate(['/menu/vehicles', vehicleId]);
   }
@@ -241,9 +317,6 @@ export class VehiclesManagerComponent implements OnInit {
     const types: any = {
       'CAR': 'Car',
       'BIKE': 'Bike',
-      'TRUCK': 'Truck',
-      'VAN': 'Van',
-      'BUS': 'Bus',
       'SCOOTER': 'Scooter'
     };
     return types[type] || type;
@@ -265,13 +338,11 @@ export class VehiclesManagerComponent implements OnInit {
 
     const file: File = event.files[0];
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       this.toastr.warning('Please upload an image file', 'Invalid File Type');
       return;
     }
 
-    // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       this.toastr.warning('File size should not exceed 5MB', 'File Too Large');
@@ -289,7 +360,10 @@ export class VehiclesManagerComponent implements OnInit {
           this.uploadingImage = false;
           this.toastr.success('Vehicle image uploaded successfully', 'Success');
           this.closeVehicleImageUploadModal();
-          this.loadVehicles(this.page);
+          this.loadUserVehicles(this.userPage);
+          if (this.isAdmin) {
+            this.loadSocietyVehicles(this.societyPage);
+          }
         },
         error: (err) => {
           this.uploadingImage = false;

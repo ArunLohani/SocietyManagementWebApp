@@ -7,8 +7,10 @@
       <p class="text-xs text-gray-500">Manage and track complaints.</p>
     </div>
 
-    <p-button label="New Complaint" icon="pi pi-plus" size="small"
+   @if (permission === 'CREATE') {
+     <p-button label="New Complaint" icon="pi pi-plus" size="small"
       (onClick)="toggleCreateModal()" severity="contrast"></p-button>
+   }
   </div>
 
   <!-- Filters -->
@@ -65,7 +67,7 @@
   <div class="flex flex-wrap gap-4 mt-6">
 
     @for (complaint of complaintsPage.content; track $index) {
-    <p-card [style]="{ width: '22rem', overflow: 'hidden' }">
+    <p-card [style]="{ width: '20rem', overflow: 'hidden' }">
 
       <ng-template #header>
         <div class="bg-gradient-to-r from-orange-500 to-red-500 h-32 flex items-center justify-center">
@@ -110,11 +112,13 @@
           <div class="flex justify-end gap-2">
             <p-button icon="pi pi-eye" size="small" label="View" variant="outlined" 
               (onClick)="viewDetail(complaint.id)" severity="secondary"></p-button>
+                @if (permission != 'READ' && isAdmin()) {
             <p-button  *ngIf="complaint.status !== 'RESOLVED'" icon="pi pi-user" size="small" label="Assign" variant="outlined"
-              (onClick)="reassign(complaint.id)" severity="info"></p-button>
+              (onClick)="reassign(complaint.id)" severity="info"></p-button>}
           </div>
           
           <div class="flex justify-end gap-2">
+              @if (permission != 'READ' && isAdmin()) {
             <p-button 
               *ngIf="complaint.status === 'OPEN'"
               icon="pi pi-play" 
@@ -132,6 +136,7 @@
               (onClick)="changeStatus(complaint.id, 'RESOLVED')" 
               severity="success">
             </p-button>
+          }
           </div>
         </div>
       </ng-template>
@@ -155,8 +160,9 @@
   <p-card class="text-center py-20 mt-6">
     <h3 class="text-xl font-bold mb-1">No complaints found</h3>
     <p class="text-gray-500 mb-4">Create your first complaint to get started.</p>
+     @if (permission === 'CREATE') {
     <p-button label="New Complaint" icon="pi pi-plus" severity="contrast"
-      (onClick)="toggleCreateModal()"></p-button>
+      (onClick)="toggleCreateModal()"></p-button>}
   </p-card>
   }
 
@@ -182,10 +188,11 @@
     </p-floatlabel>
 
     <p-floatlabel variant="on">
-      <textarea pInputTextarea id="newDesc" [(ngModel)]="newComplaint.description" 
-        rows="4" class="w-full"></textarea>
+      <textarea pInputText id="newDesc" [(ngModel)]="newComplaint.description" 
+        rows="2" class="w-full"></textarea>
       <label for="newDesc">Description</label>
     </p-floatlabel>
+
 
     <p-floatlabel variant="on">
       <input pInputText id="newCategory" [(ngModel)]="newComplaint.category" class="w-full" />

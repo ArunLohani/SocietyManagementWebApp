@@ -1,0 +1,315 @@
+/* Notification Bell Wrapper */
+.notification-bell-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Hanging Badge Style */
+.notification-badge-hanging {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 10;
+  animation: badgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification-badge-hanging ::ng-deep .p-badge {
+  min-width: 16px;
+  height: 16px;
+  line-height: 20px;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 0 3px;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+  border: 2px solid var(--surface-0);
+}
+
+@keyframes badgePop {
+  0% {
+    transform: scale(0) translateY(10px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) translateY(-2px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Badge Bounce on New Notification */
+.notification-badge-hanging.new-notification ::ng-deep .p-badge {
+  animation: badgeBounce 0.6s ease-in-out;
+}
+
+@keyframes badgeBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+}
+
+/* Notification Panel Styles */
+.notification-panel {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Notification Bell Animation */
+.notification-bell button:hover {
+  animation: bellRing 0.5s ease-in-out;
+}
+
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0deg); }
+  10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+  20%, 40%, 60%, 80% { transform: rotate(10deg); }
+}
+
+/* Tabs Styling */
+.notification-tabs ::ng-deep .p-tablist {
+  border-bottom: 2px solid var(--surface-border);
+}
+
+.notification-tabs ::ng-deep .p-tab {
+  transition: all 0.2s ease;
+}
+
+.notification-tabs ::ng-deep .p-tab:hover {
+  background-color: var(--surface-100);
+}
+
+.notification-tabs ::ng-deep .p-tab.p-tab-active {
+  border-bottom: 2px solid var(--primary-color);
+  background-color: transparent;
+}
+
+/* Notification Item Styles */
+.notification-item {
+  position: relative;
+  border: 1px solid transparent;
+  animation: slideInNotification 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes slideInNotification {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.unread-notification {
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-500-rgb), 0.05) 0%, 
+    rgba(var(--primary-500-rgb), 0.02) 100%);
+  border-left: 3px solid var(--primary-color);
+  border-color: var(--primary-200);
+}
+
+.unread-notification:hover {
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-500-rgb), 0.08) 0%, 
+    rgba(var(--primary-500-rgb), 0.04) 100%);
+  border-color: var(--primary-300);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.read-notification {
+  background: var(--surface-0);
+  border-color: var(--surface-border);
+}
+
+.read-notification:hover {
+  background: var(--surface-50);
+  border-color: var(--surface-300);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Notification Icon Wrapper */
+.notification-icon-wrapper {
+  transition: all 0.2s ease;
+}
+
+.unread-notification .notification-icon-wrapper {
+  box-shadow: 0 2px 8px rgba(var(--primary-500-rgb), 0.2);
+}
+
+.notification-item:hover .notification-icon-wrapper {
+  transform: scale(1.05);
+}
+
+/* Notification Dot Pulse Animation */
+.notification-dot {
+  animation: dotPulse 2s infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* Custom Scrollpanel */
+.custom-scrollpanel ::ng-deep .p-scrollpanel-bar {
+  background-color: var(--primary-color);
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.custom-scrollpanel ::ng-deep .p-scrollpanel-bar:hover {
+  opacity: 0.6;
+}
+
+.custom-scrollpanel ::ng-deep .p-scrollpanel-content {
+  padding-right: 8px;
+}
+
+/* Profile Panel Styles */
+.profile-panel {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 280px;
+}
+
+/* Empty State Animation */
+.notification-panel [class*="flex-column align-items-center"] > div:first-child {
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Badge Animations */
+p-badge ::ng-deep .p-badge {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Footer Hover Effect */
+.notification-panel [class*="border-top-1"] p-button button:hover {
+  background-color: var(--surface-100);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .notification-panel {
+    width: 100vw !important;
+    max-width: 380px;
+  }
+  
+  .notification-item {
+    padding: 0.75rem !important;
+  }
+  
+  .notification-icon-wrapper {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .unread-notification {
+    background: linear-gradient(135deg, 
+      rgba(var(--primary-400-rgb), 0.1) 0%, 
+      rgba(var(--primary-400-rgb), 0.05) 100%);
+  }
+  
+  .notification-panel {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Text Truncation */
+.notification-item h5 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.notification-item p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Smooth Transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Avatar Hover Effect */
+p-avatar[ng-reflect-style-class*="cursor-pointer"] {
+  transition: all 0.3s ease;
+}
+
+p-avatar[ng-reflect-style-class*="cursor-pointer"]:hover {
+  transform: scale(1.05);
+}
+
+/* Button Ripple Effect */
+p-button ::ng-deep .p-button {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Loading State (Optional) */
+.notification-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: var(--text-color-secondary);
+}
+
+.notification-loading i {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

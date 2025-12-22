@@ -1,409 +1,226 @@
-<!-- user-role-manager.component.html -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
   <!-- Header -->
-  <div class="mb-8">
-    <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-semibold text-stone-800 dark:text-stone-100">
-        User Role Manager
-      </h1>
-
-      @if (selectedTenantId) {
-         <button
-            (click)="toggleAssignUserModal()"
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#FF521B] hover:bg-[#e64a18] text-white shadow-sm
-                   focus:outline-none focus:ring-2 focus:ring-[#ffb69a] transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            + Assign Tenant to Society
-          </button>
-      }
+  <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-2xl">User Role Manager</h3>
+      <p class="text-sm text-gray-500">Assign and manage roles for users in your societies</p>
     </div>
-    <p class="text-lg text-gray-600 dark:text-gray-400">
-      Assign and manage roles for users in your societies
-    </p>
+    @if (selectedTenantId) {
+    <p-button 
+      label="Assign User to Society" 
+      icon="pi pi-plus" 
+      size="small"
+      (onClick)="toggleAssignUserModal()" 
+      severity="contrast"
+    ></p-button>
+    }
   </div>
-
-  <!-- Success Alert -->
-  @if (successMessage) {
-    <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center animate-slideDown">
-      <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-      </svg>
-      <span class="text-green-800 dark:text-green-200">{{ successMessage }}</span>
-    </div>
-  }
-
-  <!-- Error Alert -->
-  @if (errorMessage) {
-    <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center animate-slideDown">
-      <svg class="w-5 h-5 text-red-600 dark:text-red-400 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-      </svg>
-      <span class="text-red-800 dark:text-red-200">{{ errorMessage }}</span>
-    </div>
-  }
 
   <!-- Initial Loading -->
   @if (loading) {
-    <div class="flex flex-col items-center justify-center py-16">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 dark:border-orange-400 mb-4"></div>
-      <p class="text-gray-600 dark:text-gray-400">Loading societies and roles...</p>
-    </div>
+  <div class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
   }
 
   <!-- Main Content -->
   @if (!loading) {
-    <!-- Society Selection Card -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 overflow-hidden">
-      <div class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-6 py-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Select Society</h2>
+  <!-- Society Selection Card -->
+  <p-card styleClass="mb-4">
+    <ng-template pTemplate="header">
+      <div class="px-6 py-4 border-b">
+        <h3 class="text-lg font-semibold">Select Society</h3>
       </div>
-      <div class="p-6">
-        <div class="mb-4">
-          <label for="tenantSelect" class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-            Choose a society to manage user roles
-          </label>
-          <select 
-            id="tenantSelect"
-            [value]="selectedTenantId || ''"
-            (change)="onTenantSelect($event)"
-            class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg 
-                   bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                   focus:ring-2 focus:ring-orange-500 focus:border-orange-500 
-                   transition duration-150 ease-in-out cursor-pointer">
-            <option value="">-- Select a Society --</option>
-            @for (tenant of tenants; track tenant.id) {
-              <option [value]="tenant.id">{{ tenant.name }}</option>
-            }
-          </select>
-        </div>
+    </ng-template>
 
-        @if (selectedTenant) {
-          <div class="flex items-start gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-            <svg class="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            <div>
-              <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">Managing: {{ selectedTenant.name }}</p>
-              <p class="text-sm text-gray-600 dark:text-gray-400">{{ users.length }} users found in this society</p>
-            </div>
-          </div>
-        }
+    <div class="flex flex-col gap-4">
+      <div>
+        <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <i class="pi pi-building text-orange-600"></i>
+          Manage user roles in your Society
+        </label>
+        <div class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+          <span class="font-medium">{{ selectedTenant?.name }}</span>
+        </div>
       </div>
+
+      @if (selectedTenant) {
+      <p-message severity="info" styleClass="w-full">
+        <div class="flex items-start gap-3">
+          <div class="flex-1">
+            <p class="font-semibold mb-1">Managing: {{ selectedTenant.name }}</p>
+            <p class="text-sm">{{ users.length }} users found in this society</p>
+          </div>
+        </div>
+      </p-message>
+      }
     </div>
+  </p-card>
 
-    <!-- Users and Roles Section -->
-    @if (selectedTenantId) {
-      <!-- Filters and Actions -->
-      <!-- <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 p-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div class="flex flex-col sm:flex-row gap-3 flex-1">
-       
-            <div class="relative flex-1">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input 
-                type="text" 
-                placeholder="Search users by name, email, or phone..."
-                [(ngModel)]="searchTerm"
-                class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       placeholder-gray-500 dark:placeholder-gray-400
-                       focus:ring-2 focus:ring-orange-500 focus:border-orange-500 
-                       transition duration-150 ease-in-out">
-            </div>
-
-    
-            <select 
-              [(ngModel)]="selectedRoleFilter"
-              class="px-4 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg 
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                     focus:ring-2 focus:ring-orange-500 focus:border-orange-500 
-                     transition duration-150 ease-in-out cursor-pointer min-w-[180px]">
-              <option [value]="null">All Roles</option>
-              @for (role of roles; track role.id) {
-                <option [value]="role.id">{{ role.role }} ({{ getUserCountByRole(role.id) }})</option>
-              }
-            </select>
-          </div>
-
-          <div class="flex gap-3">
-            @if (searchTerm || selectedRoleFilter) {
-              <button 
-                (click)="clearFilters()"
-                class="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 
-                       bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 
-                       border border-gray-300 dark:border-gray-600 rounded-lg 
-                       transition duration-150 ease-in-out">
-                Clear Filters
-              </button>
-            }
-            <button 
-              (click)="refreshData()"
-              class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white 
-                     bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 
-                     rounded-lg transition duration-150 ease-in-out">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-              </svg>
-              Refresh
-            </button> 
-          </div>
-        </div>
-      </div> -->
-
-      <!-- Role Statistics -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        @for (role of roles; track role.id) {
-          <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 
-                      hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-            <div class="flex items-center justify-between mb-2">
-              <span class="font-semibold text-gray-900 dark:text-gray-100">{{ role.role }}</span>
-              <span class="inline-flex items-center justify-center min-w-[32px] h-8 px-2 
-                           bg-orange-600 dark:bg-orange-500 text-white text-sm font-bold rounded-full">
-                {{ getUserCountByRole(role.id) }}
-              </span>
-            </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400">users assigned</p>
-          </div>
-        }
+  <!-- Users and Roles Section -->
+  @if (selectedTenantId) {
+  
+  <!-- Role Statistics -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    @for (role of roles; track role.id) {
+    <p-card styleClass="hover:shadow-md transition-all">
+      <div class="flex items-center justify-between">
+        <span class="font-semibold text-gray-900">{{ role.role }}</span>
+        <p-badge 
+          [value]="getUserCountByRole(role.id).toString()" 
+          severity="contrast"
+        ></p-badge>
       </div>
-
-      <!-- Loading Users -->
-      @if (loadingUsers) {
-        <div class="flex flex-col items-center justify-center py-16">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 dark:border-orange-400 mb-4"></div>
-          <p class="text-gray-600 dark:text-gray-400">Loading users...</p>
-        </div>
-      }
-
-      <!-- Users Table -->
-      @if (!loadingUsers && filteredUsers.length > 0) {
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="bg-gray-50 dark:bg-gray-900/50 border-b-2 border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                    User Information
-                  </th>
-                  @for (role of roles; track role.id) {
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">
-                      {{ role.role }}
-                    </th>
-                  }
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                @for (user of filteredUsers; track user.id) {
-                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
-                    <td class="px-6 py-4">
-                      <div class="flex items-center gap-3">
-                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-600 dark:bg-orange-500 
-                                    flex items-center justify-center text-white font-bold text-lg">
-                          {{ user.name.charAt(0).toUpperCase() }}
-                        </div>
-                        <div class="min-w-0">
-                          <p class="font-medium text-gray-900 dark:text-gray-100 truncate">
-                            {{ user.name }}
-                          </p>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 truncate">
-                            {{ user.email }}
-                          </p>
-                          @if (user.phoneNumber) {
-                            <p class="text-xs text-gray-500 dark:text-gray-500">
-                              {{ user.phoneNumber }}
-                            </p>
-                          }
-                        </div>
-                      </div>
-                    </td>
-                    @for (role of roles; track role.id) {
-                      <td class="px-6 py-4 text-center">
-                        <label class="inline-flex items-center justify-center cursor-pointer">
-                          <input 
-                            type="checkbox"
-                            [checked]="hasRole(user, role.id)"
-                            (change)="toggleRole(user, role, $event)"
-                            class="w-5 h-5 text-orange-600 bg-gray-100 dark:bg-gray-700 
-                                   border-gray-300 dark:border-gray-600 rounded 
-                                   focus:ring-2 focus:ring-orange-500 
-                                   cursor-pointer transition duration-150">
-                        </label>
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Results Info -->
-        <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-          Showing <span class="font-semibold text-gray-900 dark:text-gray-100">{{ filteredUsers.length }}</span> 
-          of <span class="font-semibold text-gray-900 dark:text-gray-100">{{ users.length }}</span> users
-        </div>
-      }
-
-      <!-- No Results -->
-      @if (!loadingUsers && filteredUsers.length === 0 && users.length > 0) {
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12">
-          <div class="flex flex-col items-center justify-center text-center">
-            <svg class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No users match your filters</h3>
-            <p class="text-gray-600 dark:text-gray-400 mb-6">Try adjusting your search or filter criteria</p>
-            <button 
-              (click)="clearFilters()"
-              class="px-6 py-3 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 
-                     dark:bg-orange-500 dark:hover:bg-orange-600 rounded-lg transition duration-150">
-              Clear Filters
-            </button>
-          </div>
-        </div>
-      }
-
-      <!-- No Users in Society -->
-      @if (!loadingUsers && users.length === 0) {
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12">
-          <div class="flex flex-col items-center justify-center text-center">
-            <svg class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No users found in this society</h3>
-            <p class="text-gray-600 dark:text-gray-400">Add users to this society to manage their roles</p>
-          </div>
-        </div>
-      }
+      <p class="text-sm text-gray-600 mt-2">users assigned</p>
+    </p-card>
     }
-
-    <!-- @if (!selectedTenantId) {
-      <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6">
-        <div class="flex gap-4">
-          <svg class="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Getting Started</h4>
-            <p class="text-gray-700 dark:text-gray-300 mb-4">
-              Select a society from the dropdown above to view and manage user roles. 
-              You'll be able to assign or remove roles for each user by checking or unchecking the boxes.
-            </p>
-            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                View all users in the selected society
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                See which roles are assigned to each user
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Assign new roles with a single click
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Remove existing roles instantly
-              </li>
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                </svg>
-                Filter and search users easily
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    } -->
-  }
-
-    @if (this.showAssignUserModal && this.selectedTenantId) {
-
-            @if (loadingUnassignedUsers) {
-        <div class="flex flex-col items-center justify-center py-16">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 dark:border-orange-400 mb-4"></div>
-          <p class="text-gray-600 dark:text-gray-400">Loading users...</p>
-        </div>
-      }
-      @else {
- <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div
-      class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity"
-      (click)="toggleAssignUserModal()"
-    ></div>
-
-    <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden ring-1 ring-stone-100 dark:ring-stone-800">
-      <div class="p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold text-stone-900 dark:text-stone-100">Create New Role</h2>
-          <button
-            (click)="toggleAssignUserModal()"
-            class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition duration-150"
-          >
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Modal Body -->
-        <p class="text-sm text-stone-500 dark:text-stone-400 mb-4">
-          Select the User you want to Add to your Society.
-        </p>
-
-           <select 
-            id="userSelect"
-            [value]="selectedUser || ''"
-            (change)="onUserSelect($event)"
-            class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg 
-                   bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                   focus:ring-2 focus:ring-orange-500 focus:border-orange-500 
-                   transition duration-150 ease-in-out cursor-pointer">
-            <option value="">-- Select a User --</option>
-            @for (user of unAssignedUsers; track user.id) {
-              <option [value]="user.id">{{ user.name }} ({{user.email}} )</option>
-            }
-          </select>
-     
-
-        <div class="flex justify-end gap-3 mt-4">
-          <button
-            (click)="toggleAssignUserModal()"
-            class="px-4 py-2 text-sm font-medium text-stone-700 bg-stone-100 border border-stone-200 rounded-lg hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:border-stone-700 dark:hover:bg-stone-700"
-          >
-            Cancel
-          </button>
-          <button
-            (click)="selectedUser!=null &&  assignUser(selectedTenantId,selectedUser)"
-            [disabled]="selectedUser == null"
-            class="px-4 py-2 text-sm font-medium text-white bg-[#ff521b] rounded-lg hover:bg-[#e64a18] disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#ff7a54] dark:hover:bg-[#ff6a3e]"
-          >
-            Assign
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
-      }
- 
+
+  <!-- Loading Users -->
+  @if (loadingUsers) {
+  <div class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
   }
+
+  <!-- Users Table -->
+  @if (!loadingUsers && filteredUsers.length > 0) {
+  <p-card>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b-2 border-gray-200">
+          <tr>
+            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              User Information
+            </th>
+            @for (role of roles; track role.id) {
+            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[120px]">
+              {{ role.role }}
+            </th>
+            }
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          @for (user of filteredUsers; track user.id) {
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-lg">
+                  {{ user.name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <p class="font-medium text-gray-900 truncate">{{ user.name }}</p>
+                  <p class="text-sm text-gray-600 truncate">{{ user.email }}</p>
+                  @if (user.phoneNumber) {
+                  <p class="text-xs text-gray-500">{{ user.phoneNumber }}</p>
+                  }
+                </div>
+              </div>
+            </td>
+            @for (role of roles; track role.id) {
+            <td class="px-6 py-4 text-center">
+              <p-checkbox 
+                [binary]="true"
+                [ngModel]="hasRole(user, role.id)"
+                (onChange)="toggleRole(user, role, $event)"
+              ></p-checkbox>
+            </td>
+            }
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Results Info -->
+    <div class="mt-4 text-center text-sm text-gray-600">
+      Showing <span class="font-semibold text-gray-900">{{ filteredUsers.length }}</span>
+      of <span class="font-semibold text-gray-900">{{ users.length }}</span> users
+    </div>
+  </p-card>
+  }
+
+  <!-- No Results -->
+  @if (!loadingUsers && filteredUsers.length === 0 && users.length > 0) {
+  <p-card class="text-center py-12">
+    <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
+    <h3 class="text-xl font-bold mb-2">No users match your filters</h3>
+    <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
+    <p-button 
+      label="Clear Filters" 
+      icon="pi pi-times" 
+      (onClick)="clearFilters()" 
+      severity="secondary"
+    ></p-button>
+  </p-card>
+  }
+
+  <!-- No Users in Society -->
+  @if (!loadingUsers && users.length === 0) {
+  <p-card class="text-center py-12">
+    <i class="pi pi-users text-6xl text-gray-400 mb-4"></i>
+    <h3 class="text-xl font-bold mb-2">No users found in this society</h3>
+    <p class="text-gray-500">Add users to this society to manage their roles</p>
+  </p-card>
+  }
+  }
+  }
+
 </div>
+
+<!-- Assign User Modal -->
+<p-dialog 
+  [(visible)]="showAssignUserModal" 
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Assign User to Society"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+>
+  @if (loadingUnassignedUsers) {
+  <div class="flex justify-center items-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+  } @else {
+  <p class="text-sm text-gray-500 mb-4">
+    Select the user you want to add to your society.
+  </p>
+
+  <p-select 
+    [options]="unAssignedUsers" 
+    [(ngModel)]="selectedUser"
+    optionLabel="name" 
+    optionValue="id"
+    placeholder="-- Select a User --"
+    [showClear]="true"
+    styleClass="w-full"
+    appendTo="body"
+  >
+    <ng-template let-user pTemplate="item">
+      <div class="flex flex-col">
+        <span class="font-semibold">{{ user.name }}</span>
+        <span class="text-xs text-gray-500">{{ user.email }}</span>
+      </div>
+    </ng-template>
+  </p-select>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Cancel" 
+        (onClick)="toggleAssignUserModal()" 
+        severity="secondary"
+        [text]="true"
+      ></p-button>
+      <p-button 
+        label="Assign" 
+        (onClick)="selectedUser != null && selectedTenantId && assignUser(selectedTenantId, selectedUser)" 
+        [disabled]="selectedUser == null"
+        severity="contrast"
+      ></p-button>
+    </div>
+  </ng-template>
+  }
+</p-dialog>

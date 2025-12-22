@@ -17,7 +17,7 @@ export class TenantService {
   }
 
   getTenantById(id: string): Observable<ApiResponse<Tenant>> {
-    return this.httpClient.get<ApiResponse<Tenant>>(`${this.url}/id`);
+    return this.httpClient.get<ApiResponse<Tenant>>(`${this.url}/${id}`);
   }
 
   createTenant(tenant: string): Observable<ApiResponse<Tenant>> {

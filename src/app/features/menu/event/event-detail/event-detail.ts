@@ -16,6 +16,7 @@ import { Event, EventCreationRequest, User } from '../../../../types/types';
 import { AuthService } from '../../../../core/service/auth.service';
 import { TenantRoleMenuService } from '../../../../core/service/tenant-role-menu.service';
 import { DatePickerModule } from 'primeng/datepicker';
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-event-detail',
   templateUrl: './event-detail.html',
@@ -58,7 +59,8 @@ export class EventDetailComponent implements OnInit {
     private eventsService: EventsService,
     private auth: AuthService,
     private router: Router,
-    private tenantRoleMenuService: TenantRoleMenuService
+    private tenantRoleMenuService: TenantRoleMenuService,
+    private toastrService : ToastrService
   ) {
     this.tenantRoleMenuService.getPriority("Events").subscribe({
       next: (res) => {
@@ -128,7 +130,7 @@ export class EventDetailComponent implements OnInit {
         this.editMode = false;
         this.loadEvent();
       },
-      error: (err: any) => alert('Failed to update event: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err: any) =>  this.toastrService.error('Failed to update event: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
@@ -159,7 +161,7 @@ export class EventDetailComponent implements OnInit {
           this.checkParticipation();
           this.loadParticipants();
         },
-        error: err => alert(err.error?.message || 'Failed')
+        error: err =>   this.toastrService.error('Failed to remove participation from event: ' + (err.error?.message || err.message || 'Failed'))
       });
     } else {
       this.eventsService.takeParticipation(this.eventId).subscribe({
@@ -167,7 +169,7 @@ export class EventDetailComponent implements OnInit {
           this.checkParticipation();
           this.loadParticipants();
         },
-        error: err => alert(err.error?.message || 'Failed')
+        error: err =>   this.toastrService.error('Failed to take participation in event: ' + (err.error?.message || err.message || 'Failed'))
       });
     }
   }
@@ -176,7 +178,7 @@ export class EventDetailComponent implements OnInit {
     const payload: any = { ...this.event, status };
     this.eventsService.updateEvent?.(this.eventId, payload).subscribe({
       next: () => this.loadEvent(),
-      error: (err: any) => alert('Failed to update status: ' + (err.error?.message || err.message))
+      error: (err: any) =>   this.toastrService.error('Failed to update event status: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 

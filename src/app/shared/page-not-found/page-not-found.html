@@ -1,1 +1,35 @@
-<p>page-not-found works!</p>
+<div class="not-found-container">
+  <p-card class="not-found-card">
+    <div class="content">
+      <div class="error-icon">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      
+      <div class="error-code">404</div>
+      
+      <h1 class="title">Page Not Found</h1>
+      
+      <p class="message">
+        The page you are looking for might have been removed, had its name changed, 
+        or is temporarily unavailable.
+      </p>
+      
+      <div class="actions">
+        <p-button 
+          label="Go to Home" 
+          icon="pi pi-home" 
+          (onClick)="goHome()"
+          styleClass="p-button-raised p-button-contrast">
+          
+        </p-button>
+        
+        <p-button 
+          label="Go Back" 
+          icon="pi pi-arrow-left" 
+          (onClick)="goBack()"
+          styleClass="p-button-raised p-button-secondary">
+        </p-button>
+      </div>
+    </div>
+  </p-card>
+</div>

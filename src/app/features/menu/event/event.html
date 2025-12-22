@@ -156,7 +156,7 @@
     </p-floatlabel>
 
     <p-floatlabel variant="on">
-      <textarea pInputTextarea id="newDesc" [(ngModel)]="newEvent.description" 
+      <textarea pInputText id="newDesc" [(ngModel)]="newEvent.description" 
         rows="3" class="w-full"></textarea>
       <label for="newDesc">Description</label>
     </p-floatlabel>
@@ -195,19 +195,25 @@
     </div>
 
     <div class="flex gap-4">
-      <p-checkbox 
+    <div>
+        <p-checkbox 
         [(ngModel)]="newEvent.isPublic" 
         [binary]="true" 
         inputId="isPublic"
         label="Public">
       </p-checkbox>
+   <label for="regRequired" class="ml-2"> Public </label>
+    </div>
 
-      <p-checkbox 
+    <div>
+        <p-checkbox 
         [(ngModel)]="newEvent.registrationRequired" 
         [binary]="true" 
         inputId="regRequired"
         label="Requires Registration">
       </p-checkbox>
+          <label for="regRequired" class="ml-2"> Requires Registration </label>
+    </div>
     </div>
 
   </div>
@@ -256,13 +262,15 @@
         <div class="font-semibold text-sm">{{ p.name }}</div>
         <div class="text-xs text-gray-500">{{ p.email }}</div>
       </div>
-      <p-button 
+    @if (this.permission === 'CREATE') {
+        <p-button 
         icon="pi pi-trash" 
         size="small" 
         [text]="true"
         severity="danger"
         (onClick)="removeParticipant(selectedEventId!, p.id)">
       </p-button>
+    }
     </div>
 
     <div *ngIf="participants.length === 0" class="text-center py-10 text-gray-500">

@@ -7,8 +7,10 @@
       <p class="text-xs text-gray-500">Manage and publish notices.</p>
     </div>
 
-    <p-button label="New Notice" icon="pi pi-plus" size="small"
+      @if (permission === "CREATE") {
+           <p-button label="New Notice" icon="pi pi-plus" size="small"
       (onClick)="toggleCreateModal()" severity="contrast"></p-button>
+      }
   </div>
 
   <!-- Filters -->
@@ -111,7 +113,8 @@
           <div class="flex justify-end gap-2">
             <p-button icon="pi pi-eye" size="small" label="View" variant="outlined" 
               (onClick)="goToNotice(notice.id)" severity="secondary"></p-button>
-            <p-button 
+       @if (permission !== "READ") {
+             <p-button 
               [icon]="notice.isPublic ? 'pi pi-lock' : 'pi pi-lock-open'"
               size="small" 
               [label]="notice.isPublic ? 'Private' : 'Public'"
@@ -119,9 +122,12 @@
               (onClick)="togglePublic(notice.id)" 
               severity="info">
             </p-button>
+       }
           </div>
           
           <div class="flex justify-end">
+             @if (permission !== "READ") {
+
             <p-button 
               [icon]="notice.isExpired ? 'pi pi-check-circle' : 'pi pi-times-circle'"
               size="small" 
@@ -129,6 +135,7 @@
               (onClick)="toggleExpired(notice.id)" 
               [severity]="notice.isExpired ? 'success' : 'warn'">
             </p-button>
+          }
           </div>
         </div>
       </ng-template>
@@ -179,7 +186,7 @@
     </p-floatlabel>
 
     <p-floatlabel variant="on">
-      <textarea pInputTextarea id="newMessage" [(ngModel)]="newNotice.message" 
+      <textarea pInputText id="newMessage" [(ngModel)]="newNotice.message" 
         rows="5" class="w-full"></textarea>
       <label for="newMessage">Message</label>
     </p-floatlabel>
@@ -190,19 +197,25 @@
     </p-floatlabel>
 
     <div class="flex gap-4">
-      <p-checkbox 
+      <div>
+        <p-checkbox 
         [(ngModel)]="newNotice.isPublic" 
         [binary]="true" 
         inputId="isPublic"
         label="Public">
       </p-checkbox>
+   <label for="regRequired" class="ml-2"> Public </label>
+    </div>
 
-      <p-checkbox 
+    <!-- <div>
+        <p-checkbox 
         [(ngModel)]="newNotice.isExpired" 
         [binary]="true" 
-        inputId="isExpired"
-        label="Expired">
+        inputId="regRequired"
+        label="Expire">
       </p-checkbox>
+          <label for="regRequired" class="ml-2"> Expire </label>
+    </div> -->
     </div>
 
   </div>

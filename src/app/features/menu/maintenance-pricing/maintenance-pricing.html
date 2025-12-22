@@ -1,0 +1,152 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-lg">Maintenance Pricing</h3>
+      <p class="text-xs text-gray-500">Manage monthly maintenance fees for different flat categories.</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Pricing Cards -->
+  @if (!loading && pricingList.length > 0) {
+  <div class="flex flex-wrap gap-4 mt-6">
+
+    @for (pricing of pricingList; track pricing.category) {
+    <p-card [style]="{ width: '20rem' }">
+
+      <ng-template #header>
+        <div class="relative bg-gradient-to-r from-emerald-500 to-teal-600 h-32 flex items-center justify-center">
+          <i class="pi pi-home text-white text-6xl"></i>
+        </div>
+      </ng-template>
+
+      <div class="flex justify-between items-center mb-2">
+        <p class="font-semibold text-lg">{{ getCategoryLabel(pricing.category) }}</p>
+      </div>
+
+      <p-divider />
+
+      <div class="flex flex-col gap-3 text-sm">
+
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500 font-semibold">Monthly Fee</span>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-xl text-emerald-600">
+              {{ formatCurrency(pricing.amount) }}
+            </span>
+            @if (permission !== "READ") {
+              <button 
+                class="pi pi-pencil text-gray-400 hover:text-emerald-600 cursor-pointer transition-colors"
+                (click)="openEditModal(pricing, 'MONTHLY')"
+                title="Edit Monthly Fee"
+              ></button>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <span class="text-gray-500 font-semibold">Penalty Fee</span>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-xl text-emerald-600">
+              {{ formatCurrency(pricing.penalty) }}
+            </span>
+            @if (permission !== "READ") {
+              <button 
+                class="pi pi-pencil text-gray-400 hover:text-emerald-600 cursor-pointer transition-colors"
+                (click)="openEditModal(pricing, 'PENALTY')"
+                title="Edit Penalty Fee"
+              ></button>
+            }
+          </div>
+        </div>
+
+        <div class="text-xs text-gray-500">
+          <i class="pi pi-info-circle mr-1"></i>
+          This fee applies to all {{ getCategoryLabel(pricing.category) }} flats
+        </div>
+
+      </div>
+
+    </p-card>
+    }
+
+  </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && pricingList.length === 0) {
+  <p-card class="text-center py-20 mt-6">
+    <i class="pi pi-wallet text-6xl text-gray-300 mb-4"></i>
+    <h3 class="text-xl font-bold mb-1">No pricing configured</h3>
+    <p class="text-gray-500">Contact your administrator to set up maintenance pricing.</p>
+  </p-card>
+  }
+
+</div>
+
+<!-- Edit Modal -->
+<p-dialog
+  [(visible)]="showEditModal"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+  [header]="editModalTitle"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-5 mt-2">
+
+    <div class="bg-gray-50 p-3 rounded">
+      <p class="text-xs text-gray-500 mb-1">Category</p>
+      <p class="font-semibold">{{ getCategoryLabel(editForm.category) }}</p>
+    </div>
+
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="amount" 
+        [(ngModel)]="editForm.amount"
+        type="number"
+        min="0"
+        class="w-full"
+        autofocus
+      />
+      <label for="amount">{{ editForm.type === 'MONTHLY' ? 'Monthly Fee (₹)' : 'Penalty Fee (₹)' }}</label>
+    </p-floatlabel>
+
+    <div class="bg-blue-50 border border-blue-200 p-3 rounded text-xs text-blue-800">
+      <i class="pi pi-info-circle mr-1"></i>
+      This {{ editForm.type === 'MONTHLY' ? 'monthly' : 'penalty' }} fee will be applied to all {{ getCategoryLabel(editForm.category) }} flats in your society.
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="closeEditModal()" 
+        severity="secondary"
+        [text]="true"
+        class="px-4"
+      ></p-button>
+
+      <p-button 
+        label="Save Changes" 
+        (click)="savePricing()" 
+        severity="contrast"
+        class="px-4"
+        [loading]="isSaving"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>

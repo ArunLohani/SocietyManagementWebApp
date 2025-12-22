@@ -24,8 +24,13 @@ import {
   ParkingSlot,
   ParkingSlotFilter, 
   ParkingRequestStatus,
-  ParkingSlotStatus
+  ParkingSlotStatus,
+  Flat
 } from '../../../types/types';
+import { AuthService } from '../../../core/service/auth.service';
+import { FlatService } from '../../../core/service/flat.service';
+import { MessageModule } from 'primeng/message';
+import { TenantRoleMenuService } from '../../../core/service/tenant-role-menu.service';
 
 @Component({
   selector: 'app-parking-booking',
@@ -44,7 +49,8 @@ import {
     DialogModule,
     ProgressSpinnerModule,
     TableModule,
-    TagModule
+    TagModule,
+    MessageModule
   ],
   templateUrl: './parking-booking.html',
   styleUrls: ['./parking-booking.css']
@@ -52,7 +58,8 @@ import {
 export class ParkingBooking implements OnInit {
   requestsPage: ParkingRequest[] = [];
   loading = false;
-
+  isAdmin = false;
+  currentUserId : number | null = null;
   // Filters
   filter: ParkingRequestFilter = {};
   page = 0;
@@ -86,7 +93,7 @@ export class ParkingBooking implements OnInit {
   // View details modal
   showDetailsModal = false;
   selectedRequest: ParkingRequest | null = null;
-
+  showDeleteModal = false;
   // Action confirmation modals
   showAcceptModal = false;
   showRejectModal = false;
@@ -94,19 +101,44 @@ export class ParkingBooking implements OnInit {
 
   ParkingRequestStatus = ParkingRequestStatus;
 
+  loadingFlats : boolean = false
+  userFlats : Flat[] = []
+
+    // permission
+  permission: "READ" | "EDIT" | "CREATE" = "READ";
+
   constructor(
     private parkingBookingService: ParkingBookingService,
     private parkingSlotService: ParkingSlotService,
-    private toastr: ToastrService
-  ) {}
+    private toastr: ToastrService,
+    private auth : AuthService,
+    private flatService : FlatService,
+    private tenantRoleMenuService : TenantRoleMenuService
+  ) {
+    this.currentUserId = this.auth.getUserIdFromToken();
+ this.isAdmin = this.auth.isUserAdmin();
+     this.tenantRoleMenuService.getPriority("Parking Requests").subscribe({
+      next: (res) => {
+        console.log(res)
+        this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+      },
+      error: (err) => {
+        this.permission = "READ";
+      },
+    });
 
+  }
+
+
+ 
   ngOnInit(): void {
     this.loadRequests(0);
   }
 
   getEmptyRequestForm(): ParkingBookingRequest {
     return {
-      parkingSlotId: 0
+      parkingSlotId: 0,
+      flatId : ''
     };
   }
 
@@ -125,6 +157,40 @@ export class ParkingBooking implements OnInit {
       }
     });
   }
+
+  deleteRequest(){
+  this.loading = true;
+    if (!this.actioningRequestId) return;
+    this.parkingBookingService.deleteParkingRequest(this.actioningRequestId).subscribe({
+      next: (res) => {
+        this.loadRequests();
+        this.loading = false;
+      },
+      error: (err) => {
+        this.loading = false;
+        this.toastr.error('Failed to delete parking requests', 'Error');
+      }
+    });
+
+  }
+
+    loadUserFlats() {
+    const userId = this.auth.getUserIdFromToken();
+    if (!userId) return;
+
+    this.loadingFlats = true;
+    this.flatService.searchFlatList({ member: userId }).subscribe({
+      next: (res) => {
+        this.userFlats = res.data || [];
+        this.loadingFlats = false;
+      },
+      error: (err) => {
+        this.loadingFlats = false;
+        this.toastr.error('Failed to load your flats', 'Error');
+      }
+    });
+  }
+
 
   loadAvailableSlots() {
     this.loadingSlots = true;
@@ -166,6 +232,7 @@ export class ParkingBooking implements OnInit {
     this.slotFilter = { status: 'AVAILABLE' };
     this.showRequestModal = true;
     this.loadAvailableSlots();
+    this.loadUserFlats()
   }
 
   closeRequestModal() {
@@ -181,14 +248,16 @@ export class ParkingBooking implements OnInit {
       return;
     }
 
-    this.parkingBookingService.requestParkingSlot(this.requestForm.parkingSlotId).subscribe({
+    this.parkingBookingService.requestParkingSlot(this.requestForm.parkingSlotId,this.requestForm.flatId).subscribe({
       next: () => {
         this.toastr.success('Parking request submitted successfully', 'Success');
         this.closeRequestModal();
         this.loadRequests(this.page);
+             this.closeDeleteModal()
       },
       error: (err) => {
         this.toastr.error(err.error?.message || 'Failed to create request', 'Error');
+        this.closeDeleteModal()
       }
     });
   }
@@ -215,6 +284,15 @@ export class ParkingBooking implements OnInit {
     this.actioningRequestId = null;
   }
 
+   openDeleteModal(requestId: number) {
+    this.actioningRequestId = requestId;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.actioningRequestId = null;
+  }
   confirmAccept() {
     if (!this.actioningRequestId) return;
 

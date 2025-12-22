@@ -18,6 +18,8 @@ import { NoticesService } from '../../../core/service/notice.service';
 import { UserService } from '../../../core/service/user.service';
 import { Notice, NoticeCreationRequest, NoticeFilter, Page, Tenant } from '../../../types/types';
 import { AuthService } from '../../../core/service/auth.service';
+import { TenantRoleMenuService } from '../../../core/service/tenant-role-menu.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-notices',
@@ -71,12 +73,27 @@ export class NoticesManagerComponent implements OnInit {
   tenantId: number | null = null;
   currentUserId: number | null = null;
 
+    // permission
+  permission: "READ" | "EDIT" | "CREATE" = "READ";
+
   constructor(
     private noticesService: NoticesService,
     private userService: UserService,
     private auth: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private tenantRoleMenuService : TenantRoleMenuService,
+    private toastrService : ToastrService
+  ) { 
+    this.tenantRoleMenuService.getPriority("Notices").subscribe({
+      next: (res) => {
+        console.log(res)
+        this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+      },
+      error: (err) => {
+        this.permission = "READ";
+      },
+    });
+  }
 
   ngOnInit(): void {
     try {
@@ -154,7 +171,7 @@ export class NoticesManagerComponent implements OnInit {
 
   createNotice() {
     if (!this.newNotice.title || !this.newNotice.message || !this.newNotice.category) {
-      alert('Please fill required fields.');
+       this.toastrService.error('Please fill required fields.')
       return;
     }
     this.noticesService.createNotice(this.newNotice as NoticeCreationRequest).subscribe({
@@ -162,7 +179,7 @@ export class NoticesManagerComponent implements OnInit {
         this.toggleCreateModal();
         this.loadNotices(this.page);
       },
-      error: (err) => alert('Failed to create notice: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) =>  this.toastrService.error('Failed to pulish notice: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
@@ -173,14 +190,14 @@ export class NoticesManagerComponent implements OnInit {
   togglePublic(noticeId: number) {
     this.noticesService.togglePublic(noticeId).subscribe({
       next: () => this.loadNotices(this.page),
-      error: (err) => alert('Failed to toggle public: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) => this.toastrService.error('Failed to make notice public: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 
   toggleExpired(noticeId: number) {
     this.noticesService.toggleExpired(noticeId).subscribe({
       next: () => this.loadNotices(this.page),
-      error: (err) => alert('Failed to toggle expired: ' + (err.error?.message || err.message || 'Unknown'))
+      error: (err) =>this.toastrService.error('Failed to toggle expired: ' + (err.error?.message || err.message || 'Unknown'))
     });
   }
 

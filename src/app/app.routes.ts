@@ -22,6 +22,9 @@ import { menuGuard } from './core/guards/menu-guard';
 import { VehiclesManagerComponent } from './features/menu/vehicle/vehicle';
 import { Parking } from './features/menu/parking/parking';
 import { ParkingBooking } from './features/menu/parking-booking/parking-booking';
+import { Payment } from './features/payment/payment';
+import { MaintenancePricingComponent } from './features/menu/maintenance-pricing/maintenance-pricing';
+import { PaymentComponent } from './features/menu/my-payments/my-payments';
 
 export const routes: Routes = [
 
@@ -49,6 +52,13 @@ export const routes: Routes = [
             {
                 path: "menu",
                 children: [
+                      {
+                        path: "dashboard",
+                        component: Dashboard,
+                        canActivate: [menuGuard],
+                        data: { menu: "Dashboard" }
+
+                    },
                     {
                         path: "events",
                         component: EventsManagerComponent,
@@ -65,33 +75,64 @@ export const routes: Routes = [
                     {
                         path: "complaints",
                         component: ComplaintsManagerComponent,
+                          canActivate: [menuGuard],
+                        data: { menu: "Complaints" }
 
                     },
                     {
                         path: "complaints/:id",
-                        component: ComplaintDetailComponent
+                        component: ComplaintDetailComponent,
+                          canActivate: [menuGuard],
+                        data: { menu: "Complaints" }
                     },
 
                     {
                         path: "notices",
                         component: NoticesManagerComponent,
+                          canActivate: [menuGuard],
+                        data: { menu: "Notices" }
+                        
 
                     },
                     {
                         path: "notices/:id",
-                        component: NoticeDetailComponent
+                        component: NoticeDetailComponent,
+                            canActivate: [menuGuard],
+                        data: { menu: "Notices" }
                     },
                     {
                         path: "vehicle",
                         component: VehiclesManagerComponent,
+                            canActivate: [menuGuard],
+                        data: { menu: "Vehicle" }
 
                     }, {
                         path: "parking",
                         component: Parking,
+                         canActivate: [menuGuard],
+                        data: { menu: "Parking" }
 
                     }, {
                         path: "parking_requests",
                         component: ParkingBooking,
+                        canActivate: [menuGuard],
+                        data: { menu: "Parking Requests" }
+
+                    },{
+                        path:"pay",
+                        component : Payment
+                    },
+                    {
+                        path:"payments",
+                        component : PaymentComponent,
+                           canActivate: [menuGuard],
+                        data: { menu: "Payments" }
+                    },
+                    {
+                        path:"maintenance_pricing",
+                        component : MaintenancePricingComponent,
+                        //         canActivate: [menuGuard],
+                        // data: { menu: "Maintenance Pricing" }
 
                     }
                 ]

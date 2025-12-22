@@ -175,6 +175,7 @@ export interface UserDetails {
   phoneNumber?: string;
   roles?: Array<string>;
   tenantId?: number;
+  societyName?: string
 }
 
 
@@ -326,7 +327,7 @@ export interface Vehicle {
   vehicleType: string;
   brand: string;
   model: string;
-  owner: User;
+  owner: Flat;
   image?: string;
 }
 
@@ -335,6 +336,7 @@ export interface VehicleCreationRequest {
   vehicleType: string;
   brand: string;
   model: string;
+  flat: string
 }
 
 export interface VehicleFilter {
@@ -344,6 +346,7 @@ export interface VehicleFilter {
   brand?: string;
   model?: string;
   owner?: number;
+  user? : number
 }
 
 export enum ParkingSlotStatus {
@@ -358,7 +361,7 @@ export interface ParkingSlot {
   area: string;
   slotNumber: string;
   status: ParkingSlotStatus;
-  user?: User;
+  flat?: Flat;
   tenant?: Tenant;
 }
 
@@ -367,7 +370,7 @@ export interface ParkingSlotFilter {
   area?: string;
   slotNumber?: string;
   status?: string;
-  user?: number;
+  flat?: number;
   tenant?: number;
 }
 
@@ -383,22 +386,206 @@ export enum ParkingRequestStatus {
 }
 
 export interface ParkingRequest {
-  id:number
-  user: User;
+  id: number
+  flat: Flat;
   requestedSlot: ParkingSlot;
   status: ParkingRequestStatus;
   adminComment?: string;
+  createdBy?: number
 }
 
 export interface ParkingBookingRequest {
   parkingSlotId: number;
+  flatId: string
+
 
 }
 
-export interface ParkingRequestFilter{
-     id?: number;
-     user? : number;
-     requestedSlot? : number;
-     status?:string;
-     adminComment?:string;
+export interface ParkingRequestFilter {
+  id?: number;
+  flat?: number;
+  requestedSlot?: number;
+  status?: string;
+  adminComment?: string;
+}
+
+
+export enum FlatMembershipType {
+  OWNER,
+  FAMILY,
+  TENANT,
+  GUEST
+}
+
+export enum FlatCategory {
+  ONE_BHK,
+  TWO_BHK,
+  THREE_BHK,
+  DUPLEX,
+  STUDIO
+}
+
+export interface Flat {
+  id?: number;
+  block: string;
+  number: number;
+  floor: number;
+  sqFt: number;
+  tenant?: Tenant;
+  members: FlatMember[];
+  category: FlatCategory;
+  hasActivePayment?: Boolean
+  isOwner?: Boolean
+}
+
+export interface FlatMember {
+  id?:number;
+  flat?: Flat;
+  user?: User;
+  type: FlatMembershipType;
+  isActive:boolean
+}
+
+export interface FlatFilter {
+  id?: number;
+  block?: string;
+  number?: number;
+  floor?: number;
+  sqFt?: number;
+  tenant?: number;
+  member?: number;
+  category?: string;
+  isActive?: boolean
+}
+
+export interface FlatCreationRequest {
+  block: string;
+  number: number;
+  floor: number;
+  sqFt: number;
+  category: FlatCategory;
+}
+
+export interface FlatMemberAddRequest {
+  flatId: number;
+  userId: number;
+  type: FlatMembershipType;
+}
+
+export interface TenantCategoryPricing {
+
+  tenant: Tenant;
+  category: FlatCategory;
+  monthlyFee: number;
+}
+export interface TenantCategoryPricingResponse {
+  category: string;
+  amount: number;
+  penalty : number
+}
+
+export interface TenantCategoryPricingRequest{
+  category: string;
+  amount: number;
+}
+
+export interface PaymentCalculationDTO {
+  monthlyFee: number;
+  monthsCovered: number;
+  finalAmount: number;
+  penalty : number;
+  billingStartDate: string;
+  billingEndDate: string;
+}
+
+export interface PaymentRequestDTO {
+  flatId: number;
+  billingCycle: string;
+  // paymentMethod: string;
+}
+
+export interface RazorpayOrderDTO {
+  orderId: string;
+  currency: string;
+  amount: number;
+  razorpayKeyId: string;
+  paymentId: number;
+  customerName: string;
+  customerEmail: string;
+  customerContact: string;
+}
+
+export interface PaymentVerificationDTO {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+}
+
+export interface PaymentResponseDTO {
+  paymentId: number;
+  referenceNumber: string;
+  finalAmount: number;
+  status: string;
+  paymentDate: string;
+  transactionId: string;
+  billingStartDate: string;
+  billingEndDate: string;
+  message: string;
+}
+
+export enum PaymentStatus {
+  PROCESSING,
+  COMPLETED,
+  FAILED,
+  REFUNDED,
+  CANCELLED
+}
+
+export interface Payment {
+  id: number
+  flat: Flat;
+  user: User;
+  billingStartDate: string;
+  billingEndDate: string;
+  billingCycle: string;
+  monthsCovered: number;
+  monthlyFee: number;
+  finalAmount: number;
+  status: PaymentStatus;
+  paymentDate: string;
+  transactionId: string;
+  paymentMethod: string;
+  paymentGatewayResponse: string;
+  referenceNumber: string;
+}
+
+export interface PaymentFilter {
+  id?: number;
+  flat?: number;
+  user?: number;
+  billingStartDateFrom?: string;
+  billingStartDateTo?: string;
+  billingEndDateFrom?: string;
+  billingEndDateTo?: string;
+  paymentDateFrom?: string;
+  paymentDateTo?: string;
+  billingCycle?: string;
+  status?: string;
+  transactionId?: string;
+  paymentMethod?: string;
+  referenceNumber?: string;
+  finalAmountMin?: number;
+  finalAmountMax?: number;
+}
+
+export interface Notification {
+  id?: number; 
+  title: string;
+  message: string;
+  url?: string;  
+  type?: "USER" | 'SOCIETY';
+  userId?: number;
+  societyId?: number;
+  read: boolean;
+  createdAt: Date;
 }

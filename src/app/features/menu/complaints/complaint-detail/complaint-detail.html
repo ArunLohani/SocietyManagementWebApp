@@ -62,6 +62,7 @@
           severity="secondary">
         </p-button>
 
+       @if (isAuthor()) { 
         <p-button 
           *ngIf="!editMode"
           label="Edit" 
@@ -89,8 +90,9 @@
           severity="secondary"
           [text]="true">
         </p-button>
-
-        <div class="ml-auto flex gap-2">
+}
+        @if (this.permission!='READ' && isAdmin()) {
+          <div class="ml-auto flex gap-2">
           <p-button 
             *ngIf="complaint.status === 'OPEN'"
             label="Start" 
@@ -118,6 +120,7 @@
             severity="danger">
           </p-button>
         </div>
+        }
       </div>
 
       <!-- Edit Form -->
@@ -131,7 +134,7 @@
           </p-floatlabel>
 
           <p-floatlabel variant="on">
-            <textarea pInputTextarea id="editDesc" [(ngModel)]="editModel.description" 
+            <textarea pInputText id="editDesc" [(ngModel)]="editModel.description" 
               rows="4" class="w-full"></textarea>
             <label for="editDesc">Description</label>
           </p-floatlabel>
@@ -159,7 +162,8 @@
     </p-card>
 
     <!-- Assignment Card -->
-    <p-card class="mb-4">
+ @if (this.permission!="READ" && isAdmin()) {
+     <p-card class="mb-4">
       <ng-template #header>
         <div class="px-6 pt-6 pb-3">
           <h3 class="text-lg font-semibold flex items-center gap-2">
@@ -208,9 +212,11 @@
         </div>
       </div>
     </p-card>
+ }
 
     <!-- Resolution Notes Card -->
-    <p-card>
+       @if (this.permission != "READ" && (isAdmin() || isAssigned())) { 
+        <p-card>
       <ng-template #header>
         <div class="px-6 pt-6 pb-3">
           <h3 class="text-lg font-semibold flex items-center gap-2">
@@ -229,7 +235,7 @@
         </div>
 
         <p-floatlabel variant="on">
-          <textarea pInputTextarea id="resNote" [(ngModel)]="resolutionNote" 
+          <textarea pInputText id="resNote" [(ngModel)]="resolutionNote" 
             rows="3" class="w-full"></textarea>
           <label for="resNote">Add a resolution note...</label>
         </p-floatlabel>
@@ -254,7 +260,8 @@
         </div>
 
       </div>
-    </p-card>
+    </p-card>}
+   
 
   </div>
 

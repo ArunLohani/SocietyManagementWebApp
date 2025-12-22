@@ -1,0 +1,371 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-2xl">Maintenance Payments</h3>
+      <p class="text-sm text-gray-500">View your payment history and make new payments.</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <p-tabs [(value)]="activeTab" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab [value]="0">My Payment History</p-tab>
+      @if (isAdmin) {
+        <p-tab [value]="1">All Payments</p-tab>
+      } 
+    </p-tablist>
+
+    <p-tabpanels>
+      
+      <!-- My Payment History Tab -->
+      <p-tabpanel [value]="0">
+        
+        <!-- Filters -->
+        <p-card class="mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-semibold">Status</label>
+              <p-select 
+                [(ngModel)]="myPaymentFilter.status"
+                [options]="statusOptions"
+                placeholder="All Status"
+                [showClear]="true">
+              </p-select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-semibold">Billing Cycle</label>
+              <p-select 
+                [(ngModel)]="myPaymentFilter.billingCycle"
+                [options]="billingCycleFilterOptions"
+                placeholder="All Cycles"
+                [showClear]="true">
+              </p-select>
+            </div>
+
+              <div class="flex flex-col gap-2">
+              <label class="text-sm font-semibold">Payment Method</label>
+              <p-select 
+                [(ngModel)]="myPaymentFilter.paymentMethod"
+                [options]="paymentMethodFilterOptions"
+                placeholder="Payment Methods"
+                [showClear]="true">
+              </p-select>
+            </div>
+
+            <div class="flex items-end gap-4">
+              <p-button 
+                label="Filter" 
+                icon="pi pi-filter"
+                severity="contrast"
+                size="small"
+                (onClick)="onMyPaymentFilterChange()"
+                >
+              </p-button>
+              <p-button 
+                label="Reset Filters" 
+                icon="pi pi-filter-slash"
+                severity="secondary"
+                size="small"
+                (onClick)="resetMyPaymentFilters()"
+                [outlined]="true">
+              </p-button>
+            </div>
+
+          </div>
+        </p-card>
+
+        @if (loading) {
+        <div class="flex justify-center py-20">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+        }
+
+        @if (!loading && payments.length === 0) {
+        <p-card class="text-center py-20">
+          <i class="pi pi-receipt text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-xl font-bold mb-2">No Payment History</h3>
+          <p class="text-gray-500 mb-4">You haven't made any payments yet.</p>
+        </p-card>
+        }
+
+        @if (!loading && payments.length > 0) {
+        <p-card>
+          <p-table 
+            [value]="payments" 
+            [tableStyle]="{'min-width': '60rem'}"
+            styleClass="p-datatable-sm">
+            
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Reference No.</th>
+                <th>Flat</th>
+                <th>Billing Period</th>
+                <th>Months</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Payment Date</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-payment>
+              <tr>
+                <td>
+                  <span class="font-mono text-sm">{{ payment.referenceNumber }}</span>
+                </td>
+                <td>
+                  <span class="font-semibold">{{ getFlatLabel(payment.flat) }}</span>
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <span class="text-sm">{{ formatDate(payment.billingStartDate) }}</span>
+                    <span class="text-xs text-gray-500">to {{ formatDate(payment.billingEndDate) }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="font-semibold">{{ payment.monthsCovered }}</span>
+                </td>
+                <td>
+                  <span class="font-bold text-emerald-600">{{ formatCurrency(payment.finalAmount) }}</span>
+                </td>
+                <td>
+                  <p-tag 
+                    [value]="payment.status" 
+                    [severity]="getStatusSeverity(payment.status)">
+                  </p-tag>
+                </td>
+                <td>
+                  <span class="text-sm">{{ formatDate(payment.paymentDate) }}</span>
+                </td>
+                <td>
+                  <p-button 
+                    icon="pi pi-download" 
+                    [rounded]="true" 
+                    [text]="true"
+                    size="small"
+                    severity="secondary"
+                    (onClick)="downloadReceipt(payment)"
+                    pTooltip="Download Receipt">
+                  </p-button>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="8" class="text-center py-8">
+                  <p class="text-gray-500">No payments found</p>
+                </td>
+              </tr>
+            </ng-template>
+
+          </p-table>
+
+          <!-- Separate Paginator for My Payments -->
+          <p-paginator 
+            [first]="myPaymentPageNumber * myPaymentPageSize" 
+            [rows]="myPaymentPageSize"
+            [totalRecords]="myPaymentTotalRecords"
+            (onPageChange)="onMyPaymentPageChange($event)">
+          </p-paginator>
+        </p-card>
+        }
+
+      </p-tabpanel>
+
+      <!-- Admin All Payments Tab -->
+      @if (isAdmin) {
+      <p-tabpanel [value]="1">
+        
+        <!-- Admin Filters -->
+        <p-card class="mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-semibold">Flat</label>
+              <p-select 
+                [(ngModel)]="adminPaymentFilter.flat"
+                [options]="flatOptions"
+                placeholder="All Flats"
+                [showClear]="true"
+                [filter]="true"
+                filterBy="label">
+              </p-select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-semibold">Status</label>
+              <p-select 
+                [(ngModel)]="adminPaymentFilter.status"
+                [options]="statusOptions"
+                placeholder="All Status"
+                [showClear]="true">
+              </p-select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-sm font-semibold">Billing Cycle</label>
+              <p-select 
+                [(ngModel)]="adminPaymentFilter.billingCycle"
+                [options]="billingCycleFilterOptions"
+                placeholder="All Cycles"
+                [showClear]="true">
+              </p-select>
+            </div>
+             <div class="flex flex-col gap-2">
+              <label class="text-sm font-semibold">Payment Methods</label>
+              <p-select 
+                [(ngModel)]="myPaymentFilter.paymentMethod"
+                [options]="paymentMethodFilterOptions"
+                placeholder="Payment Methods"
+                [showClear]="true">
+              </p-select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
+            <div class="flex items-end gap-4">
+              <p-button 
+                label="Filter" 
+                icon="pi pi-filter"
+                severity="contrast"
+                size="small"
+                (onClick)="onAdminPaymentFilterChange()"
+                >
+              </p-button>
+              <p-button 
+                label="Reset Filters" 
+                icon="pi pi-filter-slash"
+                severity="secondary"
+                size="small"
+                (onClick)="resetAdminPaymentFilters()"
+                [outlined]="true">
+              </p-button>
+            </div>
+
+          </div>
+        </p-card>
+
+        @if (adminLoading) {
+        <div class="flex justify-center py-20">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+        }
+
+        @if (!adminLoading && allPayments.length === 0) {
+        <p-card class="text-center py-20">
+          <i class="pi pi-receipt text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-xl font-bold mb-2">No Payments Found</h3>
+          <p class="text-gray-500 mb-4">No payments match the selected filters.</p>
+        </p-card>
+        }
+
+        @if (!adminLoading && allPayments.length > 0) {
+        <p-card>
+          <p-table 
+            [value]="allPayments" 
+            [tableStyle]="{'min-width': '70rem'}"
+            styleClass="p-datatable-sm">
+            
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Reference No.</th>
+                <th>User</th>
+                <th>Flat</th>
+                <th>Billing Period</th>
+                <th>Months</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Method</th>
+                <th>Payment Date</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-payment>
+              <tr>
+                <td>
+                  <span class="font-mono text-xs">{{ payment.referenceNumber }}</span>
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold">{{ payment.user.name }}</span>
+                    <span class="text-xs text-gray-500">{{ payment.user.email }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="font-semibold">{{ getFlatLabel(payment.flat) }}</span>
+                </td>
+                <td>
+                  <div class="flex flex-col">
+                    <span class="text-sm">{{ formatDate(payment.billingStartDate) }}</span>
+                    <span class="text-xs text-gray-500">to {{ formatDate(payment.billingEndDate) }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="font-semibold">{{ payment.monthsCovered }}</span>
+                </td>
+                <td>
+                  <span class="font-bold text-emerald-600">{{ formatCurrency(payment.finalAmount) }}</span>
+                </td>
+                <td>
+                  <p-tag 
+                    [value]="payment.status" 
+                    [severity]="getStatusSeverity(payment.status)">
+                  </p-tag>
+                </td>
+                <td>
+                  <p-tag 
+                    [value]="payment.paymentMethod" 
+                    severity="secondary">
+                  </p-tag>
+                </td>
+                <td>
+                  <span class="text-sm">{{ formatDate(payment.paymentDate) }}</span>
+                </td>
+                <td>
+                  <p-button 
+                    icon="pi pi-download" 
+                    [rounded]="true" 
+                    [text]="true"
+                    size="small"
+                    severity="secondary"
+                    (onClick)="downloadReceipt(payment)"
+                    pTooltip="Download Receipt">
+                  </p-button>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="10" class="text-center py-8">
+                  <p class="text-gray-500">No payments found</p>
+                </td>
+              </tr>
+            </ng-template>
+
+          </p-table>
+
+          <!-- Separate Paginator for Admin Payments -->
+          <p-paginator 
+            [first]="adminPaymentPageNumber * adminPaymentPageSize" 
+            [rows]="adminPaymentPageSize"
+            [totalRecords]="adminPaymentTotalRecords"
+            (onPageChange)="onAdminPaymentPageChange($event)">
+          </p-paginator>
+        </p-card>
+        }
+
+      </p-tabpanel>
+      }
+
+    </p-tabpanels>
+  </p-tabs>
+
+</div>

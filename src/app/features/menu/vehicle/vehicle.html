@@ -1,140 +1,341 @@
 <div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="flex justify-between items-center mb-6">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-lg">Vehicle Management</h3>
-      <p class="text-xs text-gray-500">Manage your vehicle here.</p>
+      <h3 class="font-semibold text-2xl">Vehicle Management</h3>
+      <p class="text-sm text-gray-500">Manage your vehicles here.</p>
     </div>
-
-    <p-button label="Add Vehicle" icon="pi pi-plus" size="small"
-      (onClick)="openCreateModal()" severity="contrast"></p-button>
-  </div>
-
-  <!-- Filters -->
-  <div class="mt-4">
-    <p-card>
-      <p class="text-sm font-semibold">All Vehicles</p>
-      <p-divider />
-
-      <div class="flex flex-wrap gap-3 items-end">
-
-        <p-floatlabel variant="on">
-          <input pInputText id="registrationNumber" [(ngModel)]="filter.registrationNumber" />
-          <label for="registrationNumber">Registration Number</label>
-        </p-floatlabel>
-
-        <p-floatlabel variant="on">
-          <input pInputText id="brand" [(ngModel)]="filter.brand" />
-          <label for="brand">Brand</label>
-        </p-floatlabel>
-
-        <p-floatlabel variant="on">
-          <input pInputText id="model" [(ngModel)]="filter.model" />
-          <label for="model">Model</label>
-        </p-floatlabel>
-
-        <p-select class="w-56"
-          [options]="vehicleTypes"
-          [(ngModel)]="filter.vehicleType"
-          optionLabel="name" optionValue="code"
-          [showClear]="true"
-          placeholder="Select Type">
-        </p-select>
-
-        <p-button label="Search" icon="pi pi-search" size="small"
-          (onClick)="applyFilters()" severity="contrast"></p-button>
-
-        <p-button label="Clear" icon="pi pi-times" size="small"
-          (onClick)="clearFilters()" severity="secondary"></p-button>
-
-      </div>
-    </p-card>
-  </div>
-
-  <!-- Loading -->
-  <div *ngIf="loading" class="flex justify-center items-center py-20">
-    <p-progressSpinner></p-progressSpinner>
-  </div>
-
-  <!-- Cards Grid -->
-  @if (!loading && vehiclesPage) {
-  <div class="flex flex-wrap gap-4 mt-6">
-
-    @for (vehicle of vehiclesPage.content; track $index) {
-    <p-card [style]="{ width: '20rem', overflow: 'hidden' }">
-
-     
-      <ng-template #header>
-        <div class="relative bg-gradient-to-r from-blue-500 to-blue-600 h-32 flex items-center justify-center">
-          <i class="pi pi-car text-white text-6xl"></i>
-
-         <p-button (onClick)="openVehicleImageUploadModal(vehicle)" class="absolute bottom-2 right-2" icon="pi pi-upload" size="small" label="Upload"  severity="contrast" />
-          
-        </div>
-      </ng-template>
-
-      <div class="flex justify-between items-center mb-2">
-        <p class="font-semibold">{{ vehicle.registrationNumber }}</p>
-        <p-badge [value]="getVehicleTypeLabel(vehicle.vehicleType)"
-          severity="contrast"></p-badge>
-      </div>
-
-      <p-divider />
-
-      <div class="flex flex-col gap-2 text-xs">
-
-        <div class="flex justify-between">
-          <span class="text-gray-500 font-semibold">Brand</span>
-          <span class="font-bold">{{ vehicle.brand }}</span>
-        </div>
-
-        <div class="flex justify-between">
-          <span class="text-gray-500 font-semibold">Model</span>
-          <span class="font-bold">{{ vehicle.model }}</span>
-        </div>
-
-        <div class="flex justify-between">
-          <span class="text-gray-500 font-semibold">Owner</span>
-          <span class="font-bold">
-            {{ vehicle.owner?.name || 'Unassigned' }}
-          </span>
-        </div>
-
-      </div>
-
-      <ng-template #footer>
-        <div class="flex justify-end gap-2">
-          <p-button icon="pi pi-pencil" size="small" label="Edit" variant="outlined" (onClick)="openEditModal(vehicle)"
-            severity="secondary"></p-button>
-          <p-button icon="pi pi-trash" size="small" label="Delete" (onClick)="openDeleteModal(vehicle.id)"
-            severity="danger"></p-button>
-        </div>
-      </ng-template>
-
-    </p-card>
+    @if (permission === "CREATE") {
+    <p-button 
+      label="Add Vehicle" 
+      icon="pi pi-plus" 
+      size="small"
+      (onClick)="openCreateModal()" 
+      severity="contrast">
+    </p-button>
     }
-
-    <!-- Pagination -->
-    <div class="w-full">
-      <p-paginator [first]="page * pageSize" [rows]="pageSize"
-        [totalRecords]="vehiclesPage.totalElements"
-        (onPageChange)="onPageChange($event)">
-      </p-paginator>
-    </div>
-
   </div>
-  }
 
-  <!-- Empty State -->
-  @if (!loading && vehiclesPage?.content?.length === 0) {
-  <p-card class="text-center py-20">
-    <h3 class="text-xl font-bold mb-1">No vehicles found</h3>
-    <p class="text-gray-500 mb-4">Add your first vehicle to the system.</p>
-    <p-button label="Add Vehicle" icon="pi pi-plus" severity="contrast"
-      (onClick)="openCreateModal()"></p-button>
-  </p-card>
-  }
+  <!-- Tabs -->
+  <p-tabs [value]="activeTab">
+    <p-tablist>
+      <p-tab [value]="0">My Vehicles</p-tab>
+      @if (isAdmin) {
+      <p-tab [value]="1">Society Vehicles</p-tab>
+      }
+    </p-tablist>
+
+    <p-tabpanels>
+      <!-- User Vehicles Tab -->
+      <p-tabpanel [value]="0">
+        <!-- User Filters -->
+        <p-card>
+          <p class="text-sm font-semibold">My Vehicles</p>
+          <p-divider />
+
+          <div class="flex flex-wrap gap-3 items-end">
+            <p-floatlabel variant="on">
+              <input pInputText id="userRegNo" [(ngModel)]="userFilter.registrationNumber" />
+              <label for="userRegNo">Registration Number</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on">
+              <input pInputText id="userBrand" [(ngModel)]="userFilter.brand" />
+              <label for="userBrand">Brand</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on">
+              <input pInputText id="userModel" [(ngModel)]="userFilter.model" />
+              <label for="userModel">Model</label>
+            </p-floatlabel>
+
+            <p-select 
+              class="w-56"
+              [options]="vehicleTypes"
+              [(ngModel)]="userFilter.vehicleType"
+              optionLabel="name" 
+              optionValue="code"
+              [showClear]="true"
+              placeholder="Select Type">
+            </p-select>
+
+            <p-button 
+              label="Search" 
+              icon="pi pi-search" 
+              size="small"
+              (onClick)="applyUserFilters()" 
+              severity="contrast">
+            </p-button>
+
+            <p-button 
+              label="Clear" 
+              icon="pi pi-times" 
+              size="small"
+              (onClick)="clearUserFilters()" 
+              severity="secondary">
+            </p-button>
+          </div>
+        </p-card>
+
+        <!-- Loading -->
+        @if (loading) {
+        <div class="flex justify-center items-center py-20">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+        }
+
+        <!-- User Vehicles Grid -->
+        @if (!loading && userVehiclesPage) {
+        <div class="flex flex-wrap gap-4 mt-6">
+          @for (vehicle of userVehiclesPage.content; track vehicle.id) {
+          <p-card [style]="{ width: '20rem', overflow: 'hidden' }">
+            <ng-template #header>
+              <div class="relative bg-gradient-to-r from-blue-500 to-indigo-600 h-32 flex items-center justify-center">
+                <i class="pi pi-car text-white text-6xl"></i>
+                <p-badge 
+                  [value]="getVehicleTypeLabel(vehicle.vehicleType)" 
+                  severity="contrast"
+                  class="absolute top-2 right-2">
+                </p-badge>
+              </div>
+            </ng-template>
+
+            <div class="flex justify-between items-center mb-2">
+              <p class="font-semibold text-lg">{{ vehicle.registrationNumber }}</p>
+            </div>
+
+            <p-divider />
+
+            <div class="flex flex-col gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Brand</span>
+                <span class="font-semibold">{{ vehicle.brand }}</span>
+              </div>
+
+              <div class="flex justify-between">
+                <span class="text-gray-500">Model</span>
+                <span class="font-semibold">{{ vehicle.model }}</span>
+              </div>
+
+              <div class="flex justify-between">
+                <span class="text-gray-500">Flat</span>
+                <span class="font-semibold">{{ vehicle.owner.block }} - {{ vehicle.owner.number }}</span>
+              </div>
+            </div>
+
+            <ng-template #footer>
+              <div class="flex justify-end gap-2">
+                @if (permission !== "READ") {
+                <p-button 
+                  icon="pi pi-pencil" 
+                  size="small" 
+                  label="Edit" 
+                  (onClick)="openEditModal(vehicle)"
+                  severity="secondary">
+                </p-button>
+                }
+                @if (permission === 'CREATE') {
+                <p-button 
+                  icon="pi pi-trash" 
+                  size="small" 
+                  label="Delete" 
+                  (onClick)="openDeleteModal(vehicle.id)"
+                  severity="danger">
+                </p-button>
+                }
+              </div>
+            </ng-template>
+          </p-card>
+          }
+
+          <!-- User Pagination -->
+          <div class="w-full">
+            <p-paginator 
+              [first]="userPage * pageSize" 
+              [rows]="pageSize"
+              [totalRecords]="userVehiclesPage.totalElements"
+              (onPageChange)="onUserPageChange($event)">
+            </p-paginator>
+          </div>
+        </div>
+        }
+
+        <!-- User Empty State -->
+        @if (!loading && userVehiclesPage?.content?.length === 0) {
+        <p-card class="text-center py-20 mt-6">
+          <i class="pi pi-car text-5xl text-gray-300 mb-3"></i>
+          <h3 class="text-lg font-bold mb-1">No Vehicles Found</h3>
+          <p class="text-gray-500 mb-4">You don't have any vehicles registered yet.</p>
+          @if (permission === "CREATE") {
+          <p-button 
+            label="Add Vehicle" 
+            icon="pi pi-plus" 
+            size="small"
+            (onClick)="openCreateModal()" 
+            severity="contrast">
+          </p-button>
+          }
+        </p-card>
+        }
+      </p-tabpanel>
+
+      <!-- Society Vehicles Tab (Admin Only) -->
+      @if (isAdmin) {
+      <p-tabpanel [value]="1">
+        <!-- Society Filters -->
+        <p-card>
+          <p class="text-sm font-semibold">All Society Vehicles</p>
+          <p-divider />
+
+          <div class="flex flex-wrap gap-3 items-end">
+            <p-floatlabel variant="on">
+              <input pInputText id="societyRegNo" [(ngModel)]="societyFilter.registrationNumber" />
+              <label for="societyRegNo">Registration Number</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on">
+              <input pInputText id="societyBrand" [(ngModel)]="societyFilter.brand" />
+              <label for="societyBrand">Brand</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on">
+              <input pInputText id="societyModel" [(ngModel)]="societyFilter.model" />
+              <label for="societyModel">Model</label>
+            </p-floatlabel>
+
+            <p-select 
+              class="w-56"
+              [options]="vehicleTypes"
+              [(ngModel)]="societyFilter.vehicleType"
+              optionLabel="name" 
+              optionValue="code"
+              [showClear]="true"
+              placeholder="Select Type">
+            </p-select>
+
+            <p-button 
+              label="Search" 
+              icon="pi pi-search" 
+              size="small"
+              (onClick)="applySocietyFilters()" 
+              severity="contrast">
+            </p-button>
+
+            <p-button 
+              label="Clear" 
+              icon="pi pi-times" 
+              size="small"
+              (onClick)="clearSocietyFilters()" 
+              severity="secondary">
+            </p-button>
+          </div>
+        </p-card>
+
+        <!-- Loading -->
+        @if (loading) {
+        <div class="flex justify-center items-center py-20">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+        }
+
+        <!-- Society Vehicles Grid -->
+        @if (!loading && societyVehiclesPage) {
+        <div class="flex flex-wrap gap-4 mt-6">
+          @for (vehicle of societyVehiclesPage.content; track vehicle.id) {
+          <p-card [style]="{ width: '22rem', overflow: 'hidden' }">
+            <ng-template #header>
+              <div class="relative bg-gradient-to-r from-emerald-500 to-teal-600 h-32 flex items-center justify-center">
+                <i class="pi pi-car text-white text-6xl"></i>
+                <p-badge 
+                  [value]="getVehicleTypeLabel(vehicle.vehicleType)" 
+                  severity="contrast"
+                  class="absolute top-2 right-2">
+                </p-badge>
+              </div>
+            </ng-template>
+
+            <div class="flex justify-between items-center mb-2">
+              <p class="font-semibold text-lg">{{ vehicle.registrationNumber }}</p>
+            </div>
+
+            <p-divider />
+
+            <div class="flex flex-col gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Brand</span>
+                <span class="font-semibold">{{ vehicle.brand }}</span>
+              </div>
+
+              <div class="flex justify-between">
+                <span class="text-gray-500">Model</span>
+                <span class="font-semibold">{{ vehicle.model }}</span>
+              </div>
+
+              <div class="flex justify-between">
+                <span class="text-gray-500">Flat</span>
+                <span class="font-semibold">{{ vehicle.owner.block }} - {{ vehicle.owner.number }}</span>
+              </div>
+            </div>
+
+            <!-- <ng-template #footer>
+              <div class="flex justify-end gap-2">
+                @if (permission !== "READ") {
+                <p-button 
+                  icon="pi pi-pencil" 
+                  size="small" 
+                  label="Edit" 
+                  (onClick)="openEditModal(vehicle)"
+                  severity="secondary">
+                </p-button>
+                }
+                @if (permission === 'CREATE') {
+                <p-button 
+                  icon="pi pi-trash" 
+                  size="small" 
+                  label="Delete" 
+                  (onClick)="openDeleteModal(vehicle.id)"
+                  severity="danger">
+                </p-button>
+                }
+              </div>
+            </ng-template> -->
+          </p-card>
+          }
+
+          <!-- Society Pagination -->
+          <div class="w-full">
+            <p-paginator 
+              [first]="societyPage * pageSize" 
+              [rows]="pageSize"
+              [totalRecords]="societyVehiclesPage.totalElements"
+              (onPageChange)="onSocietyPageChange($event)">
+            </p-paginator>
+          </div>
+        </div>
+        }
+
+        <!-- Society Empty State -->
+        @if (!loading && societyVehiclesPage?.content?.length === 0) {
+        <p-card class="text-center py-20 mt-6">
+          <i class="pi pi-building text-5xl text-gray-300 mb-3"></i>
+          <h3 class="text-lg font-bold mb-1">No Vehicles Found</h3>
+          <p class="text-gray-500 mb-4">No vehicles have been registered in the society yet.</p>
+          @if (permission === "CREATE") {
+          <p-button 
+            label="Add Vehicle" 
+            icon="pi pi-plus" 
+            size="small"
+            (onClick)="openCreateModal()" 
+            severity="contrast">
+          </p-button>
+          }
+        </p-card>
+        }
+      </p-tabpanel>
+      }
+    </p-tabpanels>
+  </p-tabs>
 
 </div>
 
@@ -144,13 +345,42 @@
   [modal]="true"
   [style]="{ width: '32rem' }"
   [draggable]="false"
-  header="{{ isEditMode ? 'Edit Vehicle' : 'Add Vehicle' }}"
-[breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [header]="isEditMode ? 'Edit Vehicle' : 'Add Vehicle'"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
   [baseZIndex]="10000"
   contentStyleClass="px-2"
 >
 
   <div class="flex flex-col gap-5 mt-2">
+
+    @if (!loadingFlats) {
+    <p-select
+      [options]="userFlats"
+      [(ngModel)]="vehicleForm.flat"
+      name="flatId"
+      optionLabel="number"
+      optionValue="id"
+      placeholder="Select your flat"
+      [disabled]="loading || userFlats.length === 0"
+      class="w-full"
+      styleClass="w-full"
+      appendTo="body"
+    >
+      <ng-template let-flat pTemplate="item">
+        <div class="flex justify-between items-center">
+          <span class="font-semibold">Block {{ flat.block }} - {{ flat.number }}</span>
+          <span class="text-xs text-gray-500">&nbsp; {{ flat.category }}</span>
+        </div>
+      </ng-template>
+    </p-select>
+    }
+
+    @if (!loadingFlats && userFlats.length === 0) {
+    <p-message 
+      severity="warn" 
+      text="No flats assigned to you. Please contact your society admin.">
+    </p-message>
+    }
 
     <p-floatlabel variant="on">
       <input 
@@ -182,99 +412,59 @@
       <label for="model2">Model</label>
     </p-floatlabel>
 
-   <p-select
-  [options]="vehicleTypes"
-  [(ngModel)]="vehicleForm.vehicleType"
-  optionLabel="name"
-  optionValue="code"
-  placeholder="Select Type"
-  class="w-full"
-  styleClass="w-full"
-  appendTo="body"
-></p-select>
+    <p-select
+      [options]="vehicleTypes"
+      [(ngModel)]="vehicleForm.vehicleType"
+      optionLabel="name"
+      optionValue="code"
+      placeholder="Select Type"
+      class="w-full"
+      styleClass="w-full"
+      appendTo="body"
+    ></p-select>
 
   </div>
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-3 w-full mt-4">
-
       <p-button 
         label="Cancel" 
         (click)="closeVehicleModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
       ></p-button>
 
       <p-button 
         [label]="isEditMode ? 'Update' : 'Create'" 
         (click)="saveVehicle()" 
         severity="contrast"
-        class="px-4"
       ></p-button>
-
     </div>
   </ng-template>
 
 </p-dialog>
-
-<!-- Vehicle Image Uplaod Modal -->
-<p-dialog
-  [(visible)]="showImageUploadModal"
-  [modal]="true"
-  [style]="{ width: '32rem' }"
-  [draggable]="false"
-  header="Upload Image"
-[breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
-  [baseZIndex]="10000"
-  contentStyleClass="px-2"
->
-
-  <div class="flex flex-col gap-5 mt-2">
-
-<p-fileUpload
-  #fu
-    mode="advanced"
-    [customUpload]="true"
-(uploadHandler)="onUpload($event)"
-    accept="image/*"
-    maxFileSize="1000000"
-    chooseLabel="Choose Image"
-></p-fileUpload>
-
-
-  </div>
-
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
-
-      <p-button 
-        label="Cancel" 
-        (click)="closeVehicleImageUploadModal()" 
-        severity="secondary"
-        [text]="true"
-        class="px-4"
-      ></p-button>
-
-    <p-button label="Upload" (onClick)="fu.upload()" severity="contrast" />
-
-    </div>
-  </ng-template>
-
-</p-dialog>
-
 
 <!-- Delete Confirmation -->
-<p-dialog [(visible)]="showDeleteModal" header="Confirm Delete" [modal]="true"
+<p-dialog 
+  [(visible)]="showDeleteModal" 
+  header="Confirm Delete" 
+  [modal]="true"
   [style]="{ width: '22rem' }">
 
-  <p class="mt-4 mb-3">Are you sure you want to delete this vehicle?</p>
+  <p class="mt-4 mb-3">Are you sure you want to delete this vehicle? This action cannot be undone.</p>
 
   <ng-template #footer>
-    <p-button label="Cancel" [text]="true" severity="secondary"
-      (click)="closeDeleteModal()"></p-button>
-    <p-button label="Delete" severity="danger"
-      (click)="confirmDelete()"></p-button>
+    <p-button 
+      label="Cancel" 
+      [text]="true" 
+      severity="secondary"
+      (click)="closeDeleteModal()">
+    </p-button>
+    <p-button 
+      label="Delete" 
+      severity="danger"
+      (click)="confirmDelete()">
+    </p-button>
   </ng-template>
 
 </p-dialog>

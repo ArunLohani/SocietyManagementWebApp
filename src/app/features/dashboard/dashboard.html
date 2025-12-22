@@ -1,10 +1,753 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
- 
-    @if (!tenancyStatus) {
+  <!-- Loading State -->
+  @if (loading) {
+  <div class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+  }
 
-        <p>You have not been assigned to a Society. Ask your Society Admin to proceed further.</p>
+  <!-- No Tenancy Warning -->
+  @if (!loading && !tenancyStatus) {
+  <p-card class="text-center py-20">
+    <i class="pi pi-exclamation-triangle text-6xl text-amber-500 mb-4"></i>
+    <h3 class="text-xl font-bold mb-2">Not Assigned to Society</h3>
+    <p class="text-gray-600">You have not been assigned to a Society. Ask your Society Admin to proceed further.</p>
+  </p-card>
+  }
 
+  <!-- Dashboard Content -->
+  @if (!loading && tenancyStatus) {
+  <div>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-col gap-1">
+        <h3 class="font-semibold text-2xl">Dashboard</h3>
+        <p class="text-sm text-gray-500">Manage your flats and maintenance.</p>
+      </div>
+      @if (isAdmin) {
+      <p-button 
+        label="Add Flat" 
+        icon="pi pi-plus" 
+        size="small"
+        (onClick)="openCreateFlatModal()" 
+        severity="contrast">
+      </p-button>
+      }
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs [value]="activeTab">
+      <p-tablist>
+        <p-tab [value]="0">My Flats</p-tab>
+        @if (isAdmin) {
+        <p-tab [value]="1"> Society Flats</p-tab>
+        }
+      </p-tablist>
+
+      <p-tabpanels>
+        <!-- User Flats Tab -->
+        <p-tabpanel [value]="0">
+          @if (loadingFlats) {
+          <div class="flex justify-center py-10">
+            <p-progressSpinner></p-progressSpinner>
+          </div>
+          }
+
+          @if (!loadingFlats && userFlats.length === 0) {
+          <p-card class="text-center py-10">
+            <i class="pi pi-home text-5xl text-gray-300 mb-3"></i>
+            <h3 class="text-lg font-bold mb-1">No Flats Assigned</h3>
+            <p class="text-gray-500">You don't have any flats assigned yet.</p>
+          </p-card>
+          }
+
+          @if (!loadingFlats && userFlats.length > 0) {
+          <div class="flex flex-wrap gap-4 mt-4">
+            @for (flat of userFlats; track flat.id) {
+            <p-card [style]="{ width: '20rem' }">
+              
+              <ng-template #header>
+                <div class="relative bg-gradient-to-r from-blue-500 to-indigo-600 h-28 flex items-center justify-center">
+                  <i class="pi pi-home text-white text-5xl"></i>
+                  <p-badge 
+                    [value]="getCategoryLabel(flat.category.toString())" 
+                    severity="contrast"
+                    class="absolute top-2 right-2">
+                  </p-badge>
+                </div>
+              </ng-template>
+
+              <div class="flex justify-between items-center mb-2">
+                <p class="font-semibold text-lg">Block {{ flat.block }} - {{ flat.number }}</p>
+              </div>
+
+              <p-divider />
+
+              <div class="flex flex-col gap-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Floor</span>
+                  <span class="font-semibold">{{ flat.floor }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Area</span>
+                  <span class="font-semibold">{{ flat.sqFt }} sq.ft</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Members</span>
+                  <span class="font-semibold">{{ flat.members?.length || 0 }}</span>
+                </div>
+              </div>
+
+              <!-- Members List -->
+              @if (getActiveMembers(flat) && getActiveMembers(flat).length > 0) {
+              <p-divider />
+              <div class="text-xs">
+                <p class="font-semibold mb-2 text-gray-600">Members:</p>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (member of getActiveMembers(flat); track member.id) {
+                  <div class="relative group">
+                    <p-badge 
+                      [value]="member.user?.name + ' (' + getMemberTypeLabel(member.type.toString()) + ')'"
+                      [severity]="getMemberTypeSeverity(member.type.toString())">
+                    </p-badge>
+                    @if (canRemoveMember(flat, member,'User' )) {
+                    <button 
+                      class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center transition-opacity shadow-sm"
+                      (click)="showRemoveMemberModal(member.id!)"
+                      title="Remove {{ member.user?.name }}">
+                      <i class="pi pi-times" style="font-size: 0.5rem;"></i>
+                    </button>
+                    }
+                  </div>
+                  }
+                </div>
+              </div>
+              }
+
+              <ng-template #footer>
+                <div class="flex justify-end gap-2">
+                  @if (flat.isOwner) {
+                  <p-button 
+                    icon="pi pi-user-plus" 
+                    size="small" 
+                    label="Add Member"
+                    (onClick)="openMemberModal(flat.id!)"
+                    severity="secondary">
+                  </p-button>
+                @if (!flat.hasActivePayment) {
+                      <p-button 
+                    icon="pi pi-wallet" 
+                    size="small" 
+                    label="Pay Now"
+                    (onClick)="payMaintenance(flat.id!)"
+                    severity="success">
+                  </p-button>
+                }
+                @else {
+                    <p-button 
+                    icon="pi pi-wallet" 
+                    size="small" 
+                    label="Paid"
+                    disabled="true"
+                    severity="secondary">
+                  </p-button>
+                }
+                  }
+                </div>
+              </ng-template>
+
+            </p-card>
+            }
+          </div>
+          }
+        </p-tabpanel>
+
+        <!-- Society Flats Tab (Admin Only) -->
+        @if (isAdmin) {
+        <p-tabpanel [value]="1">
+          @if (loadingFlats) {
+          <div class="flex justify-center py-10">
+            <p-progressSpinner></p-progressSpinner>
+          </div>
+          }
+
+          @if (!loadingFlats && societyFlats.length === 0) {
+          <p-card class="text-center py-10">
+            <i class="pi pi-building text-5xl text-gray-300 mb-3"></i>
+            <h3 class="text-lg font-bold mb-1">No Flats Created</h3>
+            <p class="text-gray-500 mb-4">Create your first flat to start managing.</p>
+            <p-button 
+              label="Add Flat" 
+              icon="pi pi-plus" 
+              size="small"
+              (onClick)="openCreateFlatModal()" 
+              severity="contrast">
+            </p-button>
+          </p-card>
+          }
+
+          @if (!loadingFlats && societyFlats.length > 0) {
+          <div class="flex flex-wrap gap-4 mt-4">
+            @for (flat of societyFlats; track flat.id) {
+            <p-card [style]="{ width: '22rem' }">
+              
+              <ng-template #header>
+                <div class="relative bg-gradient-to-r from-emerald-500 to-teal-600 h-28 flex items-center justify-center">
+                  <i class="pi pi-building text-white text-5xl"></i>
+                  <p-badge 
+                    [value]="getCategoryLabel(flat.category.toString())" 
+                    severity="contrast"
+                    class="absolute top-2 right-2">
+                  </p-badge>
+                </div>
+              </ng-template>
+
+              <div class="flex justify-between items-center mb-2">
+                <p class="font-semibold text-lg">Block {{ flat.block }} - {{ flat.number }}</p>
+                @if (!hasOwner(flat)) {
+                <p-badge value="No Owner" severity="warn"></p-badge>
+                }
+              </div>
+
+              <p-divider />
+
+              <div class="flex flex-col gap-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Floor</span>
+                  <span class="font-semibold">{{ flat.floor }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Area</span>
+                  <span class="font-semibold">{{ flat.sqFt }} sq.ft</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Members</span>
+                  <span class="font-semibold">{{ flat.members?.length || 0 }}</span>
+                </div>
+              </div>
+
+              <!-- Members List -->
+              @if (getActiveMembers(flat) && getActiveMembers(flat).length > 0) {
+              <p-divider />
+              <div class="text-xs">
+                <p class="font-semibold mb-2 text-gray-600">Members:</p>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (member of getActiveMembers(flat); track member.id) {
+                  <div class="relative group">
+                    <p-badge 
+                      [value]="member.user?.name + ' (' + getMemberTypeLabel(member.type.toString()) + ')'"
+                      [severity]="getMemberTypeSeverity(member.type.toString())">
+                    </p-badge>
+                    @if (canRemoveMember(flat, member , 'Society')) {
+                    <button 
+                      class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center transition-opacity shadow-sm"
+                      (click)="showRemoveMemberModal(member.id!)"
+                      title="Remove {{ member.user?.name }}">
+                      <i class="pi pi-times" style="font-size: 0.5rem;"></i>
+                    </button>
+                    }
+                  </div>
+                  }
+                </div>
+              </div>
+              }
+
+              <ng-template #footer>
+                <div class="flex flex-col gap-2">
+                  <!-- Mail Actions Row -->
+                  <div class="flex flex-wrap gap-2">
+                    <p-button 
+                      icon="pi pi-bell" 
+                      size="small" 
+                      label="Reminder"
+                      (onClick)="sendMaintenanceReminder(flat.id!)"
+                      severity="warn"
+                      [outlined]="true">
+                    </p-button>
+                    <p-button 
+                      icon="pi pi-envelope" 
+                      size="small" 
+                      label="Notice"
+                      (onClick)="openNoticeModal(flat.id!)"
+                      severity="info"
+                      [outlined]="true">
+                    </p-button>
+                    <p-button 
+                      icon="pi pi-exclamation-triangle" 
+                      size="small" 
+                      label="Alert"
+                      (onClick)="openEmergencyModal(flat.id!)"
+                      severity="danger"
+                      [outlined]="true">
+                    </p-button>
+                  </div>
+                  
+                  <!-- Management Actions Row -->
+                  <div class="flex justify-end gap-2">
+                    @if (!hasOwner(flat)) {
+                    <p-button 
+                      icon="pi pi-user" 
+                      size="small" 
+                      label="Assign Owner"
+                      (onClick)="openOwnerModal(flat.id!)"
+                      severity="info">
+                    </p-button>
+                    }
+                    <p-button 
+                      icon="pi pi-trash" 
+                      size="small" 
+                      label="Delete"
+                      (onClick)="openDeleteModal(flat.id!)"
+                      severity="danger">
+                    </p-button>
+                  </div>
+                </div>
+              </ng-template>
+
+            </p-card>
+            }
+          </div>
+          }
+        </p-tabpanel>
+        }
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+  }
+                                                                                   
+</div>
+
+<!-- Create Flat Modal -->
+<p-dialog
+  [(visible)]="showFlatModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Create New Flat"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-5 mt-2">
+
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="block" 
+        [(ngModel)]="flatForm.block"
+        class="w-full"
+      />
+      <label for="block">Block</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="number" 
+        [(ngModel)]="flatForm.number"
+        type="number"
+        class="w-full"
+      />
+      <label for="number">Flat Number</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="floor" 
+        [(ngModel)]="flatForm.floor"
+        type="number"
+        class="w-full"
+      />
+      <label for="floor">Floor</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="sqFt" 
+        [(ngModel)]="flatForm.sqFt"
+        type="number"
+        class="w-full"
+      />
+      <label for="sqFt">Area (sq.ft)</label>
+    </p-floatlabel>
+
+    <p-select
+      [options]="flatCategories"
+      [(ngModel)]="flatForm.category"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Select Category"
+      class="w-full"
+      styleClass="w-full"
+      appendTo="body"
+    ></p-select>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="closeFlatModal()" 
+        severity="secondary"
+        [text]="true"
+      ></p-button>
+      <p-button 
+        label="Create" 
+        (click)="saveFlat()" 
+        severity="contrast"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Assign Owner Modal -->
+<p-dialog
+  [(visible)]="showOwnerModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Assign Owner"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-4 mt-2">
+    
+    <div class="flex gap-2">
+      <input 
+        pInputText 
+        [(ngModel)]="searchUserQuery"
+        placeholder="Search users..."
+        class="flex-1"
+      />
+      <p-button 
+        icon="pi pi-search" 
+        (onClick)="searchUsers()"
+        severity="secondary">
+      </p-button>
+    </div>
+
+    @if (loadingUsers) {
+    <div class="flex justify-center py-4">
+      <p-progressSpinner [style]="{ width: '30px', height: '30px' }"></p-progressSpinner>
+    </div>
     }
 
-</div>
+    @if (!loadingUsers && availableUsers.length > 0) {
+    <div class="max-h-64 overflow-y-auto border rounded p-2">
+      @for (user of availableUsers; track user.id) {
+      <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
+           (click)="assignOwner(user.id)">
+        <div>
+          <p class="font-semibold text-sm">{{ user.name }}</p>
+          <p class="text-xs text-gray-500">{{ user.email }}</p>
+        </div>
+        <i class="pi pi-chevron-right text-gray-400"></i>
+      </div>
+      }
+    </div>
+    }
+
+    @if (!loadingUsers && availableUsers.length === 0) {
+    <p class="text-center text-gray-500 py-4">No users found</p>
+    }
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="closeOwnerModal()" 
+        severity="secondary"
+        [text]="true"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Add Member Modal -->
+<p-dialog
+  [(visible)]="showMemberModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Add Member"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-4 mt-2">
+    
+    <p-select
+      [options]="memberTypes"
+      [(ngModel)]="memberForm.type"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Select Member Type"
+      class="w-full"
+      styleClass="w-full"
+      appendTo="body"
+    ></p-select>
+
+    <div class="flex gap-2">
+      <input 
+        pInputText 
+        [(ngModel)]="searchUserQuery"
+        placeholder="Search users..."
+        class="flex-1"
+      />
+      <p-button 
+        icon="pi pi-search" 
+        (onClick)="searchUsers()"
+        severity="secondary">
+      </p-button>
+    </div>
+
+    @if (loadingUsers) {
+    <div class="flex justify-center py-4">
+      <p-progressSpinner [style]="{ width: '30px', height: '30px' }"></p-progressSpinner>
+    </div>
+    }
+
+    @if (!loadingUsers && availableUsers.length > 0) {
+    <div class="max-h-64 overflow-y-auto border rounded p-2">
+      @for (user of availableUsers; track user.id) {
+      <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
+           (click)="memberForm.userId = user.id"
+           [class.bg-blue-50]="memberForm.userId === user.id">
+        <div>
+          <p class="font-semibold text-sm">{{ user.name }}</p>
+          <p class="text-xs text-gray-500">{{ user.email }}</p>
+        </div>
+        @if (memberForm.userId === user.id) {
+        <i class="pi pi-check text-blue-600"></i>
+        }
+      </div>
+      }
+    </div>
+    }
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="closeMemberModal()" 
+        severity="secondary"
+        [text]="true"
+      ></p-button>
+      <p-button 
+        label="Add Member" 
+        (click)="addMember()" 
+        severity="contrast"
+        [disabled]="!memberForm.userId"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>
+<!-- Remove Confirmation Modal -->
+<p-dialog 
+  [(visible)]="showRemoveModal" 
+  header="Confirm Remove" 
+  [modal]="true"
+  [style]="{ width: '22rem' }">
+
+  <p class="mt-4 mb-3">Are you sure you want to remove this member from flat? This action cannot be undone.</p>
+
+  <ng-template #footer>
+    <p-button 
+      label="Cancel" 
+      [text]="true" 
+      severity="secondary"
+      (click)="closeRemoveMemberModal()">
+    </p-button>
+    <p-button 
+      label="Remove" 
+      severity="danger"
+      (click)="onConfirmRemoval()">
+    </p-button>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Delete Confirmation Modal -->
+<p-dialog 
+  [(visible)]="showDeleteModal" 
+  header="Confirm Delete" 
+  [modal]="true"
+  [style]="{ width: '22rem' }">
+
+  <p class="mt-4 mb-3">Are you sure you want to delete this flat? This action cannot be undone.</p>
+
+  <ng-template #footer>
+    <p-button 
+      label="Cancel" 
+      [text]="true" 
+      severity="secondary"
+      (click)="closeDeleteModal()">
+    </p-button>
+    <p-button 
+      label="Delete" 
+      severity="danger"
+      (click)="confirmDelete()">
+    </p-button>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Send Notice Modal -->
+<p-dialog
+  [(visible)]="showNoticeModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Send Society Notice"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-4 mt-2">
+    <div class="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-700">
+      <i class="pi pi-info-circle mr-2"></i>
+      This notice will be sent to all members of the selected flat.
+    </div>
+    
+    <p-floatlabel variant="on">
+      <textarea 
+        pInputText 
+        id="noticeMessage" 
+        [(ngModel)]="noticeMessage"
+        rows="6"
+        class="w-full"
+        placeholder="Enter your notice message here..."
+      ></textarea>
+      <label for="noticeMessage">Notice Message</label>
+    </p-floatlabel>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="closeNoticeModal()" 
+        severity="secondary"
+        [text]="true"
+        [disabled]="sendingMail"
+      ></p-button>
+      <p-button 
+        label="Send Notice" 
+        icon="pi pi-send"
+        (click)="sendNotice()" 
+        severity="info"
+        [loading]="sendingMail"
+        [disabled]="!noticeMessage.trim()"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Send Emergency Alert Modal -->
+<p-dialog
+  [(visible)]="showEmergencyModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Send Emergency Alert"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-4 mt-2">
+    <div class="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
+      <i class="pi pi-exclamation-triangle mr-2"></i>
+      Emergency alerts are high priority messages sent to all flat members immediately.
+    </div>
+    
+    <p-floatlabel variant="on">
+      <textarea 
+        pInputText 
+        id="emergencyMessage" 
+        [(ngModel)]="emergencyMessage"
+        rows="6"
+        class="w-full"
+        placeholder="Enter emergency alert message..."
+      ></textarea>
+      <label for="emergencyMessage">Emergency Message</label>
+    </p-floatlabel>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="closeEmergencyModal()" 
+        severity="secondary"
+        [text]="true"
+        [disabled]="sendingMail"
+      ></p-button>
+      <p-button 
+        label="Send Alert" 
+        icon="pi pi-send"
+        (click)="sendEmergencyAlert()" 
+        severity="danger"
+        [loading]="sendingMail"
+        [disabled]="!emergencyMessage.trim()"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Send Reminder Confirmation Modal -->
+<p-dialog 
+  [(visible)]="showReminderModal" 
+  header="Send Maintenance Reminder" 
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+  [baseZIndex]="10000"
+>
+
+  <div class="flex flex-col gap-3 mt-2">
+    <div class="bg-amber-50 border border-amber-200 rounded p-3 text-sm text-amber-700">
+      <i class="pi pi-info-circle mr-2"></i>
+      This will send a maintenance payment reminder to all members of the selected flat.
+    </div>
+    <p class="text-gray-700">Are you sure you want to send the maintenance reminder?</p>
+  </div>
+
+  <ng-template #footer>
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        [text]="true" 
+        severity="secondary"
+        (click)="closeReminderModal()"
+        [disabled]="sendingMail"
+      ></p-button>
+      <p-button 
+        label="Send Reminder" 
+        icon="pi pi-send"
+        severity="warn"
+        (click)="confirmSendReminder()"
+        [loading]="sendingMail"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>

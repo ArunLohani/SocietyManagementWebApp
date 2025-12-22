@@ -22,6 +22,7 @@ import {
   ParkingSlotStatus, 
   Page 
 } from '../../../types/types';
+import { TenantRoleMenuService } from '../../../core/service/tenant-role-menu.service';
 
 @Component({
   selector: 'app-parking',
@@ -83,11 +84,23 @@ export class Parking implements OnInit {
     { name: 'Out of Service', code: ParkingSlotStatus.OUT_OF_SERVICE }
   ];
 
+    // permission
+  permission: "READ" | "EDIT" | "CREATE" = "READ";
+
   constructor(
     private parkingSlotService: ParkingSlotService,
     private router: Router,
-    private toastr: ToastrService
-  ) {}
+    private toastr: ToastrService,
+    private tenantRoleMenuService : TenantRoleMenuService
+    ) { this.tenantRoleMenuService.getPriority("Parking").subscribe({
+        next: (res) => {
+          console.log(res)
+          this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+        },
+        error: (err) => {
+          this.permission = "READ";
+        },
+      });}
 
   ngOnInit(): void {
     this.loadParkingSlots(0);
@@ -120,6 +133,7 @@ export class Parking implements OnInit {
   }
 
   applyFilters() {
+    
     this.loadParkingSlots(0);
   }
 

@@ -1,17 +1,47 @@
 // components/super-admin-society-manager/super-admin-society-manager.component.ts
 
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../core/service/tenant.service';
 import { UserService } from '../../core/service/user.service';
-import { Tenant, User , Page , PaginatedResponse, UserWithRoles , Role } from '../../types/types';
+import { Tenant, UserWithRoles } from '../../types/types';
 import { UserRoleService } from '../../core/service/user-role-manager-service';
+import { ToastrService } from 'ngx-toastr';
+import { PaginatorModule } from 'primeng/paginator';
+// PrimeNG imports
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { FloatLabel } from 'primeng/floatlabel';
+import { BadgeModule } from 'primeng/badge';
+import { DialogModule } from 'primeng/dialog';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { AvatarModule } from 'primeng/avatar';
+import { ChipModule } from 'primeng/chip';
+import { PaginatorState } from 'primeng/types/paginator';
 
 @Component({
   selector: 'app-super-admin-society-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    ButtonModule,
+    CardModule,
+    DividerModule,
+    InputTextModule,
+    SelectModule,
+    FloatLabel,
+    BadgeModule,
+    DialogModule,
+    ProgressSpinnerModule,
+    AvatarModule,
+    ChipModule,
+    PaginatorModule
+  ],
   templateUrl: './super-admin-society-manager.component.html',
   styleUrls: ['./super-admin-society-manager.component.css']
 })
@@ -27,8 +57,6 @@ export class SuperAdminSocietyManager implements OnInit {
   // UI state
   loading = signal(false);
   loadingUsers = signal(false);
-  successMessage = signal('');
-  errorMessage = signal('');
   showCreateTenant = signal(false);
   processingUserId = signal<number | null>(null);
   
@@ -45,10 +73,12 @@ export class SuperAdminSocietyManager implements OnInit {
   // New tenant form
   newTenantName = signal('');
 
+  
   constructor(
     private tenantService: TenantService,
     private userService: UserService,
-    private userRoleService : UserRoleService
+    private userRoleService: UserRoleService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -67,7 +97,7 @@ export class SuperAdminSocietyManager implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.showError('Failed to load societies');
+        this.toastr.error('Failed to load societies');
         this.loading.set(false);
       }
     });
@@ -76,10 +106,7 @@ export class SuperAdminSocietyManager implements OnInit {
   /**
    * Handle tenant selection
    */
-  onTenantSelect(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    const tenantId = Number(selectElement.value);
-
+  onTenantSelect(tenantId: number | null): void {
     if (!tenantId) {
       this.resetTenantSelection();
       return;
@@ -94,50 +121,30 @@ export class SuperAdminSocietyManager implements OnInit {
   /**
    * Load users for selected tenant
    */
-  // loadUsers(): void {
-  //   const tenantId = this.selectedTenantId();
-  //   if (!tenantId) return;
-
-  //   this.loadingUsers.set(true);
-    
-  //   this.userService.searchUsers(
-  //     this.searchName() || undefined,
-  //     this.searchEmail() || undefined,
-  //     this.currentPage(),
-  //     this.pageSize()
-  //   ).subscribe({
-  //     next: (response: PaginatedResponse<User>) => {
-  //       // Filter users by selected tenant
-  //       const filteredUsers = response.content.filter(user => user.tenantId === tenantId);
-  //       this.users.set(filteredUsers);
-  //       // this.totalPages.set(response.totalPages);
-  //       this.totalUsers.set(filteredUsers.length);
-  //       this.loadingUsers.set(false);
-  //     },
-  //     error: (err) => {
-  //       this.showError('Failed to load users');
-  //       this.loadingUsers.set(false);
-  //     }
-  //   });
-  // }
-
-    loadUsers(): void {
-         const tenantId = this.selectedTenantId();
+  loadUsers(pageNumber = 0,pageSize = 6): void {
+    const tenantId = this.selectedTenantId();
     if (!tenantId) return;
+    
     this.loadingUsers.set(true);
     
-    this.userRoleService.getUsersByTenant(tenantId).subscribe({
+    this.userRoleService.getUsersByTenantPaginated(tenantId , pageNumber,pageSize).subscribe({
       next: (response) => {
-        this.users.set(response.data);
+        this.users.set(response.content);
         this.loadingUsers.set(false);
-        this.totalUsers.set(response.data.length)
+        this.totalUsers.set(response.totalElements);
+        this.currentPage.set(pageNumber);
       },
-       error: (err) => {
-        this.showError('Failed to load users');
+      error: (err) => {
+        this.toastr.error('Failed to load users');
         this.loadingUsers.set(false);
       }
     });
   }
+
+    onPageChange(e: PaginatorState) {
+    this.loadUsers(e.page);
+  }
+
   /**
    * Search users
    */
@@ -157,29 +164,12 @@ export class SuperAdminSocietyManager implements OnInit {
   }
 
   /**
-   * Pagination
-   */
-  nextPage(): void {
-    if (this.currentPage() < this.totalPages() - 1) {
-      this.currentPage.update(page => page + 1);
-      this.loadUsers();
-    }
-  }
-
-  previousPage(): void {
-    if (this.currentPage() > 0) {
-      this.currentPage.update(page => page - 1);
-      this.loadUsers();
-    }
-  }
-
-  /**
    * Create new tenant
    */
   createTenant(): void {
     const name = this.newTenantName().trim();
     if (!name) {
-      this.showError('Please enter a society name');
+      this.toastr.error('Please enter a society name');
       return;
     }
 
@@ -187,13 +177,13 @@ export class SuperAdminSocietyManager implements OnInit {
 
     this.tenantService.createTenant(name).subscribe({
       next: (response) => {
-        this.showSuccess('Society created successfully!');
+        this.toastr.success('Society created successfully!');
         this.newTenantName.set('');
         this.showCreateTenant.set(false);
         this.loadTenants();
       },
       error: (err) => {
-        this.showError(err.error?.message || 'Failed to create society');
+        this.toastr.error(err.error?.message || 'Failed to create society');
         this.loading.set(false);
       }
     });
@@ -213,46 +203,23 @@ export class SuperAdminSocietyManager implements OnInit {
    * Assign admin to user
    */
   assignAdmin(user: UserWithRoles): void {
-    if (!confirm(`Assign ${user.name} as admin of ${this.selectedTenant()?.name}?`)) {
-      return;
-    }
-
     this.processingUserId.set(user.id);
-    
     this.assignRole(user);
-  
-
-    setTimeout(() => {
-      this.showSuccess(`${user.name} assigned as admin successfully!`);
-      this.processingUserId.set(null);
-      this.loadUsers();
-    }, 1000);
   }
 
-   removeAdmin(user: UserWithRoles): void {
-    if (!confirm(`Remove ${user.name} as admin of ${this.selectedTenant()?.name}?`)) {
-      return;
-    }
-
+  /**
+   * Remove admin from user
+   */
+  removeAdmin(user: UserWithRoles): void {
     this.processingUserId.set(user.id);
-    
     this.removeRole(user);
-  
-
-    setTimeout(() => {
-      this.showSuccess(`${user.name} removed as admin successfully!`);
-      this.processingUserId.set(null);
-      this.loadUsers();
-    }, 1000);
   }
 
   assignRole(user: UserWithRoles): void {
-
-     const roleId = 1;
+    const roleId = 1;
 
     this.userRoleService.assignRoleToUser(user.id, roleId).subscribe({
       next: (response) => {
-        // Update local state
         if (!user.assignedRoleIds) {
           user.assignedRoleIds = [];
         }
@@ -263,20 +230,22 @@ export class SuperAdminSocietyManager implements OnInit {
         user.assignedRoleIds.push(roleId);
         user.assignedRoleNames.push("ADMIN");
         
-        this.showSuccess(`Role ADMIN assigned to ${user.name}`);
+        this.toastr.success(`Role ADMIN assigned to ${user.name}`);
+        this.processingUserId.set(null);
+        this.loadUsers();
       },
       error: (err) => {
-        this.showError(`Failed to assign role: ${err.error?.message || 'Unknown error'}`);
-
+        this.toastr.error(`Failed to assign role: ${err.error?.message || 'Unknown error'}`);
+        this.processingUserId.set(null);
       }
     });
   }
 
-    removeRole(user: UserWithRoles): void {
-           const roleId = 1;
+  removeRole(user: UserWithRoles): void {
+    const roleId = 1;
+    
     this.userRoleService.removeRoleFromUser(user.id, roleId).subscribe({
       next: (response) => {
-        // Update local state
         if (user.assignedRoleIds) {
           user.assignedRoleIds = user.assignedRoleIds.filter(id => id !== roleId);
         }
@@ -284,11 +253,13 @@ export class SuperAdminSocietyManager implements OnInit {
           user.assignedRoleNames = user.assignedRoleNames.filter(name => name !== "ADMIN");
         }
         
-        this.showSuccess(`Role ADMIN removed from ${user.name}`);
+        this.toastr.success(`Role ADMIN removed from ${user.name}`);
+        this.processingUserId.set(null);
+        this.loadUsers();
       },
       error: (err) => {
-        this.showError(`Failed to remove role: ${err.error?.message || 'Unknown error'}`);
-    
+        this.toastr.error(`Failed to remove role: ${err.error?.message || 'Unknown error'}`);
+        this.processingUserId.set(null);
       }
     });
   }
@@ -297,7 +268,6 @@ export class SuperAdminSocietyManager implements OnInit {
    * Check if user is admin
    */
   isAdmin(user: UserWithRoles): boolean {
-    console.log("USER",user)
     return user.assignedRoleNames?.includes('ADMIN') || false;
   }
 
@@ -313,21 +283,10 @@ export class SuperAdminSocietyManager implements OnInit {
   }
 
   /**
-   * Show success message
+   * Get user initials
    */
-  showSuccess(message: string): void {
-    this.successMessage.set(message);
-    this.errorMessage.set('');
-    setTimeout(() => this.successMessage.set(''), 4000);
-  }
-
-  /**
-   * Show error message
-   */
-  showError(message: string): void {
-    this.errorMessage.set(message);
-    this.successMessage.set('');
-    setTimeout(() => this.errorMessage.set(''), 6000);
+  getUserInitials(name: string): string {
+    return name.charAt(0).toUpperCase();
   }
 
   /**

@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
-import { ApiResponse, UserWithRoles } from '../../types/types';
+import { ApiResponse, Page, UserWithRoles } from '../../types/types';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +19,13 @@ export class UserRoleService {
       `${this.url}/tenant/${tenantId}`
     );
   }
+
+    getUsersByTenantPaginated(tenantId: number,pageNumber = 0, pageSize = 6): Observable<Page<UserWithRoles>> {
+    return this.httpClient.get<Page<UserWithRoles>>(
+      `${this.url}/search/${tenantId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    );
+  }
+
 
   assignRoleToUser(userId: number, roleId: number): Observable<ApiResponse<string>> {
     return this.httpClient.post<ApiResponse<string>>(
