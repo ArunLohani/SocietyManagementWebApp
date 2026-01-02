@@ -1,0 +1,242 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-lg">Notices</h3>
+      <p class="text-xs text-gray-500">Manage and publish notices.</p>
+    </div>
+
+      @if (permission === "CREATE") {
+           <p-button label="New Notice" icon="pi pi-plus" size="small"
+      (onClick)="toggleCreateModal()" severity="contrast"></p-button>
+      }
+  </div>
+
+  <!-- Filters -->
+  <div class="mt-4">
+    <p-card>
+      <p class="text-sm font-semibold">All Notices</p>
+      <p-divider />
+
+      <div class="flex flex-wrap gap-3 items-end">
+
+        <p-floatlabel variant="on">
+          <input pInputText id="title" [(ngModel)]="filter.title" />
+          <label for="title">Title</label>
+        </p-floatlabel>
+
+        <p-floatlabel variant="on">
+          <input pInputText id="category" [(ngModel)]="filter.category" />
+          <label for="category">Category</label>
+        </p-floatlabel>
+
+        <p-select class="w-48"
+          [options]="publicOptions"
+          [(ngModel)]="filter.isPublic"
+          optionLabel="name" optionValue="code"
+          [showClear]="true"
+          placeholder="Visibility">
+        </p-select>
+
+        <p-select class="w-48"
+          [options]="expiredOptions"
+          [(ngModel)]="filter.isExpired"
+          optionLabel="name" optionValue="code"
+          [showClear]="true"
+          placeholder="Status">
+        </p-select>
+
+        <p-button label="Search" icon="pi pi-search" size="small"
+          (onClick)="searchNotices()" severity="contrast"></p-button>
+
+        <p-button label="Clear" icon="pi pi-times" size="small"
+          (onClick)="clearFilters()" severity="secondary"></p-button>
+
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Cards Grid -->
+  @if (!loading && noticesPage) {
+  <div class="flex flex-wrap gap-4 mt-6">
+
+    @for (notice of noticesPage.content; track $index) {
+    <p-card [style]="{ width: '22rem', overflow: 'hidden' }">
+
+      <ng-template #header>
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-32 flex items-center justify-center">
+          <i class="pi pi-megaphone text-white text-6xl"></i>
+        </div>
+      </ng-template>
+
+      <div class="flex justify-between items-center mb-2">
+        <p class="font-semibold text-lg line-clamp-1">{{ notice.title }}</p>
+        <p-badge 
+          [value]="notice.isExpired ? 'Expired' : 'Active'" 
+          [severity]="getStatusSeverity(notice.isExpired)">
+        </p-badge>
+      </div>
+
+      <p-divider />
+
+      <div class="flex flex-col gap-2 text-xs mb-3">
+
+        <div class="flex justify-between">
+          <span class="text-gray-500 font-semibold">Category</span>
+          <span class="font-bold">{{ notice.category }}</span>
+        </div>
+
+        <div class="flex justify-between">
+          <span class="text-gray-500 font-semibold">Tenant</span>
+          <span class="font-bold">{{ notice.tenant.name || '—' }}</span>
+        </div>
+
+        <div class="flex justify-between">
+          <span class="text-gray-500 font-semibold">Visibility</span>
+          <span class="font-bold">{{ notice.isPublic ? 'Public' : 'Private' }}</span>
+        </div>
+
+        <div class="mt-2">
+          <p class="text-gray-600 line-clamp-3">{{ notice.message }}</p>
+        </div>
+
+      </div>
+
+      <ng-template #footer>
+        <div class="flex flex-col gap-2">
+          <div class="flex justify-end gap-2">
+            <p-button icon="pi pi-eye" size="small" label="View" variant="outlined" 
+              (onClick)="goToNotice(notice.id)" severity="secondary"></p-button>
+       @if (permission !== "READ") {
+             <p-button 
+              [icon]="notice.isPublic ? 'pi pi-lock' : 'pi pi-lock-open'"
+              size="small" 
+              [label]="notice.isPublic ? 'Private' : 'Public'"
+              variant="outlined"
+              (onClick)="togglePublic(notice.id)" 
+              severity="info">
+            </p-button>
+       }
+          </div>
+          
+          <div class="flex justify-end">
+             @if (permission !== "READ") {
+
+            <p-button 
+              [icon]="notice.isExpired ? 'pi pi-check-circle' : 'pi pi-times-circle'"
+              size="small" 
+              [label]="notice.isExpired ? 'Activate' : 'Expire'"
+              (onClick)="toggleExpired(notice.id)" 
+              [severity]="notice.isExpired ? 'success' : 'warn'">
+            </p-button>
+          }
+          </div>
+        </div>
+      </ng-template>
+
+    </p-card>
+    }
+
+    <!-- Pagination -->
+    <div class="w-full">
+      <p-paginator [first]="page * pageSize" [rows]="pageSize"
+        [totalRecords]="noticesPage.totalElements"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+
+  </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && noticesPage?.content?.length === 0) {
+  <p-card class="text-center py-20 mt-6">
+    <h3 class="text-xl font-bold mb-1">No notices found</h3>
+    <p class="text-gray-500 mb-4">Create your first notice to get started.</p>
+    <p-button label="New Notice" icon="pi pi-plus" severity="contrast"
+      (onClick)="toggleCreateModal()"></p-button>
+  </p-card>
+  }
+
+</div>
+
+<!-- Create Notice Modal -->
+<p-dialog
+  [(visible)]="showCreateModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Create Notice"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2"
+>
+
+  <div class="flex flex-col gap-4 mt-2">
+
+    <p-floatlabel variant="on">
+      <input pInputText id="newTitle" [(ngModel)]="newNotice.title" class="w-full" />
+      <label for="newTitle">Title</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <textarea pInputText id="newMessage" [(ngModel)]="newNotice.message" 
+        rows="5" class="w-full"></textarea>
+      <label for="newMessage">Message</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <input pInputText id="newCategory" [(ngModel)]="newNotice.category" class="w-full" />
+      <label for="newCategory">Category</label>
+    </p-floatlabel>
+
+    <div class="flex gap-4">
+      <div>
+        <p-checkbox 
+        [(ngModel)]="newNotice.isPublic" 
+        [binary]="true" 
+        inputId="isPublic"
+        label="Public">
+      </p-checkbox>
+   <label for="regRequired" class="ml-2"> Public </label>
+    </div>
+
+    <!-- <div>
+        <p-checkbox 
+        [(ngModel)]="newNotice.isExpired" 
+        [binary]="true" 
+        inputId="regRequired"
+        label="Expire">
+      </p-checkbox>
+          <label for="regRequired" class="ml-2"> Expire </label>
+    </div> -->
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="toggleCreateModal()" 
+        severity="secondary"
+        [text]="true"
+        class="px-4"
+      ></p-button>
+
+      <p-button 
+        label="Create" 
+        (click)="createNotice()" 
+        severity="contrast"
+        class="px-4"
+      ></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>

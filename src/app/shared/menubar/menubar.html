@@ -1,0 +1,221 @@
+<p-menubar class="sticky top-0 z-50">
+  <ng-template pTemplate="end">
+    <div class="flex items-center gap-4">
+      
+      <!-- Notifications -->
+      <div class="flex justify-center">
+        <p-popover #notificationPopover>
+          <ng-template pTemplate="content">
+            <div class="notification-panel" style="min-width: 400px; max-width: 500px;">
+              <div class="flex justify-between items-center mb-3 px-3 pt-3">
+                <h4 class="m-0 font-semibold">Notifications</h4>
+              </div>
+              <p-divider></p-divider>
+              
+              <!-- New Tabs Implementation -->
+              <p-tabs value="0">
+                <p-tablist>
+                  <!-- Society Notifications Tab -->
+                  <p-tab value="0">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-building"></i>
+                      <span>Society</span>
+                      <p-badge 
+                        *ngIf="unreadSocietyCount > 0" 
+                        [value]="unreadSocietyCount.toString()" 
+                        severity="danger">
+                      </p-badge>
+                    </div>
+                  </p-tab>
+                  
+                  <!-- User Notifications Tab -->
+                  <p-tab value="1">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-user"></i>
+                      <span>Personal</span>
+                      <p-badge 
+                        *ngIf="unreadUserCount > 0" 
+                        [value]="unreadUserCount.toString()" 
+                        severity="danger">
+                      </p-badge>
+                    </div>
+                  </p-tab>
+                </p-tablist>
+                
+                <p-tabpanels>
+                  <!-- Society Notifications Panel -->
+                  <p-tabpanel value="0">
+                    <div *ngIf="societyNotifications.length === 0" class="text-center py-4 text-muted-color">
+                      <i class="pi pi-inbox text-3xl mb-2"></i>
+                      <p class="m-0">No society notifications</p>
+                    </div>
+                    
+                    <p-scrollPanel *ngIf="societyNotifications.length > 0" [style]="{width: '100%', height: '300px'}">
+                      <div class="flex flex-col gap-2">
+                        <div 
+                          *ngFor="let notification of societyNotifications"
+                          class="notification-item p-3 border-round hover:surface-100 transition-colors w-full"
+                          [class.bg-blue-50]="!notification.read">
+                          <div class="flex justify-between items-start gap-3">
+                            <div class="flex-1 cursor-pointer" (click)="onNotificationClick(notification, 'society')">
+                              <div class="flex justify-between items-start mb-1">
+                                <h5 class="m-0 font-semibold text-sm">{{ notification.title }}</h5>
+                                <span class="text-xs text-muted-color">{{ getTimeAgo(notification.createdAt) }}</span>
+                              </div>
+                              <p class="m-0 text-sm text-color-secondary">{{ notification.message }}</p>
+                              <div *ngIf="!notification.read" class="flex justify-end mt-2">
+                                <span class="text-xs text-primary font-medium">New</span>
+                              </div>
+                            </div>
+                            
+                            <!-- Mark as Read Icon -->
+                            <div class="flex items-center">
+                              <p-button
+                                *ngIf="!notification.read"
+                                icon="pi pi-check"
+                                [text]="true"
+                                [rounded]="true"
+                                size="small"
+                                severity="secondary"
+                                (onClick)="markAsReadOnly(notification, 'society', $event)"
+                                pTooltip="Mark as read"
+                                tooltipPosition="left"
+                                class="mark-read-btn">
+                              </p-button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </p-scrollPanel>
+                    
+                    <div *ngIf="societyNotifications.length > 0" class="flex justify-end mt-2 px-3 pb-2">
+                      <p-button 
+                        label="Mark All as Read" 
+                        [text]="true" 
+                        size="small"
+                        severity="secondary"
+                        (onClick)="clearAllNotifications('society')">
+                      </p-button>
+                    </div>
+                  </p-tabpanel>
+                  
+                  <!-- User Notifications Panel -->
+                  <p-tabpanel value="1">
+                    <div *ngIf="userNotifications.length === 0" class="text-center py-4 text-muted-color">
+                      <i class="pi pi-inbox text-3xl mb-2"></i>
+                      <p class="m-0">No personal notifications</p>
+                    </div>
+                    
+                    <p-scrollPanel *ngIf="userNotifications.length > 0" [style]="{width: '100%', height: '300px'}">
+                      <div class="flex flex-col gap-2">
+                        <div 
+                          *ngFor="let notification of userNotifications"
+                          class="notification-item p-3 border-round hover:surface-100 transition-colors w-full"
+                          [class.bg-blue-50]="!notification.read">
+                          <div class="flex justify-between items-start gap-3">
+                            <div class="flex-1 cursor-pointer" (click)="onNotificationClick(notification, 'user')">
+                              <div class="flex justify-between items-start mb-1">
+                                <h5 class="m-0 font-semibold text-sm">{{ notification.title }}</h5>
+                                <span class="text-xs text-muted-color">{{ getTimeAgo(notification.createdAt) }}</span>
+                              </div>
+                              <p class="m-0 text-sm text-color-secondary">{{ notification.message }}</p>
+                              <div *ngIf="!notification.read" class="flex justify-end mt-2">
+                                <span class="text-xs text-primary font-medium">New</span>
+                              </div>
+                            </div>
+                            
+                            <!-- Mark as Read Icon -->
+                            <div class="flex items-center">
+                              <p-button
+                                *ngIf="!notification.read"
+                                icon="pi pi-check"
+                                [text]="true"
+                                [rounded]="true"
+                                size="small"
+                                severity="secondary"
+                                (onClick)="markAsReadOnly(notification, 'user', $event)"
+                                pTooltip="Mark as read"
+                                tooltipPosition="left"
+                                class="mark-read-btn">
+                              </p-button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </p-scrollPanel>
+                    
+                    <div *ngIf="userNotifications.length > 0" class="flex justify-end mt-2 px-3 pb-2">
+                      <p-button 
+                        label="Mark All as Read" 
+                        [text]="true" 
+                        size="small"
+                        severity="secondary"
+                        (onClick)="clearAllNotifications('user')">
+                      </p-button>
+                    </div>
+                  </p-tabpanel>
+                </p-tabpanels>
+              </p-tabs>
+            </div>
+          </ng-template>
+        </p-popover>
+        
+        <div class="notification-bell-wrapper">
+          <p-button 
+            (onClick)="notificationPopover.toggle($event)" 
+            [text]="true" 
+            [rounded]="true"
+            icon="pi pi-bell"
+            class="notification-bell">
+          </p-button>
+          <p-badge 
+            *ngIf="totalNotificationCount > 0"
+            [value]="totalNotificationCount.toString()" 
+            severity="danger"
+            badgeSize="small"
+            class="notification-badge-hanging">
+          </p-badge>
+        </div>
+      </div>
+      
+      <!-- User Profile -->
+      <div class="flex justify-center">
+        <p-popover #profilePopover>
+          <ng-template pTemplate="content">
+            <div class="profile-panel" style="min-width: 250px;">
+              <div class="flex gap-2 p-2">
+                <i class="pi pi-user text-muted-color"></i>
+                <div class="flex-1">
+                  <p class="m-0 text-sm font-medium">{{ user?.name || 'User' }}</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 p-2">
+                <i class="pi pi-envelope text-muted-color"></i>
+                <div class="flex-1">
+                  <p class="m-0 text-sm font-medium">{{ user?.email }}</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 p-2">
+                <i class="pi pi-building text-muted-color"></i>
+                <div class="flex-1">
+                  <p class="m-0 text-sm font-medium">{{ user?.societyName || 'N/A' }}</p>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </p-popover>
+        
+        <p-avatar 
+          (click)="profilePopover.toggle($event)" 
+          [label]="getUserInitials()"
+          size="normal" 
+          shape="circle"
+          styleClass="cursor-pointer">
+        </p-avatar>
+      </div>
+      
+    </div>
+  </ng-template>
+</p-menubar>

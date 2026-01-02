@@ -1,0 +1,316 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-lg">Society Management</h3>
+      <p class="text-xs text-gray-500">Manage societies and assign admins</p>
+    </div>
+    <div class="flex gap-2">
+      <p-button 
+        label="View Unassigned Users" 
+        icon="pi pi-users" 
+        size="small"
+        (onClick)="openUnassignedUsersDialog()" 
+        severity="secondary"
+        [outlined]="true">
+      </p-button>
+      <p-button 
+        label="Create Society" 
+        icon="pi pi-plus" 
+        size="small"
+        (onClick)="toggleCreateTenant()" 
+        severity="contrast">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Main Content -->
+  @if (!loading()) {
+    <!-- Society Selection Card -->
+    <div class="mt-4">
+      <p-card>
+        <p class="text-sm font-semibold">Select Society</p>
+        <p-divider />
+
+        <div class="flex flex-col gap-4">
+          <p-select
+            [options]="tenants()"
+            [(ngModel)]="selectedTenantId"
+            (onChange)="onTenantSelect($event.value)"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="-- Select a Society --"
+            [showClear]="true"
+            class="w-full"
+            styleClass="w-full"
+            appendTo="body">
+          </p-select>
+
+          @if (selectedTenant()) {
+            <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+              <div>
+                <p class="font-semibold text-sm mb-1">Managing: {{ selectedTenant()!.name }}</p>
+                <p class="text-xs text-gray-600">{{ totalUsers() }} users found in this society</p>
+              </div>
+            </div>
+          }
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Users Section -->
+    @if (selectedTenantId()) {
+      @if (loadingUsers()) {
+        <div class="flex justify-center items-center py-20">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+      }
+
+      @if (!loadingUsers() && users().length > 0) {
+        <div class="mt-4">
+          <p-card>
+            <p class="text-sm font-semibold mb-2">Users in {{ selectedTenant()?.name }}</p>
+            <p-divider />
+
+            <div class="flex flex-col gap-3">
+              @for (user of users(); track user.id) {
+                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div class="flex items-center gap-4 flex-1">
+                    <p-avatar 
+                      [label]="getUserInitials(user.name)"
+                      size="large"
+                      [style]="{'background-color': '#3b82f6', 'color': '#ffffff'}"
+                      shape="circle">
+                    </p-avatar>
+
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <p class="font-semibold text-sm truncate">{{ user.name }}</p>
+                        @if (isAdmin(user)) {
+                          <p-badge value="Admin" severity="success"></p-badge>
+                        }
+                      </div>
+                      <p class="text-xs text-gray-600 truncate">{{ user.email }}</p>
+                      @if (user.phoneNumber) {
+                        <p class="text-xs text-gray-500">{{ user.phoneNumber }}</p>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="ml-4">
+                    @if (!isAdmin(user)) {
+                      <p-button
+                        label="Assign Admin"
+                        icon="pi pi-user-plus"
+                        size="small"
+                        (onClick)="assignAdmin(user)"
+                        [disabled]="processingUserId() === user.id"
+                        [loading]="processingUserId() === user.id"
+                        severity="contrast">
+                      </p-button>
+                    } @else {
+                      <p-button
+                        label="Remove Admin"
+                        icon="pi pi-user-minus"
+                        size="small"
+                        (onClick)="removeAdmin(user)"
+                        [disabled]="processingUserId() === user.id"
+                        [loading]="processingUserId() === user.id"
+                        severity="danger"
+                        [outlined]="true">
+                      </p-button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-4">
+              <p-paginator 
+                [first]="currentPage() * pageSize()" 
+                [rows]="pageSize()"
+                [totalRecords]="totalUsers()"
+                (onPageChange)="onPageChange($event)">
+              </p-paginator>
+              <p class="text-xs text-gray-600 text-center mt-2">
+                Showing <span class="font-semibold">{{ filteredUsersCount }}</span> users
+              </p>
+            </div>
+          </p-card>
+        </div>
+      }
+
+      <!-- No Results -->
+      @if (!loadingUsers() && users().length === 0) {
+        <p-card class="text-center py-20 mt-4">
+          <i class="pi pi-users text-6xl text-gray-400 mb-4"></i>
+          <h3 class="text-xl font-bold mb-1">No users found</h3>
+          <p class="text-gray-500 mb-4">No users in this society yet</p>
+          <p-button 
+            label="Add Users from Unassigned" 
+            icon="pi pi-user-plus" 
+            (onClick)="openUnassignedUsersDialog()"
+            severity="contrast">
+          </p-button>
+        </p-card>
+      }
+    }
+  }
+</div>
+
+<!-- Create Society Modal -->
+<p-dialog
+  [(visible)]="showCreateTenant"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Create New Society"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2">
+
+  <p class="text-sm text-gray-500 mb-4">
+    Enter the name for your new society or organization.
+  </p>
+
+  <div class="flex flex-col gap-5 mt-2">
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="tenantName" 
+        [(ngModel)]="newTenantName"
+        class="w-full"
+        (keydown.enter)="createTenant()"
+      />
+      <label for="tenantName">Society Name</label>
+    </p-floatlabel>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="toggleCreateTenant()" 
+        severity="secondary"
+        [text]="true"
+        class="px-4">
+      </p-button>
+
+      <p-button 
+        label="Create Society" 
+        (click)="createTenant()" 
+        severity="contrast"
+        [disabled]="!newTenantName().trim()"
+        class="px-4">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Unassigned Users Modal -->
+<p-dialog
+  [(visible)]="showUnassignedUsersDialog"
+  [modal]="true"
+  [style]="{ width: '48rem' }"
+  [draggable]="false"
+  header="Unassigned Users"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2">
+
+  <p class="text-sm text-gray-500 mb-4">
+    These users are not assigned to any society. Select a society first, then add users and assign them as admins.
+  </p>
+
+  <!-- Society selection reminder -->
+  @if (!selectedTenantId()) {
+    <div class="flex items-start gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg mb-4">
+      <i class="pi pi-exclamation-triangle text-orange-600 mt-0.5"></i>
+      <div>
+        <p class="font-semibold text-sm mb-1">No Society Selected</p>
+        <p class="text-xs text-gray-600">Please select a society first to assign users.</p>
+      </div>
+    </div>
+  } @else {
+    <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+      <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
+      <div>
+        <p class="font-semibold text-sm mb-1">Adding to: {{ selectedTenant()!.name }}</p>
+        <p class="text-xs text-gray-600">Users will be assigned to this society as admins.</p>
+      </div>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loadingUnassignedUsers) {
+    <div class="flex justify-center items-center py-12">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  }
+
+  <!-- Unassigned Users List -->
+  @if (!loadingUnassignedUsers && unAssignedUsers.length > 0) {
+    <div class="flex flex-col gap-3 max-h-[400px] overflow-y-auto">
+      @for (user of unAssignedUsers; track user.id) {
+        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-4 flex-1">
+            <p-avatar 
+              [label]="getUserInitials(user.name)"
+              size="large"
+              [style]="{'background-color': '#6366f1', 'color': '#ffffff'}"
+              shape="circle">
+            </p-avatar>
+
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm truncate mb-1">{{ user.name }}</p>
+              <p class="text-xs text-gray-600 truncate">{{ user.email }}</p>
+              @if (user.phoneNumber) {
+                <p class="text-xs text-gray-500">{{ user.phoneNumber }}</p>
+              }
+            </div>
+          </div>
+
+          <div class="ml-4">
+            <p-button
+              label="Add & Make Admin"
+              icon="pi pi-user-plus"
+              size="small"
+              (onClick)="assignTenantAndAdminToUnAssignedUser(user)"
+              [disabled]="!selectedTenantId() || processingUserId() === user.id"
+              [loading]="processingUserId() === user.id"
+              severity="contrast">
+            </p-button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- No Unassigned Users -->
+  @if (!loadingUnassignedUsers && unAssignedUsers.length === 0) {
+    <div class="text-center py-12">
+      <i class="pi pi-check-circle text-6xl text-green-400 mb-4"></i>
+      <h3 class="text-lg font-bold mb-1">All Users Assigned</h3>
+      <p class="text-gray-500">There are no unassigned users at the moment.</p>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Close" 
+        (click)="closeUnassignedUsersDialog()" 
+        severity="secondary"
+        class="px-4">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

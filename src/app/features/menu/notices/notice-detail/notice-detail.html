@@ -1,0 +1,104 @@
+<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <!-- Notice Detail -->
+  <div *ngIf="!loading && notice" class="max-w-5xl mx-auto">
+
+    <!-- Header Card -->
+    <p-card>
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <h1 class="text-2xl font-bold">{{ notice.title }}</h1>
+            <p-badge [value]="notice.isExpired ? 'Expired' : 'Active'" [severity]="getStatusSeverity(notice.isExpired)">
+            </p-badge>
+          </div>
+
+          <div class="flex items-center gap-4 text-sm text-gray-600 mb-3">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-tag"></i>
+              <span>{{ notice.category }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-building"></i>
+              <span>{{ notice.tenant.name }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i [class]="notice.isPublic ? 'pi pi-unlock' : 'pi pi-lock'"></i>
+              <span>{{ notice.isPublic ? 'Public' : 'Private' }}</span>
+            </div>
+          </div>
+
+          <p class="text-gray-700 whitespace-pre-wrap">{{ notice.message }}</p>
+        </div>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 flex-wrap">
+        <p-button label="Back" icon="pi pi-arrow-left" size="small" (onClick)="backToList()" severity="secondary">
+        </p-button>
+
+        @if (this.permission != "READ") {
+          <p-button *ngIf="!editMode" label="Edit" icon="pi pi-pencil" size="small" (onClick)="enterEdit()"
+          severity="secondary">
+        </p-button>
+
+        <p-button *ngIf="editMode" label="Save" icon="pi pi-check" size="small" (onClick)="saveEdit()"
+          severity="success">
+        </p-button>
+
+        <p-button *ngIf="editMode" label="Cancel" icon="pi pi-times" size="small" (onClick)="cancelEdit()"
+          severity="secondary" [text]="true">
+        </p-button>
+
+
+        <div class="ml-auto flex gap-2">
+          <p-button [label]="notice.isPublic ? 'Make Private' : 'Make Public'"
+            [icon]="notice.isPublic ? 'pi pi-lock' : 'pi pi-unlock'" size="small" (onClick)="togglePublic()"
+            severity="info">
+          </p-button>
+
+          <p-button [label]="notice.isExpired ? 'Mark Active' : 'Mark Expired'"
+            [icon]="notice.isExpired ? 'pi pi-check-circle' : 'pi pi-times-circle'" size="small"
+            (onClick)="toggleExpired()" [severity]="notice.isExpired ? 'success' : 'warn'">
+          </p-button>
+        </div>
+
+                }
+      </div>
+
+      <!-- Edit Form -->
+      <div *ngIf="editMode" class="mt-4">
+        <p-divider></p-divider>
+        <div class="flex flex-col gap-4">
+
+          <p-floatlabel variant="on">
+            <input pInputText id="editTitle" [(ngModel)]="editModel.title" class="w-full" />
+            <label for="editTitle">Title</label>
+          </p-floatlabel>
+
+          <p-floatlabel variant="on">
+            <textarea pInputText id="editMessage" [(ngModel)]="editModel.message" rows="5" class="w-full"></textarea>
+            <label for="editMessage">Message</label>
+          </p-floatlabel>
+
+          <p-floatlabel variant="on">
+            <input pInputText id="editCategory" [(ngModel)]="editModel.category" class="w-full" />
+            <label for="editCategory">Category</label>
+          </p-floatlabel>
+
+      
+        </div>
+      </div>
+
+    </p-card>
+
+  </div>
+
+</div>
