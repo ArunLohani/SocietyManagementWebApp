@@ -5,7 +5,7 @@ import { TenantService } from '../../core/service/tenant.service';
 import { RoleService } from '../../core/service/role.service';
 import { UserRoleService } from '../../core/service/user-role-manager-service';
 import { Role, Tenant, User, UserDetails, UserWithRoles } from '../../types/types';
-import { forkJoin } from 'rxjs';
+import { forkJoin, map } from 'rxjs';
 import { TenantRoleService } from '../../core/service/tenant-role.service';
 import { UserService } from '../../core/service/user.service';
 import { AuthService } from '../../core/service/auth.service';
@@ -21,6 +21,7 @@ import { BadgeModule } from 'primeng/badge';
 import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-user-role-manager',
@@ -36,7 +37,8 @@ import { MessageModule } from 'primeng/message';
     BadgeModule,
     DialogModule,
     ProgressSpinnerModule,
-    MessageModule
+    MessageModule,
+    Tooltip
   ],
   templateUrl: './user-role-manager.html',
   styleUrl: './user-role-manager.css'
@@ -47,17 +49,21 @@ export class UserRoleManager implements OnInit {
   roles: Array<Role> = [];
   users: Array<UserWithRoles> = [];
   unAssignedUsers: Array<UserDetails> = [];
-  
+unAssignedUsersOption: { name: string; email: string; id: number }[] = [];
+
+
   // Selected state
   selectedTenantId: number | null = null;
   selectedTenant: Tenant | null = null;
   selectedUser: number | null = null;
+  userToRemove: UserWithRoles | null = null;
   
   // UI state
   loading: boolean = false;
   loadingUsers: boolean = false;
   showAssignUserModal: boolean = false;
   loadingUnassignedUsers: boolean = false;
+  showRemoveUserModal: boolean = false;
   
   // Search & Filter
   searchTerm: string = '';
@@ -125,23 +131,29 @@ export class UserRoleManager implements OnInit {
     });
   }
 
-  loadUnassignedUsers(): void {
-    this.loadingUnassignedUsers = true;
-    this.unAssignedUsers = [];
-    
-    this.userService.getUnassignedUser().subscribe({
-      next: (response) => {
-        this.unAssignedUsers = response.data;
-        this.loadingUnassignedUsers = false;
-      },
-      error: (err) => {
-        this.toastr.error('Failed to load users', 'Error');
-        this.loadingUnassignedUsers = false;
-        console.error('Error loading users:', err);
-      }
-    });
-  }
-
+loadUnassignedUsers(): void {
+  this.loadingUnassignedUsers = true;
+  this.unAssignedUsers = [];
+  
+  this.userService.getUnassignedUser().subscribe({
+    next: (response) => {
+      this.unAssignedUsers = response.data;
+      this.loadingUnassignedUsers = false;
+      this.unAssignedUsersOption = this.unAssignedUsers.map(unassignUser => ({
+        name: unassignUser.name,
+        email: unassignUser.email,  // Add email
+        id: unassignUser.id
+      }));
+      
+      console.log("unassignedUsers", this.unAssignedUsersOption);
+    },
+    error: (err) => {
+      this.toastr.error('Failed to load users', 'Error');
+      this.loadingUnassignedUsers = false;
+      console.error('Error loading users:', err);
+    }
+  });
+}
   loadRolesForTenants(tenantId: number): void {
     this.loadingUsers = true;
     this.roles = [];
@@ -161,6 +173,11 @@ export class UserRoleManager implements OnInit {
 
   hasRole(user: UserWithRoles, roleId: number): boolean {
     return Array.isArray(user.assignedRoleIds) && user.assignedRoleIds.includes(roleId);
+  }
+
+  isAdmin(user: UserWithRoles): boolean {
+    return Array.isArray(user.assignedRoleNames) && 
+           user.assignedRoleNames.some(role => role.toUpperCase() === 'ADMIN');
   }
 
   toggleRole(user: UserWithRoles, role: Role, event: any): void {
@@ -218,6 +235,40 @@ export class UserRoleManager implements OnInit {
     });
   }
 
+  openRemoveUserModal(user: UserWithRoles): void {
+    if (this.isAdmin(user)) {
+      this.toastr.warning('Admin users cannot be removed from the society', 'Warning');
+      return;
+    }
+    this.userToRemove = user;
+    this.showRemoveUserModal = true;
+  }
+
+  closeRemoveUserModal(): void {
+    this.showRemoveUserModal = false;
+    this.userToRemove = null;
+  }
+
+  confirmRemoveUser(): void {
+    if (!this.userToRemove || !this.selectedTenantId) {
+      return;
+    }
+
+    this.loading = true;
+    this.tenantService.removeUserFromTenant(this.selectedTenantId, this.userToRemove.id).subscribe({
+      next: (response) => {
+        this.toastr.success(`${this.userToRemove!.name} removed from society successfully`, 'Success');
+        this.loadUsersForTenant(this.selectedTenantId!);
+        this.closeRemoveUserModal();
+        this.loading = false;
+      },
+      error: (err) => {
+        this.toastr.error(err.error?.message || 'Failed to remove user from society', 'Error');
+        this.loading = false;
+      }
+    });
+  }
+
   get filteredUsers(): Array<UserWithRoles> {
     let filtered = [...this.users];
 
@@ -257,12 +308,14 @@ export class UserRoleManager implements OnInit {
     }
   }
 
-  toggleAssignUserModal = () => {
-    this.showAssignUserModal = !this.showAssignUserModal;
-    if (this.showAssignUserModal) {
-      this.loadUnassignedUsers();
-    }
+toggleAssignUserModal = () => {
+  this.showAssignUserModal = !this.showAssignUserModal;
+  if (this.showAssignUserModal) {
+    this.selectedUser = null;  // Reset selection
+    this.unAssignedUsersOption = [];  // Clear previous options
+    this.loadUnassignedUsers();
   }
+}
 
   assignUser(tenantId: number, userId: number): void {
     this.loading = true;

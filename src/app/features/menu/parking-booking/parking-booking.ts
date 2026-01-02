@@ -63,7 +63,7 @@ export class ParkingBooking implements OnInit {
   // Filters
   filter: ParkingRequestFilter = {};
   page = 0;
-  pageSize = 10;
+  pageSize = 2;
   totalElements = 0;
 
   // Status options

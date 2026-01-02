@@ -32,7 +32,7 @@ export class ParkingSlotService {
     return this.httpClient.post<Page<ParkingSlot>>(`${this.url}/search?pageNumber=${pageNumber}&pageSize=${pageSize}`, filter);
   }
 
-  updateSlotStatus(id: number, status: ParkingSlotStatus): Observable<ApiResponse<ParkingSlot>> {
+  updateSlotStatus(id: number, status: string): Observable<ApiResponse<ParkingSlot>> {
     return this.httpClient.put<ApiResponse<ParkingSlot>>(`${this.url}/${id}/status`, status);
   }
 

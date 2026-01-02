@@ -88,6 +88,13 @@
           <span class="font-bold">{{ getStatusLabel(slot.status) }}</span>
         </div>
 
+        @if (slot.status.toString() == "OCCUPIED") {
+           <div class="flex justify-between">
+          <span class="text-gray-500 font-semibold">Occupied by</span>
+          <span class="font-bold">{{ slot?.flat?.block}} - {{slot?.flat?.number }}</span>
+        </div>
+        }
+
       </div>
      @if (permission !== 'READ') { 
       <ng-template #footer>

@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../core/service/tenant.service';
 import { UserService } from '../../core/service/user.service';
-import { Tenant, UserWithRoles } from '../../types/types';
+import { Tenant, UserDetails, UserWithRoles } from '../../types/types';
 import { UserRoleService } from '../../core/service/user-role-manager-service';
 import { ToastrService } from 'ngx-toastr';
 import { PaginatorModule } from 'primeng/paginator';
@@ -73,6 +73,9 @@ export class SuperAdminSocietyManager implements OnInit {
   // New tenant form
   newTenantName = signal('');
 
+  //unassigned users
+  loadingUnassignedUsers = false;
+    unAssignedUsers: Array<UserDetails> = [];
   
   constructor(
     private tenantService: TenantService,
@@ -102,6 +105,24 @@ export class SuperAdminSocietyManager implements OnInit {
       }
     });
   }
+
+    loadUnassignedUsers(): void {
+    this.loadingUnassignedUsers = true;
+    this.unAssignedUsers = [];
+    
+    this.userService.getUnassignedUser().subscribe({
+      next: (response) => {
+        this.unAssignedUsers = response.data;
+        this.loadingUnassignedUsers = false;
+      },
+      error: (err) => {
+        this.toastr.error('Failed to load users', 'Error');
+        this.loadingUnassignedUsers = false;
+        console.error('Error loading users:', err);
+      }
+    });
+  }
+
 
   /**
    * Handle tenant selection
@@ -198,6 +219,56 @@ export class SuperAdminSocietyManager implements OnInit {
       this.newTenantName.set('');
     }
   }
+
+
+// Fixed method to assign tenant and admin role
+assignTenantAndAdminToUnAssignedUser(user: UserDetails): void {
+  if (this.selectedTenantId() == null) {
+    this.toastr.error('Please select a society first.');
+    return;
+  }
+
+  this.processingUserId.set(user.id);
+
+  // First assign tenant
+  this.tenantService.assignUserToTenant(this.selectedTenantId()!, user.id).subscribe({
+    next: () => {
+      // Then assign admin role
+      this.userRoleService.assignRoleToUser(user.id, 1).subscribe({
+        next: () => {
+          this.toastr.success(`${user.name} assigned to society and made admin`);
+          this.processingUserId.set(null);
+          
+          // Reload both lists
+          this.loadUnassignedUsers();
+          this.loadUsers();
+        },
+        error: (err) => {
+          this.toastr.error(`Failed to assign admin role: ${err.error?.message || 'Unknown error'}`);
+          this.processingUserId.set(null);
+        }
+      });
+    },
+    error: (err) => {
+      this.toastr.error(`Failed to assign to society: ${err.error?.message || 'Unknown error'}`);
+      this.processingUserId.set(null);
+    }
+  });
+}
+
+// Add signal for dialog visibility
+showUnassignedUsersDialog = signal(false);
+
+// Method to open dialog
+openUnassignedUsersDialog(): void {
+  this.showUnassignedUsersDialog.set(true);
+  this.loadUnassignedUsers();
+}
+
+// Method to close dialog
+closeUnassignedUsersDialog(): void {
+  this.showUnassignedUsersDialog.set(false);
+}
 
   /**
    * Assign admin to user

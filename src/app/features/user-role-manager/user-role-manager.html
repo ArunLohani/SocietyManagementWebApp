@@ -99,6 +99,9 @@
               {{ role.role }}
             </th>
             }
+            <!-- <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[100px]">
+              Actions
+            </th> -->
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
@@ -115,6 +118,9 @@
                   @if (user.phoneNumber) {
                   <p class="text-xs text-gray-500">{{ user.phoneNumber }}</p>
                   }
+                  @if (isAdmin(user)) {
+                  <p-badge value="Admin" severity="success" styleClass="text-xs"></p-badge>
+                  }
                 </div>
               </div>
             </td>
@@ -127,6 +133,18 @@
               ></p-checkbox>
             </td>
             }
+            <!-- <td class="px-6 py-4 text-center">
+              <p-button 
+                icon="pi pi-trash" 
+                severity="danger"
+                [text]="true"
+                [rounded]="true"
+                (onClick)="openRemoveUserModal(user)"
+                [disabled]="isAdmin(user)"
+                [pTooltip]="isAdmin(user) ? 'Admin users cannot be removed' : 'Remove user from society'"
+                tooltipPosition="top"
+              ></p-button>
+            </td> -->
           </tr>
           }
         </tbody>
@@ -187,24 +205,32 @@
   <p class="text-sm text-gray-500 mb-4">
     Select the user you want to add to your society.
   </p>
-
-  <p-select 
-    [options]="unAssignedUsers" 
-    [(ngModel)]="selectedUser"
-    optionLabel="name" 
-    optionValue="id"
-    placeholder="-- Select a User --"
-    [showClear]="true"
-    styleClass="w-full"
-    appendTo="body"
-  >
-    <ng-template let-user pTemplate="item">
-      <div class="flex flex-col">
-        <span class="font-semibold">{{ user.name }}</span>
-        <span class="text-xs text-gray-500">{{ user.email }}</span>
-      </div>
-    </ng-template>
-  </p-select>
+<p-select 
+  [options]="unAssignedUsersOption" 
+  [(ngModel)]="selectedUser"
+  optionLabel="name" 
+  optionValue="id"
+  placeholder="-- Select a User --"
+  [showClear]="true"
+  styleClass="w-full"
+  appendTo="body"
+>
+  <!-- Template for dropdown items -->
+  <ng-template let-user pTemplate="item">
+    <div class="flex flex-col">
+      <span class="font-semibold">{{ user.name }}</span>
+      <span class="text-xs text-gray-500">{{ user.email }}</span>
+    </div>
+  </ng-template>
+  
+  <!-- Template for selected value display -->
+  <ng-template let-user pTemplate="selectedItem">
+    <div class="flex flex-col" *ngIf="user">
+      <span class="font-semibold">{{ user.name }}</span>
+      <span class="text-xs text-gray-500">{{ user.email }}</span>
+    </div>
+  </ng-template>
+</p-select>
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-3">
@@ -217,10 +243,70 @@
       <p-button 
         label="Assign" 
         (onClick)="selectedUser != null && selectedTenantId && assignUser(selectedTenantId, selectedUser)" 
-        [disabled]="selectedUser == null"
+        [disabled]="!selectedUser"
         severity="contrast"
       ></p-button>
     </div>
   </ng-template>
+  }
+</p-dialog>
+
+<!-- Remove User Confirmation Modal -->
+<p-dialog 
+  [(visible)]="showRemoveUserModal" 
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+  header="Remove User from Society"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
+  [baseZIndex]="10000"
+>
+  @if (userToRemove) {
+  <div class="flex flex-col gap-4">
+    <p-message severity="warn" styleClass="w-full">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-exclamation-triangle text-xl"></i>
+        <div class="flex-1">
+          <p class="font-semibold mb-1">Warning</p>
+          <p class="text-sm">This action will remove the user from the society and all their assigned roles.</p>
+        </div>
+      </div>
+    </p-message>
+
+    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <p class="text-sm text-gray-600 mb-2">User to be removed:</p>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold">
+          {{ userToRemove.name.charAt(0).toUpperCase() }}
+        </div>
+        <div>
+          <p class="font-semibold text-gray-900">{{ userToRemove.name }}</p>
+          <p class="text-sm text-gray-600">{{ userToRemove.email }}</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-sm text-gray-700">
+      Are you sure you want to remove <strong>{{ userToRemove.name }}</strong> from this society?
+    </p>
+  </div>
+
+
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Cancel" 
+        (onClick)="closeRemoveUserModal()" 
+        severity="secondary"
+        [text]="true"
+      ></p-button>
+      <p-button 
+        label="Remove User" 
+        icon="pi pi-trash"
+        (onClick)="confirmRemoveUser()" 
+        severity="danger"
+        [loading]="loading"
+      ></p-button>
+    </div>
+
   }
 </p-dialog>

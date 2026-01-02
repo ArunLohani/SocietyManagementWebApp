@@ -31,4 +31,12 @@ export class TenantService {
     });
 
   }
+    removeUserFromTenant(tenantId: number, userId: number): Observable<ApiResponse<Tenant>> {
+    return this.httpClient.post<ApiResponse<Tenant>>(`${this.url}/removeUser`, {
+      tenantId,
+      userId
+    });
+
+  }
+
 }

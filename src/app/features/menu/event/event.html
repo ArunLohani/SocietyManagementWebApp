@@ -176,7 +176,7 @@
           styleClass="w-full"
           [inputStyle]="{ width: '100%' }">
         </p-calendar> -->
-        <p-datepicker [(ngModel)]="newEvent.startDateTime" [showTime]="true"  />
+        <p-datepicker [(ngModel)]="newEvent.startDateTime" [showTime]="true"    appendTo="body"/>
         <label for="startDate">Start Date & Time</label>
       </p-floatlabel>
 
@@ -189,12 +189,12 @@
           styleClass="w-full"
           [inputStyle]="{ width: '100%' }">
         </p-calendar> -->
-         <p-datepicker [(ngModel)]="newEvent.endDateTime" [showTime]="true"  />
+         <p-datepicker [(ngModel)]="newEvent.endDateTime" [showTime]="true"     appendTo="body"/>
         <label for="endDate">End Date & Time</label>
       </p-floatlabel>
     </div>
 
-    <div class="flex gap-4">
+    <!-- <div class="flex gap-4">
     <div>
         <p-checkbox 
         [(ngModel)]="newEvent.isPublic" 
@@ -214,7 +214,7 @@
       </p-checkbox>
           <label for="regRequired" class="ml-2"> Requires Registration </label>
     </div>
-    </div>
+    </div> -->
 
   </div>
 

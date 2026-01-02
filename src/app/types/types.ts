@@ -346,7 +346,7 @@ export interface VehicleFilter {
   brand?: string;
   model?: string;
   owner?: number;
-  user? : number
+  user?: number
 }
 
 export enum ParkingSlotStatus {
@@ -439,11 +439,11 @@ export interface Flat {
 }
 
 export interface FlatMember {
-  id?:number;
+  id?: number;
   flat?: Flat;
   user?: User;
   type: FlatMembershipType;
-  isActive:boolean
+  isActive: boolean
 }
 
 export interface FlatFilter {
@@ -481,10 +481,10 @@ export interface TenantCategoryPricing {
 export interface TenantCategoryPricingResponse {
   category: string;
   amount: number;
-  penalty : number
+  penalty: number
 }
 
-export interface TenantCategoryPricingRequest{
+export interface TenantCategoryPricingRequest {
   category: string;
   amount: number;
 }
@@ -493,7 +493,7 @@ export interface PaymentCalculationDTO {
   monthlyFee: number;
   monthsCovered: number;
   finalAmount: number;
-  penalty : number;
+  penalty: number;
   billingStartDate: string;
   billingEndDate: string;
 }
@@ -579,13 +579,99 @@ export interface PaymentFilter {
 }
 
 export interface Notification {
-  id?: number; 
+  id?: number;
   title: string;
   message: string;
-  url?: string;  
+  url?: string;
   type?: "USER" | 'SOCIETY';
   userId?: number;
   societyId?: number;
   read: boolean;
   createdAt: Date;
+}
+
+export enum VisitorStatus {
+  PENDING,     // Request created, waiting for resident action
+  APPROVED,    // Approved by resident, OTP generated
+  REJECTED,    // Rejected by resident
+  ENTERED,     // OTP verified, visitor entered
+  EXITED,      // Visitor exited society
+  EXPIRED,      // OTP expired / visit window missed,
+  CANCELLED
+}
+
+
+export interface VisitorResponseDTO {
+  id: number;
+  visitorName: string;
+  visitorPhone: string;
+  visitorEmail: string;
+  purpose: string;
+  rejectionReason: string;
+  // Visit timing
+  expectedIn: Date;
+  expectedOut: Date;
+  status: VisitorStatus;
+  flat: Flat;
+  requestedBy: User; // resident or security (for walk-in)
+}
+
+export interface VisitorRequestFilter {
+  id?: number;
+  visitorName?: string;
+  visitorPhone?: string;
+  visitorEmail?: string;
+  purpose?: string;
+
+  // Expected In range filters
+  expectedInFrom?: Date;
+  expectedInTo?: Date;
+
+  // Expected Out range filters
+  expectedOutFrom?: Date;
+  expectedOutTo?: Date;
+
+  status?: string;
+  flat?: number;
+  requestedBy?: number; // resident or security (for walk-in)
+
+  // Approved At range filters
+  approvedAtFrom?: Date;
+  approvedAtTo?: Date;
+
+  // Entered At range filters
+  enteredAtFrom?: Date;
+  enteredAtTo?: Date;
+
+  // Exit At range filters
+  exitedAtFrom?: Date;
+  exitedAtTo?: Date;
+
+  // Created At range filters
+  createdAtFrom?: Date;
+  createdAtTo?: Date;
+
+  // Updated At range filters
+  updatedAtFrom?: Date;
+  updatedAtTo?: Date;
+
+  isActive?: boolean;
+  sortFilter?: SortFilter
+}
+
+export interface SortFilter {
+  property: string;
+  asc: boolean;
+}
+
+export interface GuestRequestDTO{
+    visitorName: string;
+  visitorPhone: string;
+  visitorEmail: string;
+  purpose: string;
+    // Visit timing
+  expectedIn: Date;
+  expectedOut: Date;
+    // Relationships
+  flat : number;
 }

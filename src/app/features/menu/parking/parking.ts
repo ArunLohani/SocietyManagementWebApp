@@ -66,7 +66,7 @@ export class Parking implements OnInit {
   // Status update modal
   showStatusModal = false;
   updatingSlotId: number | null = null;
-  selectedStatus: ParkingSlotStatus = ParkingSlotStatus.AVAILABLE;
+  selectedStatus: string = "AVAILABLE";
 
   // Status options for select
   statusOptions = [
@@ -78,10 +78,10 @@ export class Parking implements OnInit {
   ];
 
   statusUpdateOptions = [
-    { name: 'Available', code: ParkingSlotStatus.AVAILABLE },
-    { name: 'Occupied', code: ParkingSlotStatus.OCCUPIED },
-    { name: 'Reserved', code: ParkingSlotStatus.RESERVED },
-    { name: 'Out of Service', code: ParkingSlotStatus.OUT_OF_SERVICE }
+    { name: 'Available', code: 'AVAILABLE' },
+    // { name: 'Occupied', code: 'OCCUPIED' },
+    { name: 'Reserved', code: "RESERVED" },
+    { name: 'Out of Service', code: "OUT_OF_SERVICE" }
   ];
 
     // permission
@@ -234,7 +234,7 @@ export class Parking implements OnInit {
 
   updateStatus() {
     if (!this.updatingSlotId) return;
-
+    console.log("this.updatingSlotId, this.selectedStatus",this.updatingSlotId, this.selectedStatus)
     this.parkingSlotService.updateSlotStatus(this.updatingSlotId, this.selectedStatus).subscribe({
       next: () => {
         this.toastr.success('Status updated successfully', 'Success');

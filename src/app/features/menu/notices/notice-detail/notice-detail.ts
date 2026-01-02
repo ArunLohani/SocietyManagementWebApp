@@ -15,6 +15,7 @@ import { NoticesService } from '../../../../core/service/notice.service';
 import { Notice, NoticeCreationRequest } from '../../../../types/types';
 import { AuthService } from '../../../../core/service/auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { TenantRoleMenuService } from '../../../../core/service/tenant-role-menu.service';
 
 @Component({
   selector: 'app-notice-detail',
@@ -45,14 +46,23 @@ export class NoticeDetailComponent implements OnInit {
 
   tenantId: number | null = null;
   currentUserId: number | null = null;
-
+  permission: "READ" | "EDIT" | "CREATE" = "READ";
   constructor(
     private route: ActivatedRoute,
     private noticesService: NoticesService,
     private auth: AuthService,
     private router: Router,
-    private toastrService : ToastrService
-  ) {}
+    private toastrService : ToastrService,
+    private tenantRoleMenuService : TenantRoleMenuService
+  ) { this.tenantRoleMenuService.getPriority("Notices").subscribe({
+      next: (res) => {
+        console.log(res)
+        this.permission = res.data === 10 ? "READ" : res.data === 20 ? "EDIT" : res.data === 30 ? "CREATE" : "READ";
+      },
+      error: (err) => {
+        this.permission = "READ";
+      },
+    });}
 
   ngOnInit(): void {
     this.noticeId = Number(this.route.snapshot.paramMap.get('id'));

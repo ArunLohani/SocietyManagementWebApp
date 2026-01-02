@@ -62,7 +62,7 @@
           severity="secondary">
         </p-button>
 
-       @if (isAuthor()) { 
+       @if (isAuthor() && this.permission != "READ") { 
         <p-button 
           *ngIf="!editMode"
           label="Edit" 
@@ -162,57 +162,105 @@
     </p-card>
 
     <!-- Assignment Card -->
- @if (this.permission!="READ" && isAdmin()) {
-     <p-card class="mb-4">
-      <ng-template #header>
-        <div class="px-6 pt-6 pb-3">
-          <h3 class="text-lg font-semibold flex items-center gap-2">
-            <i class="pi pi-users"></i>
-            Assignment
-          </h3>
-        </div>
-      </ng-template>
+@if (permission !== 'READ' && isAdmin() && complaint.status.toString() != "RESOLVED") {
+  <p-card class="mb-4 shadow-sm">
+    
+    <!-- Header -->
+    <ng-template #header>
+      <div class="px-6 pt-6 pb-3 border-b">
+        <h3 class="text-lg font-semibold flex items-center gap-2">
+          <i class="pi pi-users text-primary"></i>
+          Complaint Assignment
+        </h3>
+        <p class="text-sm text-gray-500 mt-1">
+          Assign this complaint to a responsible user
+        </p>
+      </div>
+    </ng-template>
 
-      <div class="flex flex-col gap-3">
-        <p-floatlabel variant="on">
-          <input 
-            pInputText 
-            id="searchAssign" 
-            [(ngModel)]="assignSearch"
-            (input)="searchAssignableUsers(assignSearch)"
-            class="w-full" 
-          />
-          <label for="searchAssign">Search users to assign</label>
-        </p-floatlabel>
+    <!-- Current Assignment Info -->
+    @if (complaint.assignedToUser) {
+      <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-sm">
+          <span class="font-semibold text-blue-700">
+            {{ complaint.assignedToUser?.name }}
+          </span>
+          is currently assigned to this complaint.
+        </p>
+        <p class="text-xs text-blue-600 mt-1">
+          You may reassign the complaint to another user below.
+        </p>
+      </div>
+    } @else {
+      <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <p class="text-sm text-yellow-700">
+          This complaint is not assigned yet.
+        </p>
+        <p class="text-xs text-yellow-600 mt-1">
+          Search and assign a user to take action.
+        </p>
+      </div>
+    }
 
-        <div *ngIf="loadingUsers" class="flex justify-center py-4">
-          <p-progressSpinner [style]="{ width: '40px', height: '40px' }"></p-progressSpinner>
-        </div>
+    <!-- Search -->
+    <div class="flex flex-col gap-3">
+      <p-floatlabel variant="on">
+        <input
+          pInputText
+          id="searchAssign"
+          [(ngModel)]="assignSearch"
+          (input)="searchAssignableUsers(assignSearch)"
+          class="w-full"
+        />
+        <label for="searchAssign">Search users by name or email</label>
+      </p-floatlabel>
 
-        <div *ngIf="!loadingUsers && availableUsers.length > 0" 
-             class="max-h-64 overflow-y-auto border rounded-lg">
-          <div *ngFor="let u of availableUsers" 
-               class="flex justify-between items-center p-3 border-b hover:bg-gray-50">
-            <div>
-              <div class="font-semibold text-sm">{{ u.name }}</div>
-              <div class="text-xs text-gray-500">{{ u.email }}</div>
+      <!-- Loading -->
+      <div *ngIf="loadingUsers" class="flex justify-center py-6">
+        <p-progressSpinner
+          [style]="{ width: '40px', height: '40px' }">
+        </p-progressSpinner>
+      </div>
+
+      <!-- User List -->
+      <div
+        *ngIf="!loadingUsers && availableUsers.length > 0"
+        class="max-h-64 overflow-y-auto border rounded-lg divide-y">
+
+        <div
+          *ngFor="let u of availableUsers"
+          class="flex justify-between items-center p-3 hover:bg-gray-50 transition">
+
+          <div>
+            <div class="font-semibold text-sm text-gray-800">
+              {{ u.name }}
             </div>
-            <p-button 
-              label="Assign" 
-              size="small"
-              (onClick)="assignToUser(u.id)" 
-              severity="contrast">
-            </p-button>
+            <div class="text-xs text-gray-500">
+              {{ u.email }}
+            </div>
           </div>
-        </div>
 
-        <div *ngIf="!loadingUsers && availableUsers.length === 0 && assignSearch" 
-             class="text-center py-6 text-gray-500 text-sm">
-          No users found
+          <p-button
+            label="Assign"
+            size="small"
+            icon="pi pi-check"
+            (onClick)="assignToUser(u.id)"
+            severity="success">
+          </p-button>
         </div>
       </div>
-    </p-card>
- }
+
+      <!-- Empty State -->
+      <div
+        *ngIf="!loadingUsers && availableUsers.length === 0 && assignSearch"
+        class="text-center py-6 text-gray-500 text-sm">
+        <i class="pi pi-search mb-2 block text-lg"></i>
+        No matching users found
+      </div>
+    </div>
+  </p-card>
+}
+
 
     <!-- Resolution Notes Card -->
        @if (this.permission != "READ" && (isAdmin() || isAssigned())) { 

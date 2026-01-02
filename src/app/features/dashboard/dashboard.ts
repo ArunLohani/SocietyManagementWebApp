@@ -158,6 +158,24 @@ getActiveMembers(flat: Flat) {
       this.flatService.searchFlatList({}).subscribe({
         next: (res) => {
           this.societyFlats = res.data || [];
+               this.societyFlats.forEach(flat => {
+               const hasOwner = flat.members?.some(
+  m => m.isActive === true && m.type.toString() === 'OWNER'
+) ?? false;
+
+          if (!flat.id || !hasOwner ) {
+            flat.hasActivePayment = true;
+            return;
+          }
+          this.payment.checkActivePayment(flat.id).subscribe({
+            next: (res) => {
+              flat.hasActivePayment = res.data
+            },
+            error: (err) => {
+              flat.hasActivePayment = false;
+            },
+          })
+        });
           this.loadUserFlats();
         },
         error: (err) => {

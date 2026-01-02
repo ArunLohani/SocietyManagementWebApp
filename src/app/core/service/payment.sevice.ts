@@ -162,4 +162,17 @@ export class PaymentService {
 
     razorpay.open();
   }
+  
+    downloadReceipt(paymentId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${paymentId}/receipt`, {
+      responseType: 'blob'
+    });
+  }
+
+
+  getReceiptHtml(paymentId: number): Observable<string> {
+    return this.http.get(`${this.apiUrl}/${paymentId}/receipt/html`, {
+      responseType: 'text'
+    });
+  }
 }

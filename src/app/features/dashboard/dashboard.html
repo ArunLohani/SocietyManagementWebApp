@@ -257,7 +257,9 @@
                 <div class="flex flex-col gap-2">
                   <!-- Mail Actions Row -->
                   <div class="flex flex-wrap gap-2">
-                    <p-button 
+                      @if (!flat.hasActivePayment) {
+
+                          <p-button 
                       icon="pi pi-bell" 
                       size="small" 
                       label="Reminder"
@@ -265,6 +267,9 @@
                       severity="warn"
                       [outlined]="true">
                     </p-button>
+
+                      }
+                  
                     <p-button 
                       icon="pi pi-envelope" 
                       size="small" 

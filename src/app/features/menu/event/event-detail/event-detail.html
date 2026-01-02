@@ -48,13 +48,15 @@
         </p-button>
         
 
-         <p-button 
+        @if (event.status.toString() == "PUBLISHED") {
+           <p-button 
           [label]="isUserParticipant ? 'Leave' : 'Join'" 
           [icon]="isUserParticipant ? 'pi pi-sign-out' : 'pi pi-sign-in'"
           size="small"
           (onClick)="joinLeave()" 
           [severity]="isUserParticipant ? 'danger' : 'success'">
         </p-button>
+        }
 
 @if (this.permission != "READ") {
         <p-button 
@@ -154,7 +156,7 @@
             </p-floatlabel>
           </div>
 
-          <div class="flex gap-4">
+          <!-- <div class="flex gap-4">
            <div>
         <p-checkbox 
         [(ngModel)]="editModel.isPublic" 
@@ -174,7 +176,7 @@
       </p-checkbox>
           <label for="regRequired" class="ml-2"> Requires Registration </label>
     </div>
-          </div>
+          </div> -->
 
         </div>
       </div>

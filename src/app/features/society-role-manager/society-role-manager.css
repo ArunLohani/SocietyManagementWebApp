@@ -1,0 +1,384 @@
+.role-manager-container {
+  min-height: 100vh;
+  background: #fafafa;
+  padding: 2rem;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Header Section */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  animation: slideDown 0.5s ease-out;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #212121;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #757575;
+  margin: 0;
+}
+
+.add-role-btn {
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.25) !important;
+  transition: all 0.3s ease !important;
+  color: white;
+}
+
+.add-role-btn:hover {
+  box-shadow: 0 6px 20px rgba(0, 120, 212, 0.35) !important;
+  transform: translateY(-2px);
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5rem 0;
+}
+
+/* Main Content */
+.main-content {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.roles-card {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.roles-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+.roles-card mat-card-header {
+  padding: 1.5rem 1.5rem 1rem 1.5rem !important;
+}
+
+.roles-card mat-card-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: #212121 !important;
+}
+
+.roles-card mat-card-content {
+  padding: 1.5rem !important;
+}
+
+.add-role-btn {
+  color: white !important;
+}
+
+.add-role-btn mat-icon {
+  color: white;
+}
+
+/* Available Roles Section */
+.available-roles-section {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  animation: slideUp 0.5s ease-out;
+}
+
+.section-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #424242;
+  margin: 0 0 0.75rem 0;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+mat-chip-option {
+  background: white !important;
+  color: #616161 !important;
+  border: 1px solid #e0e0e0 !important;
+  transition: all 0.2s ease !important;
+}
+
+mat-chip-option:hover {
+  background: #fafafa !important;
+  border-color: #0078d4 !important;
+}
+
+mat-chip-option.mat-mdc-chip-selected {
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Table */
+.table-container {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.roles-table {
+  width: 100%;
+  background: white;
+}
+
+.roles-table th {
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  padding: 1rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.roles-table td {
+  padding: 1rem !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.roles-table tr:hover td {
+  background: #fafafa !important;
+}
+
+.role-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.role-icon {
+  color: #757575 !important;
+  font-size: 1.25rem !important;
+}
+
+.role-name {
+  font-weight: 500;
+  color: #424242;
+  font-size: 0.95rem;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+/* Checkbox */
+::ng-deep .mat-mdc-checkbox.mat-primary {
+  --mdc-checkbox-selected-checkmark-color: white !important;
+  --mdc-checkbox-selected-focus-icon-color: #0078d4 !important;
+  --mdc-checkbox-selected-hover-icon-color: #0078d4 !important;
+  --mdc-checkbox-selected-icon-color: #0078d4 !important;
+  --mdc-checkbox-selected-pressed-icon-color: #0078d4 !important;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 3rem !important;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 3rem !important;
+  width: 3rem !important;
+  height: 3rem !important;
+  color: #bdbdbd !important;
+  margin-bottom: 0.5rem;
+}
+
+.empty-text {
+  color: #757575;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Dialog */
+.dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.dialog-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 500px;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.dialog-card {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden;
+}
+
+.dialog-header {
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%) !important;
+  color: white !important;
+  padding: 1.5rem !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dialog-header mat-card-title {
+  color: white !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+.close-btn {
+  color: white !important;
+}
+
+.dialog-content {
+  padding: 1.5rem !important;
+}
+
+.dialog-description {
+  color: #616161;
+  font-size: 0.875rem;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* ::ng-deep .mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+}
+
+::ng-deep .mat-mdc-text-field-wrapper {
+  background: white !important;
+}
+
+::ng-deep .mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay {
+  opacity: 0.1 !important;
+}
+
+::ng-deep .mat-mdc-outlined-text-field:hover .mdc-notched-outline .mdc-notched-outline__leading,
+::ng-deep .mat-mdc-outlined-text-field:hover .mdc-notched-outline .mdc-notched-outline__notch,
+::ng-deep .mat-mdc-outlined-text-field:hover .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-color: #9e9e9e !important;
+}
+
+::ng-deep .mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+::ng-deep .mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+::ng-deep .mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #0078d4 !important;
+  border-width: 2px !important;
+} */
+
+.dialog-actions {
+  padding: 1rem 1.5rem !important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.dialog-actions button {
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .role-manager-container {
+    padding: 1rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .dialog-container {
+    width: 95%;
+  }
+}
