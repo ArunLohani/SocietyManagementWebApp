@@ -1,114 +1,79 @@
-<div class=" col-span-1  bg-[#020617] sticky top-0 h-screen
-   text-white flex flex-col shadow-2xl transition-all duration-300 ease-in-out rounded-tr-2xl rounded-br-2xl ">
-  <!-- Header / Branding -->
+<!-- Overlay (mobile) -->
+<div
+  *ngIf="mobileOpen"
+  class="fixed inset-0 bg-black/40 z-40 lg:hidden"
+  (click)="closeOnMobile()"
+></div>
+
+<!-- Sidebar -->
+<aside
+  class=" fixed overflow-y-scroll custom-scroll z-100 h-screen w-64
+         bg-[#020617] text-white
+         top-0 left-0 lg:static
+         lg:translate-x-0
+         transition-transform duration-300"
+  [class.-translate-x-full]="!mobileOpen"
+>
+
+  <!-- Header -->
   <div class="flex items-center justify-between px-4 py-6 border-b border-white">
-    <div *ngIf="!collapsed" class="text-xl font-bold tracking-wide"><a href="/">Homely</a></div>
-
-
-
+    <span class="text-xl font-bold">Homely</span>
+    <button class="lg:hidden" (click)="closeOnMobile()">
+      <fa-icon [icon]="closeIcon"></fa-icon>
+    </button>
   </div>
-  <!-- User Profile -->
-  <!-- <div *ngIf="!collapsed" class="flex items-center gap-3 px-4 py-4 border-b border-white"> -->
-  <!-- <img src={{user.picture}} class="w-10 h-10 rounded-full" alt="User avatar" /> -->
-  <!-- <div>
-      <p class="text-sm font-medium">{{user.name}}</p>
-      <p class="text-xs text-[#ffffffb3]">{{user.role}}</p>
-    </div> -->
-  <!-- </div> -->
+
   <!-- Navigation -->
-  <nav class="flex-1 overflow-y-auto px-2 py-4 custom-scroll flex flex-col gap-2">
+  <nav class="flex-1 overflow-y-auto px-2 py-4 custom-scroll space-y-1">
 
-  <!-- Loop all menu items -->
-  @for (item of menuItems; track $index) {
+    @for (item of menuItems; track $index) {
 
-    <!-- If item has children -->
-    @if (item.children) {
+      @if (item.children) {
+        <div
+          class="flex items-center gap-4 px-4 py-3 rounded-md cursor-pointer
+                 hover:bg-[#161A29]"
+          (click)="toggleMenu()"
+        >
+          <fa-icon [icon]="item.icon"></fa-icon>
+          <span>{{ item.label }}</span>
+        </div>
 
-      <!-- Parent clickable item -->
-      <div
-        class="group flex items-center gap-4 px-4 py-3 rounded-md 
-               transition-all duration-200 border-l-4 border-transparent
-               hover:bg-[#161a29] hover:text-white cursor-pointer"
-        (click)="toggleMenu()"
-      >
-
-        <!-- Change icon when expanded -->
-        <fa-icon 
-          [icon]="showMenu ? item.toggleIcon : item.icon"
-          class="transition-all duration-300"
-        />
-
-        <!-- Label -->
-        <span *ngIf="!collapsed" class="text-sm font-medium">{{ item.label }}</span>
-      </div>
-
-      <!-- Submenu with slide animation -->
-      <div
-        class="ml-4  transition-all duration-300"
-        [class.max-h-0]="!showMenu"
-        [class.max-h-96]="showMenu"
-      >
-        <div class="flex flex-col gap-2 py-2">
-
-          <!-- Child links -->
+        <div *ngIf="showMenu" class="ml-6 space-y-1">
           @for (child of item.children; track $index) {
             <a
               [routerLink]="child.route"
-              routerLinkActive="bg-white text-black border-l-4 border-primary"
-              class="group ml-4 flex items-center gap-4 px-4 py-1 rounded-md 
-                     transition-all duration-200 border-l-4 border-transparent 
-                     hover:bg-[#161a29] hover:text-white
-                     opacity-0 translate-y-2"
-              [class.opacity-100]="showMenu"
-              [class.opacity-0]="!showMenu"
-              [class.translate-y-0]="showMenu"
-              [class.translate-y-2]="!showMenu"
+              (click)="closeOnMobile()"
+              class="block px-4 py-2 rounded hover:bg-[#161A29]"
             >
-              <span *ngIf="!collapsed" class="text-sm font-medium">{{ child.label }}</span>
+              {{ child.label }}
             </a>
           }
-
         </div>
-      </div>
+      }
 
+      @else {
+        <a
+          [routerLink]="item.route"
+          (click)="closeOnMobile()"
+          class="flex items-center gap-4 px-4 py-3 rounded-md hover:bg-[#161A29]"
+        >
+          <fa-icon [icon]="item.icon"></fa-icon>
+          <span>{{ item.label }}</span>
+        </a>
+      }
     }
 
-    <!-- ELSE — normal menu item without children -->
-    @else {
-
-      <a
-        [routerLink]="item.route"
-        routerLinkActive="bg-white text-black border-l-4 border-primary"
-        class="group flex items-center gap-4 px-4 py-3 rounded-md 
-               transition-all duration-200 border-l-4 border-transparent 
-               hover:bg-[#161a29] hover:text-white"
+    <!-- Logout -->
+    <div class="border-t border-white pt-4 mt-6">
+      <button
+        (click)="logout()"
+        class="w-full flex items-center gap-4 px-4 py-3 rounded-md
+               hover:bg-white hover:text-black transition"
       >
-        <fa-icon [icon]="item.icon" />
-        <span *ngIf="!collapsed" class="text-sm font-medium">{{ item.label }}</span>
-      </a>
+        <fa-icon [icon]="power_off"></fa-icon>
+        Logout
+      </button>
+    </div>
 
-    }
-
-  }
-
-  <!-- Logout -->
-  <div class="mt-8 border-t border-white pt-4">
-    <a
-      (click)="logout()"
-      class="group flex items-center gap-4 px-4 py-3 rounded-md text-white 
-             hover:bg-white hover:text-black transition-all duration-200 
-             border-l-4 border-transparent cursor-pointer"
-    >
-      <fa-icon [icon]="power_off" />
-      <span *ngIf="!collapsed" class="text-sm font-medium">Logout</span>
-    </a>
-  </div>
-
-</nav>
-
-  <!-- Footer -->
-  <div class="p-4 border-t  text-[11px] border-white text-center">
-    <p *ngIf="!collapsed">© 2025 Homely</p>
-    <p class="text-[10px] mt-1 opacity-60">v1.0.0</p>
-  </div>
-</div>
+  </nav>
+</aside>

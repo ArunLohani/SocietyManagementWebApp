@@ -1,91 +1,124 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core'; // Removed OnInit
-import { Observable } from 'rxjs';
-import { LoginRequestData, RegisterRequestData, JwtPayload, User, ApiResponse, AuthSuccessData, Role } from '../../types/types';import { CookieService } from 'ngx-cookie-service';
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import {
+  LoginRequestData,
+  RegisterRequestData,
+  JwtPayload,
+  ApiResponse,
+  AuthSuccessData
+} from '../../types/types';
+import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../../environments/environment.development';
 import { Router } from '@angular/router';
+import { ProfileService } from './profile.service';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  token: string | null = null;
-  url = `${environment.apiUrl}/auth`;
+  private token: string | null = null;
+  private url = `${environment.apiUrl}/auth`;
 
-  constructor(private httpClient: HttpClient, private cookieService: CookieService,private router : Router) {
+  constructor(
+    private httpClient: HttpClient,
+    private cookieService: CookieService,
+    private router: Router,
+    private profileService: ProfileService
+  ) {
+    this.loadToken();
   }
 
-  getToken() {
-    this.token = this.cookieService.get('access_token');
+  /* ---------------- TOKEN HANDLING ---------------- */
+
+  private loadToken(): void {
+    this.token = this.cookieService.get('access_token') || null;
   }
+
+  getToken(): string | null {
+    if (!this.token) {
+      this.loadToken();
+    }
+    return this.token;
+  }
+
+  /* ---------------- AUTH CHECKS ---------------- */
+
+  /** ✅ Sync check (used for token decoding & UI logic) */
   isAuthenticated(): boolean {
-    this.getToken()
-    return !!this.token;
+    return !!this.getToken();
   }
 
-  decodeToken(token: string): JwtPayload {
-    const decodedToken = jwtDecode<JwtPayload>(token);
-    return decodedToken;
+  /** ✅ API-level auth check (used in Guards) */
+  isAuthenticated$(): Observable<boolean> {
+    return this.profileService.getMyProfile().pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
+  }
+
+  /* ---------------- TOKEN DECODING ---------------- */
+
+  private decodeToken(): JwtPayload | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      return jwtDecode<JwtPayload>(token);
+    } catch {
+      return null;
+    }
   }
 
   getEmailFromToken(): string | null {
-    if (this.isAuthenticated() && this.token) {
-      return this.decodeToken(this.token).email;
-    }
-    return null;
+    return this.decodeToken()?.email ?? null;
   }
 
-  getUserIdFromToken() : number | null {
-       if (this.isAuthenticated() && this.token) {
-      return Number(this.decodeToken(this.token).sub);
-    }
-    return null;
+  getUserIdFromToken(): number | null {
+    const sub = this.decodeToken()?.sub;
+    return sub ? Number(sub) : null;
   }
 
-  getRolesFromToken() : string[] | null {
-
-     if (this.isAuthenticated() && this.token) {
-      console.log(this.decodeToken(this.token).roles)
-      return this.decodeToken(this.token).roles.split(",");
-    }
-    return null;
-
+  getRolesFromToken(): string[] {
+    return this.decodeToken()?.roles?.split(',') ?? [];
   }
 
-  getTenantIdFromToken() : number | null {
-         if (this.isAuthenticated() && this.token) {
-      console.log(this.decodeToken(this.token).roles)
-      return this.decodeToken(this.token).tenantId;
-    }
-    return null;
-
-
+  getTenantIdFromToken(): number | null {
+    return this.decodeToken()?.tenantId ?? null;
   }
 
-  isUserSuperAdmin () : boolean {
-      
-    return this.getRolesFromToken()?.includes("SUPER_ADMIN") ? true : false;
+  /* ---------------- ROLE HELPERS ---------------- */
 
+  isUserSuperAdmin(): boolean {
+    return this.getRolesFromToken().includes('SUPER_ADMIN');
   }
 
-  isUserAdmin():boolean{
-        return this.getRolesFromToken()?.includes("ADMIN") ? true : false;
-
+  isUserAdmin(): boolean {
+    return this.getRolesFromToken().includes('ADMIN');
   }
+
+  /* ---------------- AUTH ACTIONS ---------------- */
 
   login(loginData: LoginRequestData): Observable<ApiResponse<AuthSuccessData>> {
-    return this.httpClient.post<ApiResponse<AuthSuccessData>>(`${this.url}/login`, loginData);
+    return this.httpClient.post<ApiResponse<AuthSuccessData>>(
+      `${this.url}/login`,
+      loginData
+    );
   }
 
-  register(registerData: RegisterRequestData): Observable<ApiResponse<AuthSuccessData>>{
-    return this.httpClient.post<ApiResponse<AuthSuccessData>>(`${this.url}/register`, registerData);
+  register(registerData: RegisterRequestData): Observable<ApiResponse<AuthSuccessData>> {
+    return this.httpClient.post<ApiResponse<AuthSuccessData>>(
+      `${this.url}/register`,
+      registerData
+    );
   }
 
-  logout() {
-     this.cookieService.delete('access_token', '/'); 
+  logout(): void {
+    this.cookieService.delete('access_token', '/');
+    this.token = null;
     this.router.navigate(['/login']);
   }
-
-
 }

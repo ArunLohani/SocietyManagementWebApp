@@ -1,11 +1,9 @@
-import { Component, Input } from '@angular/core';
-import { AuthService } from '../../../app/core/service/auth.service';
-import { Router, RouterModule } from '@angular/router';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
   faBuilding,
-  faChevronLeft,
   faChevronRight,
   faPowerOff,
   faUser,
@@ -14,9 +12,9 @@ import {
   faUsers,
   faChartLine,
   faBars,
-  faCross,
-  faX
+  faXmark
 } from '@fortawesome/free-solid-svg-icons';
+import { AuthService } from '../../../app/core/service/auth.service';
 import { MenuService } from '../../core/service/menu.service';
 
 @Component({
@@ -27,47 +25,50 @@ import { MenuService } from '../../core/service/menu.service';
   styleUrls: ['./sidebar.css'],
 })
 export class Sidebar {
-  // Sidebar state
-  collapsed = false;
+
+  @Input() mobileOpen = false;
+  @Output() closeMobile = new EventEmitter<void>();
+
+  showMenu = false;
 
   // Icons
-  chevron_right = faChevronRight;
-  chevron_left = faChevronLeft;
   power_off = faPowerOff;
-  userIcon = faUser;
   society = faBuilding;
   roleIcon = faUsersCog;
   permissionIcon = faKey;
   usersIcon = faUsers;
-  dashboardIcon = faChartLine
-  menuIcon = faBars
-  showMenu = false
-  menuItems: Array<Menu> = [];
-  toggleMenuIcon = faX
-  constructor(private authService: AuthService,private menuService : MenuService) {
+  dashboardIcon = faChartLine;
+  menuIcon = faBars;
+  closeIcon = faXmark;
 
-    const userMenus : Menu = {
-      label : "Menus",
-      route : "#",
-      icon : this.menuIcon,
-      toggleIcon : this.toggleMenuIcon,
-      children : []
+  menuItems: Menu[] = [];
 
-    }
-  
-    this.menuService.getAllMenus().subscribe({next : (response)=> {
-          response.data.map(menu => 
-            userMenus.children?.push({
-              label : menu.menuName,
-              route : `/menu/${menu.menuName.toLowerCase().split(" ").join("_")}`,
-              icon :""
-            })
-          )
+  constructor(
+    private authService: AuthService,
+    private menuService: MenuService
+  ) {
 
-          this.menuItems.push(userMenus);
+    // Dynamic Menu
+    const userMenus: Menu = {
+      label: 'Menus',
+      route: '#',
+      icon: this.menuIcon,
+      toggleIcon: this.closeIcon,
+      children: []
+    };
 
-            console.log(this.menuItems);
-    },})
+    this.menuService.getAllMenus().subscribe({
+      next: (res) => {
+        res.data.forEach(menu => {
+          userMenus.children?.push({
+            label: menu.menuName,
+            route: `/menu/${menu.menuName.toLowerCase().replaceAll(' ', '_')}`,
+            icon: null
+          });
+        });
+        this.menuItems.push(userMenus);
+      }
+    });
 
     if (authService.isUserSuperAdmin()) {
       this.menuItems.push({
@@ -78,52 +79,43 @@ export class Sidebar {
     }
 
     if (authService.isUserAdmin()) {
-      this.menuItems.push({
-        label: 'Role Management',
-        route: '/admin/role',
-        icon: this.roleIcon,
-      });
-      this.menuItems.push({
-        label: 'User Management',
-        route: '/admin/user',
-        icon: this.usersIcon,
-      });
-      this.menuItems.push({
-        label: 'Permission Management',
-        route: '/admin/permission',
-        icon: this.permissionIcon,
-      });
+      this.menuItems.push(
+        {
+          label: 'Role Management',
+          route: '/admin/role',
+          icon: this.roleIcon,
+        },
+        {
+          label: 'User Management',
+          route: '/admin/user',
+          icon: this.usersIcon,
+        },
+        {
+          label: 'Permission Management',
+          route: '/admin/permission',
+          icon: this.permissionIcon,
+        }
+      );
     }
   }
 
-
-  toggleMenu(){
-    console.log("SHOWMENU",this.showMenu)
-    this.showMenu = !this.showMenu
+  toggleMenu() {
+    this.showMenu = !this.showMenu;
   }
 
-  toggleSidebar() {
-    this.collapsed = !this.collapsed;
+  closeOnMobile() {
+    this.closeMobile.emit();
   }
 
   logout() {
     this.authService.logout();
   }
-
-  user: User = { name: '', role: '', picture: '', email: '' };
 }
-
-type User = {
-  name: string;
-  role: string;
-  email: string;
-  picture: string;
-};
 
 type Menu = {
   label: string;
   route: string;
   icon: any;
-  toggleIcon? : any;
-  children? : Menu[]
+  toggleIcon?: any;
+  children?: Menu[];
 };

@@ -1,18 +1,22 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-4 md:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
-    <div class="flex flex-col gap-1">
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+    <div>
       <h3 class="font-semibold text-2xl">User Role Manager</h3>
-      <p class="text-sm text-gray-500">Assign and manage roles for users in your societies</p>
+      <p class="text-sm text-gray-500">
+        Assign and manage roles for users in your societies
+      </p>
     </div>
+
     @if (selectedTenantId) {
-    <p-button 
-      label="Assign User to Society" 
-      icon="pi pi-plus" 
+    <p-button
+      label="Assign User to Society"
+      icon="pi pi-plus"
       size="small"
-      (onClick)="toggleAssignUserModal()" 
       severity="contrast"
+      class="w-full md:w-auto"
+      (onClick)="toggleAssignUserModal()"
     ></p-button>
     }
   </div>
@@ -24,55 +28,42 @@
   </div>
   }
 
-  <!-- Main Content -->
   @if (!loading) {
-  <!-- Society Selection Card -->
-  <p-card styleClass="mb-4">
-    <ng-template pTemplate="header">
-      <div class="px-6 py-4 border-b">
-        <h3 class="text-lg font-semibold">Select Society</h3>
-      </div>
-    </ng-template>
 
-    <div class="flex flex-col gap-4">
-      <div>
-        <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-          <i class="pi pi-building text-orange-600"></i>
-          Manage user roles in your Society
-        </label>
-        <div class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-          <span class="font-medium">{{ selectedTenant?.name }}</span>
-        </div>
+  <!-- Society Info -->
+  <p-card styleClass="mb-4">
+    <div class="space-y-3">
+      <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <i class="pi pi-building text-orange-600"></i>
+        Managing Society
+      </label>
+      <div class="px-4 py-3 bg-gray-50 rounded-lg border">
+        <span class="font-medium">{{ selectedTenant?.name }}</span>
       </div>
 
       @if (selectedTenant) {
-      <p-message severity="info" styleClass="w-full">
-        <div class="flex items-start gap-3">
-          <div class="flex-1">
-            <p class="font-semibold mb-1">Managing: {{ selectedTenant.name }}</p>
-            <p class="text-sm">{{ users.length }} users found in this society</p>
-          </div>
-        </div>
+      <p-message severity="info">
+        <p class="font-semibold">Managing: {{ selectedTenant.name }}</p>
+        <p class="text-sm">{{ users.length }} users found</p>
       </p-message>
       }
     </div>
   </p-card>
 
-  <!-- Users and Roles Section -->
   @if (selectedTenantId) {
-  
-  <!-- Role Statistics -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+  <!-- Role Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     @for (role of roles; track role.id) {
-    <p-card styleClass="hover:shadow-md transition-all">
-      <div class="flex items-center justify-between">
-        <span class="font-semibold text-gray-900">{{ role.role }}</span>
-        <p-badge 
-          [value]="getUserCountByRole(role.id).toString()" 
+    <p-card>
+      <div class="flex justify-between items-center">
+        <span class="font-semibold">{{ role.role }}</span>
+        <p-badge
+          [value]="getUserCountByRole(role.id).toString()"
           severity="contrast"
         ></p-badge>
       </div>
-      <p class="text-sm text-gray-600 mt-2">users assigned</p>
+      <p class="text-xs text-gray-500 mt-1">users assigned</p>
     </p-card>
     }
   </div>
@@ -84,229 +75,111 @@
   </div>
   }
 
-  <!-- Users Table -->
+  <!-- ================================================= -->
+  <!-- DESKTOP TABLE (md+) | Horizontal scroll enabled -->
+  <!-- ================================================= -->
   @if (!loadingUsers && filteredUsers.length > 0) {
-  <p-card>
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <thead class="bg-gray-50 border-b-2 border-gray-200">
-          <tr>
-            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              User Information
-            </th>
-            @for (role of roles; track role.id) {
-            <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[120px]">
-              {{ role.role }}
-            </th>
-            }
-            <!-- <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[100px]">
-              Actions
-            </th> -->
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200">
-          @for (user of filteredUsers; track user.id) {
-          <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="flex-shrink-0 w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-lg">
-                  {{ user.name.charAt(0).toUpperCase() }}
+  <div class="hidden md:block">
+    <p-card>
+      <div class="overflow-x-auto">
+        <table class="min-w-max w-full">
+          <thead class="bg-gray-50 border-b">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold">
+                User Information
+              </th>
+              @for (role of roles; track role.id) {
+              <th
+                class="px-4 py-3 text-center text-xs font-semibold min-w-[120px]"
+              >
+                {{ role.role }}
+              </th>
+              }
+            </tr>
+          </thead>
+
+          <tbody class="divide-y">
+            @for (user of filteredUsers; track user.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold"
+                  >
+                    {{ user.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="font-medium">{{ user.name }}</p>
+                    <p class="text-xs text-gray-500">{{ user.email }}</p>
+                    @if (isAdmin(user)) {
+                    <p-badge value="Admin" severity="success"></p-badge>
+                    }
+                  </div>
                 </div>
-                <div class="min-w-0">
-                  <p class="font-medium text-gray-900 truncate">{{ user.name }}</p>
-                  <p class="text-sm text-gray-600 truncate">{{ user.email }}</p>
-                  @if (user.phoneNumber) {
-                  <p class="text-xs text-gray-500">{{ user.phoneNumber }}</p>
-                  }
-                  @if (isAdmin(user)) {
-                  <p-badge value="Admin" severity="success" styleClass="text-xs"></p-badge>
-                  }
-                </div>
-              </div>
-            </td>
-            @for (role of roles; track role.id) {
-            <td class="px-6 py-4 text-center">
-              <p-checkbox 
-                [binary]="true"
-                [ngModel]="hasRole(user, role.id)"
-                (onChange)="toggleRole(user, role, $event)"
-              ></p-checkbox>
-            </td>
+              </td>
+
+              @for (role of roles; track role.id) {
+              <td class="px-4 py-3 text-center">
+                <p-checkbox
+                  [binary]="true"
+                  [ngModel]="hasRole(user, role.id)"
+                  (onChange)="toggleRole(user, role, $event)"
+                ></p-checkbox>
+              </td>
+              }
+            </tr>
             }
-            <!-- <td class="px-6 py-4 text-center">
-              <p-button 
-                icon="pi pi-trash" 
-                severity="danger"
-                [text]="true"
-                [rounded]="true"
-                (onClick)="openRemoveUserModal(user)"
-                [disabled]="isAdmin(user)"
-                [pTooltip]="isAdmin(user) ? 'Admin users cannot be removed' : 'Remove user from society'"
-                tooltipPosition="top"
-              ></p-button>
-            </td> -->
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Results Info -->
-    <div class="mt-4 text-center text-sm text-gray-600">
-      Showing <span class="font-semibold text-gray-900">{{ filteredUsers.length }}</span>
-      of <span class="font-semibold text-gray-900">{{ users.length }}</span> users
-    </div>
-  </p-card>
-  }
-
-  <!-- No Results -->
-  @if (!loadingUsers && filteredUsers.length === 0 && users.length > 0) {
-  <p-card class="text-center py-12">
-    <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
-    <h3 class="text-xl font-bold mb-2">No users match your filters</h3>
-    <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
-    <p-button 
-      label="Clear Filters" 
-      icon="pi pi-times" 
-      (onClick)="clearFilters()" 
-      severity="secondary"
-    ></p-button>
-  </p-card>
-  }
-
-  <!-- No Users in Society -->
-  @if (!loadingUsers && users.length === 0) {
-  <p-card class="text-center py-12">
-    <i class="pi pi-users text-6xl text-gray-400 mb-4"></i>
-    <h3 class="text-xl font-bold mb-2">No users found in this society</h3>
-    <p class="text-gray-500">Add users to this society to manage their roles</p>
-  </p-card>
-  }
-  }
-  }
-
-</div>
-
-<!-- Assign User Modal -->
-<p-dialog 
-  [(visible)]="showAssignUserModal" 
-  [modal]="true"
-  [style]="{ width: '32rem' }"
-  [draggable]="false"
-  header="Assign User to Society"
-  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
-  [baseZIndex]="10000"
->
-  @if (loadingUnassignedUsers) {
-  <div class="flex justify-center items-center py-8">
-    <p-progressSpinner></p-progressSpinner>
-  </div>
-  } @else {
-  <p class="text-sm text-gray-500 mb-4">
-    Select the user you want to add to your society.
-  </p>
-<p-select 
-  [options]="unAssignedUsersOption" 
-  [(ngModel)]="selectedUser"
-  optionLabel="name" 
-  optionValue="id"
-  placeholder="-- Select a User --"
-  [showClear]="true"
-  styleClass="w-full"
-  appendTo="body"
->
-  <!-- Template for dropdown items -->
-  <ng-template let-user pTemplate="item">
-    <div class="flex flex-col">
-      <span class="font-semibold">{{ user.name }}</span>
-      <span class="text-xs text-gray-500">{{ user.email }}</span>
-    </div>
-  </ng-template>
-  
-  <!-- Template for selected value display -->
-  <ng-template let-user pTemplate="selectedItem">
-    <div class="flex flex-col" *ngIf="user">
-      <span class="font-semibold">{{ user.name }}</span>
-      <span class="text-xs text-gray-500">{{ user.email }}</span>
-    </div>
-  </ng-template>
-</p-select>
-
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3">
-      <p-button 
-        label="Cancel" 
-        (onClick)="toggleAssignUserModal()" 
-        severity="secondary"
-        [text]="true"
-      ></p-button>
-      <p-button 
-        label="Assign" 
-        (onClick)="selectedUser != null && selectedTenantId && assignUser(selectedTenantId, selectedUser)" 
-        [disabled]="!selectedUser"
-        severity="contrast"
-      ></p-button>
-    </div>
-  </ng-template>
-  }
-</p-dialog>
-
-<!-- Remove User Confirmation Modal -->
-<p-dialog 
-  [(visible)]="showRemoveUserModal" 
-  [modal]="true"
-  [style]="{ width: '28rem' }"
-  [draggable]="false"
-  header="Remove User from Society"
-  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
-  [baseZIndex]="10000"
->
-  @if (userToRemove) {
-  <div class="flex flex-col gap-4">
-    <p-message severity="warn" styleClass="w-full">
-      <div class="flex items-start gap-3">
-        <i class="pi pi-exclamation-triangle text-xl"></i>
-        <div class="flex-1">
-          <p class="font-semibold mb-1">Warning</p>
-          <p class="text-sm">This action will remove the user from the society and all their assigned roles.</p>
-        </div>
+          </tbody>
+        </table>
       </div>
-    </p-message>
 
-    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-      <p class="text-sm text-gray-600 mb-2">User to be removed:</p>
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold">
-          {{ userToRemove.name.charAt(0).toUpperCase() }}
+      <div class="mt-4 text-sm text-gray-600 text-center">
+        Showing <b>{{ filteredUsers.length }}</b> of <b>{{ users.length }}</b>
+        users
+      </div>
+    </p-card>
+  </div>
+  }
+
+  <!-- ===================================== -->
+  <!-- MOBILE VIEW (< md) | No scroll -->
+  <!-- ===================================== -->
+  @if (!loadingUsers && filteredUsers.length > 0) {
+  <div class="block md:hidden space-y-4">
+    @for (user of filteredUsers; track user.id) {
+    <p-card>
+      <div class="flex items-center gap-3 mb-4">
+        <div
+          class="w-12 h-12 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold"
+        >
+          {{ user.name.charAt(0).toUpperCase() }}
         </div>
         <div>
-          <p class="font-semibold text-gray-900">{{ userToRemove.name }}</p>
-          <p class="text-sm text-gray-600">{{ userToRemove.email }}</p>
+          <p class="font-semibold">{{ user.name }}</p>
+          <p class="text-xs text-gray-500">{{ user.email }}</p>
+          @if (isAdmin(user)) {
+          <p-badge value="Admin" severity="success"></p-badge>
+          }
         </div>
       </div>
-    </div>
 
-    <p class="text-sm text-gray-700">
-      Are you sure you want to remove <strong>{{ userToRemove.name }}</strong> from this society?
-    </p>
+      <div class="space-y-3">
+        @for (role of roles; track role.id) {
+        <div class="flex justify-between items-center">
+          <span class="text-sm font-medium">{{ role.role }}</span>
+          <p-checkbox
+            [binary]="true"
+            [ngModel]="hasRole(user, role.id)"
+            (onChange)="toggleRole(user, role, $event)"
+          ></p-checkbox>
+        </div>
+        }
+      </div>
+    </p-card>
+    }
   </div>
-
-
-    <div class="flex justify-end gap-3">
-      <p-button 
-        label="Cancel" 
-        (onClick)="closeRemoveUserModal()" 
-        severity="secondary"
-        [text]="true"
-      ></p-button>
-      <p-button 
-        label="Remove User" 
-        icon="pi pi-trash"
-        (onClick)="confirmRemoveUser()" 
-        severity="danger"
-        [loading]="loading"
-      ></p-button>
-    </div>
+  }
 
   }
-</p-dialog>
+  }
+</div>

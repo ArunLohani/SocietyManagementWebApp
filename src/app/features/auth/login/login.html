@@ -1,61 +1,70 @@
+
 <app-auth-layout>
+  <div class="flex flex-col text-left w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] max-w-md gap-3 sm:gap-4">
+    <div class="flex flex-col">
+      <p class="text-xl sm:text-2xl font-semibold">Welcome Back</p>
+      <p class="text-xs sm:text-sm text-gray-500 font-black">Login to get access to your Society.</p>
+    </div>
+    
+    <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)" class="flex flex-col gap-3 sm:gap-4">
+      <!-- Email Field -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs sm:text-sm text-gray-700 font-semibold">Email</label>
+        <input #email="ngModel" type="email" name="email" id="email"
+          class="placeholder:text-gray-500 text-gray-800 py-2 sm:py-2.5 focus:outline-0 px-2 sm:px-3 text-sm border rounded-md border-gray-300"
+          placeholder="Email" [(ngModel)]="loginData.email" required
+          pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+        
+        @if(email.invalid && email.touched){
+          <div class="text-[10px] sm:text-xs text-red-500">Enter Valid Mail</div>
+        }
+      </div>
 
-    <div class="flex flex-col text-left w-[50%] gap-3">
-        <div class="flex flex-col">
-            <p class="text-2xl font-semibold">Welcome Back</p>
-            <p class="text-xs text-gray-500 font-black">Login to get access to your Society.</p>
+      <!-- Password Field -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs sm:text-sm text-gray-700 font-semibold">Password</label>
+        <div class="flex border rounded-md border-gray-300 items-center pr-2">
+          <input #password="ngModel" [type]="showPassword ? 'text' : 'password'" id="password" name="password"
+            class="flex-1 placeholder:text-gray-500 text-gray-800 py-2 sm:py-2.5 px-2 sm:px-3 focus:outline-0 text-sm"
+            placeholder="Password" required minlength="8" maxlength="15" [(ngModel)]="loginData.password">
+          
+          @if (showPassword) {
+            <fa-icon [icon]="eyeClosedIcon" class="text-xs sm:text-sm cursor-pointer" (click)="togglePassword()"/>
+          } @else {
+            <fa-icon [icon]="eyeIcon" class="text-xs sm:text-sm cursor-pointer" (click)="togglePassword()"/>
+          }
         </div>
-        <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)" class="flex flex-col gap-4">
+        
+        @if(password.invalid && password.touched){
+          <div class="text-[10px] sm:text-xs text-red-500">Enter Valid Password</div>
+        }
+      </div>
+      
+      @if (errorMessage!='') {
+        <div class="text-[10px] sm:text-xs text-red-500">{{errorMessage}}</div>
+      }
+      
+      <button [disabled]="loginForm.invalid" 
+        class="disabled:cursor-not-allowed disabled:opacity-50 bg-[#FF521B] text-white p-2 sm:p-2.5 rounded-md text-sm sm:text-base font-medium hover:bg-[#e64a19] transition-colors">
+        Login
+      </button>
+    </form>
+    
+    <p class="text-xs sm:text-sm text-center">
+      Don't have an account? 
+      <span class="text-orange-500 cursor-pointer hover:underline font-medium" (click)="onRegisterClick()">Register</span>
+    </p>
 
-            <div class="flex flex-col gap-1">
-                <label class="text-xs text-gray-700 font-semibold">Email</label>
-                <input #email="ngModel" type="email" name="email" id="email"
-                    class="placeholder:text-gray-500 text-gray-800 py-2 focus:outline-0 px-2 text-sm border rounded-md border-gray-300"
-                    placeholder="Email" [(ngModel)]="loginData.email" required
-                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
-
-                @if(email.invalid && email.touched){
-                <div class="text-[10px] text-red-500">Enter Valid Mail</div>
-
-                }
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="text-xs text-gray-700 font-semibold">Password</label>
-              <div class="flex border rounded-md border-gray-300 items-center pr-1">
-                  <input #password="ngModel" [type]="showPassword ? 'text' : 'password' " id="password" name="password"
-                    class="flex-1 placeholder:text-gray-500 text-gray-800 py-2 px-2 focus:outline-0 text-sm 
-                    "
-                    placeholder="Password" required minlength="8" maxlength="15" [(ngModel)]="loginData.password">
-
-             @if (showPassword) {
-                  <fa-icon [icon]="eyeClosedIcon" class="text-xs" (click)="togglePassword()"/>
-             }
-             @else{
-            <fa-icon [icon]="eyeIcon" class="text-xs" (click)="togglePassword()"/>
-             }
-              </div>
-
-                @if(password.invalid && password.touched){
-                <div class="text-[10px] text-red-500">Enter Valid Password</div>
-                }
-            </div>
-            @if (errorMessage!='') {
-                <div class="text-[10px] text-red-500">{{errorMessage}}</div>
-                
-            }
-            <button [disabled]="loginForm.invalid" class="disabled:cursor-not-allowed disabled:opacity-50 bg-[#FF521B] text-white p-2">Login</button>
-        </form>
-        <p class="text-sm">Don't have an account? <span class="text-orange-500 cursor-pointer" (click)="onRegisterClick()">Register</span></p>
-
-        <div class="flex items-center gap-1 text-xs">
-            <div class="w-full h-[0.5px] border-[0.1px]"></div>
-            OR
-               <div class="w-full h-[0.5px] border-[0.1px]"></div>
-
-        </div>
-
-        <button (click)="ContinueWithGoogle()" class="text-sm font-semibold text-black flex gap-1 justify-center p-1 items-center border rounded-md border-gray-300 bg-gray-50"><fa-icon [icon]="googleIcon" class="text-base"/>Continue With Google</button>
+    <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+      <div class="flex-1 h-[0.5px] bg-gray-300"></div>
+      OR
+      <div class="flex-1 h-[0.5px] bg-gray-300"></div>
     </div>
 
+    <button (click)="ContinueWithGoogle()" 
+      class="text-xs sm:text-sm font-semibold text-black flex gap-2 justify-center p-2 sm:p-2.5 items-center border rounded-md border-gray-300 bg-gray-50 hover:bg-gray-100 transition-colors">
+      <fa-icon [icon]="googleIcon" class="text-base sm:text-lg"/>
+      Continue With Google
+    </button>
+  </div>
 </app-auth-layout>

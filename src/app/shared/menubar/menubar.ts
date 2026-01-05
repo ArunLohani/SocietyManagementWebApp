@@ -23,7 +23,7 @@ import { ProfileService } from '../../core/service/profile.service';
 import { StompService } from '../../core/service/stomp.service';
 import { UserDetails, Notification } from '../../types/types';
 import { NotificationService } from '../../core/service/notification.service';
-
+import { EventEmitter,Output } from '@angular/core';
 @Component({
   selector: 'app-menubar',
   standalone: true,
@@ -45,6 +45,9 @@ import { NotificationService } from '../../core/service/notification.service';
   styleUrl: './menubar.css'
 })
 export class MenuBar implements OnInit, OnDestroy {
+
+  @Output() toggleSidebar = new EventEmitter<void>();
+
   user: UserDetails | null = null;
   menuItems: MenuItem[] = [];
   
@@ -72,6 +75,10 @@ export class MenuBar implements OnInit, OnDestroy {
     private router: Router,
     private notificationService: NotificationService
   ) {}
+
+  openSidebar(){
+    this.toggleSidebar.emit()
+  }
 
   ngOnInit(): void {
     this.loadUserProfile();
