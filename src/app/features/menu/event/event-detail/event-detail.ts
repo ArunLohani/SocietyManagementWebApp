@@ -74,7 +74,7 @@ export class EventDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.eventId = Number(this.route.snapshot.paramMap.get('id'));
-    this.currentUserId = this.auth.getUserIdFromToken();
+    this.currentUserId = this.auth.getUserId();
     this.loadEvent();
     this.checkParticipation();
     this.loadParticipants();

@@ -63,6 +63,8 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   overflow: hidden;
+  min-width: 400px;
+  max-width: 500px;
 }
 
 /* Notification Bell Animation */
@@ -170,18 +172,35 @@
 }
 
 /* Custom Scrollpanel */
-.custom-scrollpanel ::ng-deep .p-scrollpanel-bar {
+.custom-scrollpanel ::ng-deep .p-scrollpanel-bar,
+.notification-scroll-panel ::ng-deep .p-scrollpanel-bar {
   background-color: var(--primary-color);
   opacity: 0.3;
   transition: opacity 0.2s;
 }
 
-.custom-scrollpanel ::ng-deep .p-scrollpanel-bar:hover {
+.custom-scrollpanel ::ng-deep .p-scrollpanel-bar:hover,
+.notification-scroll-panel ::ng-deep .p-scrollpanel-bar:hover {
   opacity: 0.6;
 }
 
-.custom-scrollpanel ::ng-deep .p-scrollpanel-content {
+.custom-scrollpanel ::ng-deep .p-scrollpanel-content,
+.notification-scroll-panel ::ng-deep .p-scrollpanel-content {
   padding-right: 8px;
+}
+
+/* Scroll Panel Height */
+.notification-scroll-panel {
+  width: 100%;
+  height: 300px;
+}
+
+.notification-scroll-panel ::ng-deep .p-scrollpanel-wrapper {
+  width: 100%;
+}
+
+.notification-scroll-panel ::ng-deep .p-scrollpanel-content {
+  width: 100%;
 }
 
 /* Profile Panel Styles */
@@ -225,36 +244,6 @@ p-badge ::ng-deep .p-badge {
   background-color: var(--surface-100);
 }
 
-/* Responsive Design */
-@media (max-width: 480px) {
-  .notification-panel {
-    width: 100vw !important;
-    max-width: 380px;
-  }
-  
-  .notification-item {
-    padding: 0.75rem !important;
-  }
-  
-  .notification-icon-wrapper {
-    width: 36px !important;
-    height: 36px !important;
-  }
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .unread-notification {
-    background: linear-gradient(135deg, 
-      rgba(var(--primary-400-rgb), 0.1) 0%, 
-      rgba(var(--primary-400-rgb), 0.05) 100%);
-  }
-  
-  .notification-panel {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  }
-}
-
 /* Text Truncation */
 .notification-item h5 {
   overflow: hidden;
@@ -292,7 +281,7 @@ p-button ::ng-deep .p-button {
   overflow: hidden;
 }
 
-/* Loading State (Optional) */
+/* Loading State */
 .notification-loading {
   display: flex;
   justify-content: center;
@@ -311,5 +300,419 @@ p-button ::ng-deep .p-button {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .unread-notification {
+    background: linear-gradient(135deg, 
+      rgba(var(--primary-400-rgb), 0.1) 0%, 
+      rgba(var(--primary-400-rgb), 0.05) 100%);
+  }
+  
+  .notification-panel {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ===================================
+   RESPONSIVE DESIGN BREAKPOINTS
+   =================================== */
+
+/* Large Tablets and Small Desktops (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .notification-panel {
+    min-width: 380px;
+    max-width: 450px;
+  }
+  
+  .profile-panel {
+    min-width: 260px;
+  }
+  
+  /* Adjust tab labels */
+  .notification-tabs ::ng-deep .p-tab span {
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablets (max-width: 768px) */
+@media (max-width: 768px) {
+  .notification-panel {
+    min-width: 340px;
+    max-width: 90vw;
+    border-radius: 8px;
+  }
+  
+  .profile-panel {
+    min-width: 240px;
+  }
+  
+  /* Reduce padding */
+  .notification-item {
+    padding: 0.75rem !important;
+  }
+  
+  /* Smaller icon wrapper */
+  .notification-icon-wrapper {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  
+  /* Adjust font sizes */
+  .notification-item h5 {
+    font-size: 0.875rem;
+  }
+  
+  .notification-item p {
+    font-size: 0.813rem;
+  }
+  
+  /* Reduce scroll panel height */
+  .notification-panel ::ng-deep p-scrollpanel,
+  .notification-scroll-panel {
+    height: 250px !important;
+  }
+  
+  /* Smaller badges */
+  .notification-badge-hanging ::ng-deep .p-badge {
+    min-width: 14px;
+    height: 14px;
+    font-size: 7px;
+  }
+  
+  /* Compact tabs */
+  .notification-tabs ::ng-deep .p-tab {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .notification-tabs ::ng-deep .p-tab span {
+    font-size: 0.875rem;
+  }
+  
+  /* Smaller gap in tab content */
+  .notification-tabs ::ng-deep .p-tab .flex {
+    gap: 0.375rem;
+  }
+}
+
+/* Mobile Landscape and Small Tablets (max-width: 640px) */
+@media (max-width: 640px) {
+  .notification-panel {
+    min-width: unset !important;
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
+    border-radius: 8px;
+  }
+  
+  .profile-panel {
+    min-width: 220px;
+  }
+  
+  /* Further reduce padding */
+  .notification-item {
+    padding: 0.625rem !important;
+  }
+  
+  /* Even smaller icons */
+  .notification-icon-wrapper {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  
+  /* Compact header */
+  .notification-panel .flex.justify-between.items-center {
+    padding: 0.75rem 0.75rem 0.5rem !important;
+  }
+  
+  .notification-panel h4 {
+    font-size: 1rem;
+  }
+  
+  /* Reduce scroll height */
+  .notification-panel ::ng-deep p-scrollpanel,
+  .notification-scroll-panel {
+    height: 220px !important;
+  }
+  
+  /* Smaller mark as read button */
+  .mark-read-btn ::ng-deep button {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+  
+  .mark-read-btn ::ng-deep button .pi {
+    font-size: 0.75rem;
+  }
+  
+  /* Compact footer buttons */
+  .notification-panel p-button[label="Mark All as Read"] ::ng-deep button {
+    font-size: 0.813rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  /* Avatar size */
+  p-avatar {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+  
+  /* Notification bell button */
+  .notification-bell ::ng-deep button {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+}
+
+/* Mobile Portrait (max-width: 480px) */
+@media (max-width: 480px) {
+  .notification-panel {
+    min-width: unset !important;
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
+    border-radius: 6px;
+  }
+  
+  .profile-panel {
+    min-width: 200px;
+    max-width: calc(100vw - 1rem);
+  }
+  
+  /* Very compact padding */
+  .notification-item {
+    padding: 0.5rem !important;
+  }
+  
+  /* Smallest icons */
+  .notification-icon-wrapper {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  /* Hide tab text on very small screens, keep icons */
+  .notification-tabs ::ng-deep .p-tab span:not(.pi) {
+    display: none;
+  }
+  
+  .notification-tabs ::ng-deep .p-tab {
+    padding: 0.5rem;
+    min-width: auto;
+  }
+  
+  .notification-tabs ::ng-deep .p-tab i {
+    font-size: 1.1rem;
+  }
+  
+  /* Show badge inline with icon */
+  .notification-tabs ::ng-deep .p-tab .flex {
+    gap: 0.25rem;
+  }
+  
+  /* Compact time display */
+  .notification-item .text-xs {
+    font-size: 0.688rem;
+  }
+  
+  /* Reduce scroll height further */
+  .notification-panel ::ng-deep p-scrollpanel,
+  .notification-scroll-panel {
+    height: 200px !important;
+  }
+  
+  /* Smaller notification title */
+  .notification-item h5 {
+    font-size: 0.813rem;
+    -webkit-line-clamp: 1;
+  }
+  
+  /* Smaller notification message */
+  .notification-item p {
+    font-size: 0.75rem;
+    -webkit-line-clamp: 1;
+  }
+  
+  /* Compact panel header */
+  .notification-panel .flex.justify-between.items-center {
+    padding: 0.625rem 0.625rem 0.375rem !important;
+  }
+  
+  .notification-panel h4 {
+    font-size: 0.938rem;
+  }
+  
+  /* Smaller divider */
+  .notification-panel ::ng-deep p-divider {
+    margin: 0.25rem 0;
+  }
+  
+  /* Very small mark as read button */
+  .mark-read-btn ::ng-deep button {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+  
+  .mark-read-btn ::ng-deep button .pi {
+    font-size: 0.688rem;
+  }
+  
+  /* Hide "Mark All as Read" text, show icon only */
+  .notification-panel p-button[label="Mark All as Read"] ::ng-deep button span {
+    display: none;
+  }
+  
+  .notification-panel p-button[label="Mark All as Read"] ::ng-deep button::before {
+    content: "✓";
+    font-size: 1rem;
+  }
+  
+  /* Smaller avatar */
+  p-avatar {
+    width: 2rem !important;
+    height: 2rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* Smaller notification bell */
+  .notification-bell ::ng-deep button {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+  
+  .notification-bell ::ng-deep button .pi {
+    font-size: 1rem;
+  }
+  
+  /* Position badge closer on small screens */
+  .notification-badge-hanging {
+    top: -2px;
+    right: -2px;
+  }
+  
+  .notification-badge-hanging ::ng-deep .p-badge {
+    min-width: 12px;
+    height: 12px;
+    font-size: 6px;
+    padding: 0 2px;
+  }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .notification-panel {
+    width: calc(100vw - 1.5rem) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    min-width: unset !important;
+  }
+  
+  .profile-panel {
+    min-width: 180px;
+  }
+  
+  /* Ultra compact */
+  .notification-item {
+    padding: 0.375rem !important;
+  }
+  
+  /* Reduce scroll height to minimum */
+  .notification-panel ::ng-deep p-scrollpanel,
+  .notification-scroll-panel {
+    height: 180px !important;
+  }
+  
+  /* Single line truncation for all text */
+  .notification-item h5,
+  .notification-item p {
+    -webkit-line-clamp: 1;
+  }
+  
+  /* Remove hover effects on very small screens for better performance */
+  .notification-item:hover .notification-icon-wrapper {
+    transform: none;
+  }
+  
+  .notification-bell button:hover {
+    animation: none;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .notification-panel ::ng-deep p-scrollpanel {
+    height: 150px !important;
+  }
+  
+  .notification-panel {
+    max-height: 80vh;
+  }
+}
+
+/* Popover positioning adjustments for mobile */
+@media (max-width: 640px) {
+  /* Ensure popovers don't overflow screen */
+  ::ng-deep .p-popover {
+    max-width: calc(100vw - 2rem) !important;
+    left: 1rem !important;
+    right: 1rem !important;
+  }
+  
+  /* Adjust popover arrow position */
+  ::ng-deep .p-popover .p-popover-arrow {
+    display: none;
+  }
+  
+  /* Force notification panel width */
+  .notification-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: unset !important;
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) and (pointer: coarse) {
+  .notification-item {
+    min-height: 44px; /* iOS minimum tap target */
+  }
+  
+  .mark-read-btn ::ng-deep button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .notification-bell ::ng-deep button,
+  p-avatar {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Prevent text selection on mobile */
+@media (max-width: 768px) {
+  .notification-item h5,
+  .notification-item p {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* Optimize animations for mobile performance */
+@media (max-width: 768px) {
+  .notification-item {
+    animation: none;
+    opacity: 1;
+  }
+  
+  .notification-dot {
+    animation: none;
+  }
+  
+  @keyframes badgePop {
+    0% {
+      transform: scale(0.8);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 }

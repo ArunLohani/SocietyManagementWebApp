@@ -1,91 +1,118 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core'; // Removed OnInit
-import { Observable } from 'rxjs';
-import { LoginRequestData, RegisterRequestData, JwtPayload, User, ApiResponse, AuthSuccessData, Role } from '../../types/types';import { CookieService } from 'ngx-cookie-service';
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import {
+  LoginRequestData,
+  RegisterRequestData,
+  JwtPayload,
+  ApiResponse,
+  AuthSuccessData,
+  UserDetails
+} from '../../types/types';
+import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../../environments/environment.development';
 import { Router } from '@angular/router';
+import { ProfileService } from './profile.service';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  token: string | null = null;
-  url = `${environment.apiUrl}/auth`;
+  private token: string | null = null;
+  private url = `${environment.apiUrl}/auth`;
 
-  constructor(private httpClient: HttpClient, private cookieService: CookieService,private router : Router) {
+  constructor(
+    private httpClient: HttpClient,
+    private cookieService: CookieService,
+    private router: Router,
+    private profileService: ProfileService
+  ) {
+    this.loadToken();
   }
 
-  getToken() {
-    this.token = this.cookieService.get('access_token');
+  /* ---------------- TOKEN HANDLING ---------------- */
+
+  private loadToken(): void {
+    this.token = this.cookieService.get('access_token') || null;
   }
+
+  getToken(): string | null {
+    if (!this.token) {
+      this.loadToken();
+    }
+    return this.token;
+  }
+
   isAuthenticated(): boolean {
-    this.getToken()
-    return !!this.token;
+    return !!this.getToken();
   }
 
-  decodeToken(token: string): JwtPayload {
-    const decodedToken = jwtDecode<JwtPayload>(token);
-    return decodedToken;
+  isAuthenticated$(): Observable<boolean> {
+    return this.profileService.getMyProfile().pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
-  getEmailFromToken(): string | null {
-    if (this.isAuthenticated() && this.token) {
-      return this.decodeToken(this.token).email;
-    }
-    return null;
+  /* ---------------- USER DETAILS (FROM PROFILE) ---------------- */
+
+  getUser(): UserDetails | null {
+    return this.profileService.getUser();
   }
 
-  getUserIdFromToken() : number | null {
-       if (this.isAuthenticated() && this.token) {
-      return Number(this.decodeToken(this.token).sub);
-    }
-    return null;
+  getEmail(): string | null {
+    return this.getUser()?.email ?? null;
   }
 
-  getRolesFromToken() : string[] | null {
-
-     if (this.isAuthenticated() && this.token) {
-      console.log(this.decodeToken(this.token).roles)
-      return this.decodeToken(this.token).roles.split(",");
-    }
-    return null;
-
+  getUserId(): number | null {
+    return this.getUser()?.id ?? null;
   }
 
-  getTenantIdFromToken() : number | null {
-         if (this.isAuthenticated() && this.token) {
-      console.log(this.decodeToken(this.token).roles)
-      return this.decodeToken(this.token).tenantId;
-    }
-    return null;
-
-
+  getRoles(): string[] {
+    return this.getUser()?.roles ?? [];
   }
 
-  isUserSuperAdmin () : boolean {
-      
-    return this.getRolesFromToken()?.includes("SUPER_ADMIN") ? true : false;
-
+  getTenantId(): number | null {
+    return this.getUser()?.tenantId ?? null;
   }
 
-  isUserAdmin():boolean{
-        return this.getRolesFromToken()?.includes("ADMIN") ? true : false;
-
+  getSocietyName(): string | null {
+    return this.getUser()?.societyName ?? null;
   }
+
+  /* ---------------- ROLE HELPERS ---------------- */
+
+  isUserSuperAdmin(): boolean {
+    return this.getRoles().includes('SUPER_ADMIN');
+  }
+
+  isUserAdmin(): boolean {
+    return this.getRoles().includes('ADMIN');
+  }
+
+  /* ---------------- AUTH ACTIONS ---------------- */
 
   login(loginData: LoginRequestData): Observable<ApiResponse<AuthSuccessData>> {
-    return this.httpClient.post<ApiResponse<AuthSuccessData>>(`${this.url}/login`, loginData);
+    return this.httpClient.post<ApiResponse<AuthSuccessData>>(
+      `${this.url}/login`,
+      loginData
+    );
   }
 
-  register(registerData: RegisterRequestData): Observable<ApiResponse<AuthSuccessData>>{
-    return this.httpClient.post<ApiResponse<AuthSuccessData>>(`${this.url}/register`, registerData);
+  register(registerData: RegisterRequestData): Observable<ApiResponse<AuthSuccessData>> {
+    return this.httpClient.post<ApiResponse<AuthSuccessData>>(
+      `${this.url}/register`,
+      registerData
+    );
   }
 
-  logout() {
-     this.cookieService.delete('access_token', '/'); 
+  logout(): void {
+    this.cookieService.delete('access_token', '/');
+    this.token = null;
+    this.profileService.clearUser();
     this.router.navigate(['/login']);
   }
-
-
 }

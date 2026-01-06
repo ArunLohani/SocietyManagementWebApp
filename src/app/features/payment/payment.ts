@@ -87,7 +87,7 @@ export class Payment implements OnInit {
   }
 
   loadUserFlats() {
-    const userId = this.authService.getUserIdFromToken();
+    const userId = this.authService.getUserId();
     if (!userId) return;
 
     this.loadingFlats = true;

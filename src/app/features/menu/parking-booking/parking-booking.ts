@@ -115,7 +115,7 @@ export class ParkingBooking implements OnInit {
     private flatService : FlatService,
     private tenantRoleMenuService : TenantRoleMenuService
   ) {
-    this.currentUserId = this.auth.getUserIdFromToken();
+    this.currentUserId = this.auth.getUserId();
  this.isAdmin = this.auth.isUserAdmin();
      this.tenantRoleMenuService.getPriority("Parking Requests").subscribe({
       next: (res) => {
@@ -175,7 +175,7 @@ export class ParkingBooking implements OnInit {
   }
 
     loadUserFlats() {
-    const userId = this.auth.getUserIdFromToken();
+    const userId = this.auth.getUserId();
     if (!userId) return;
 
     this.loadingFlats = true;

@@ -1,10 +1,10 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-2xl">Vehicle Management</h3>
-      <p class="text-sm text-gray-500">Manage your vehicles here.</p>
+      <h3 class="font-semibold text-xl sm:text-2xl">Vehicle Management</h3>
+      <p class="text-xs sm:text-sm text-gray-500">Manage your vehicles here.</p>
     </div>
     @if (permission === "CREATE") {
     <p-button 
@@ -12,7 +12,8 @@
       icon="pi pi-plus" 
       size="small"
       (onClick)="openCreateModal()" 
-      severity="contrast">
+      severity="contrast"
+      class="w-full sm:w-auto">
     </p-button>
     }
   </div>
@@ -34,24 +35,24 @@
           <p class="text-sm font-semibold">My Vehicles</p>
           <p-divider />
 
-          <div class="flex flex-wrap gap-3 items-end">
-            <p-floatlabel variant="on">
-              <input pInputText id="userRegNo" [(ngModel)]="userFilter.registrationNumber" />
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="userRegNo" [(ngModel)]="userFilter.registrationNumber" class="w-full" />
               <label for="userRegNo">Registration Number</label>
             </p-floatlabel>
 
-            <p-floatlabel variant="on">
-              <input pInputText id="userBrand" [(ngModel)]="userFilter.brand" />
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="userBrand" [(ngModel)]="userFilter.brand" class="w-full" />
               <label for="userBrand">Brand</label>
             </p-floatlabel>
 
-            <p-floatlabel variant="on">
-              <input pInputText id="userModel" [(ngModel)]="userFilter.model" />
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="userModel" [(ngModel)]="userFilter.model" class="w-full" />
               <label for="userModel">Model</label>
             </p-floatlabel>
 
             <p-select 
-              class="w-56"
+              class="w-full sm:w-56"
               [options]="vehicleTypes"
               [(ngModel)]="userFilter.vehicleType"
               optionLabel="name" 
@@ -60,21 +61,25 @@
               placeholder="Select Type">
             </p-select>
 
-            <p-button 
-              label="Search" 
-              icon="pi pi-search" 
-              size="small"
-              (onClick)="applyUserFilters()" 
-              severity="contrast">
-            </p-button>
+            <div class="flex justify-end gap-3 w-full sm:w-auto">
+              <p-button 
+                label="Search" 
+                icon="pi pi-search" 
+                size="small"
+                (onClick)="applyUserFilters()" 
+                severity="contrast"
+                class="">
+              </p-button>
 
-            <p-button 
-              label="Clear" 
-              icon="pi pi-times" 
-              size="small"
-              (onClick)="clearUserFilters()" 
-              severity="secondary">
-            </p-button>
+              <p-button 
+                label="Clear" 
+                icon="pi pi-times" 
+                size="small"
+                (onClick)="clearUserFilters()" 
+                severity="secondary"
+                class="">
+              </p-button>
+            </div>
           </div>
         </p-card>
 
@@ -87,9 +92,9 @@
 
         <!-- User Vehicles Grid -->
         @if (!loading && userVehiclesPage) {
-        <div class="flex flex-wrap gap-4 mt-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
           @for (vehicle of userVehiclesPage.content; track vehicle.id) {
-          <p-card [style]="{ width: '20rem', overflow: 'hidden' }">
+          <p-card class="w-full" [style]="{ overflow: 'hidden' }">
             <ng-template #header>
               <div class="relative bg-gradient-to-r from-blue-500 to-indigo-600 h-32 flex items-center justify-center">
                 <i class="pi pi-car text-white text-6xl"></i>
@@ -102,7 +107,7 @@
             </ng-template>
 
             <div class="flex justify-between items-center mb-2">
-              <p class="font-semibold text-lg">{{ vehicle.registrationNumber }}</p>
+              <p class="font-semibold text-base sm:text-lg truncate pr-2">{{ vehicle.registrationNumber }}</p>
             </div>
 
             <p-divider />
@@ -110,12 +115,12 @@
             <div class="flex flex-col gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-500">Brand</span>
-                <span class="font-semibold">{{ vehicle.brand }}</span>
+                <span class="font-semibold truncate ml-2">{{ vehicle.brand }}</span>
               </div>
 
               <div class="flex justify-between">
                 <span class="text-gray-500">Model</span>
-                <span class="font-semibold">{{ vehicle.model }}</span>
+                <span class="font-semibold truncate ml-2">{{ vehicle.model }}</span>
               </div>
 
               <div class="flex justify-between">
@@ -125,14 +130,15 @@
             </div>
 
             <ng-template #footer>
-              <div class="flex justify-end gap-2">
+              <div class="flex flex-row justify-end gap-2">
                 @if (permission !== "READ") {
                 <p-button 
                   icon="pi pi-pencil" 
                   size="small" 
                   label="Edit" 
                   (onClick)="openEditModal(vehicle)"
-                  severity="secondary">
+                  severity="secondary"
+                  class=" sm:w-auto">
                 </p-button>
                 }
                 @if (permission === 'CREATE') {
@@ -141,7 +147,8 @@
                   size="small" 
                   label="Delete" 
                   (onClick)="openDeleteModal(vehicle.id)"
-                  severity="danger">
+                  severity="danger"
+                  class=" sm:w-auto">
                 </p-button>
                 }
               </div>
@@ -149,31 +156,33 @@
           </p-card>
           }
 
-          <!-- User Pagination -->
-          <div class="w-full">
-            <p-paginator 
-              [first]="userPage * pageSize" 
-              [rows]="pageSize"
-              [totalRecords]="userVehiclesPage.totalElements"
-              (onPageChange)="onUserPageChange($event)">
-            </p-paginator>
-          </div>
+        </div>
+
+        <!-- User Pagination -->
+        <div class="w-full mt-6">
+          <p-paginator 
+            [first]="userPage * pageSize" 
+            [rows]="pageSize"
+            [totalRecords]="userVehiclesPage.totalElements"
+            (onPageChange)="onUserPageChange($event)">
+          </p-paginator>
         </div>
         }
 
         <!-- User Empty State -->
         @if (!loading && userVehiclesPage?.content?.length === 0) {
-        <p-card class="text-center py-20 mt-6">
-          <i class="pi pi-car text-5xl text-gray-300 mb-3"></i>
-          <h3 class="text-lg font-bold mb-1">No Vehicles Found</h3>
-          <p class="text-gray-500 mb-4">You don't have any vehicles registered yet.</p>
+        <p-card class="text-center py-12 sm:py-20 mt-6">
+          <i class="pi pi-car text-4xl sm:text-5xl text-gray-300 mb-3"></i>
+          <h3 class="text-base sm:text-lg font-bold mb-1">No Vehicles Found</h3>
+          <p class="text-sm sm:text-base text-gray-500 mb-4">You don't have any vehicles registered yet.</p>
           @if (permission === "CREATE") {
           <p-button 
             label="Add Vehicle" 
             icon="pi pi-plus" 
             size="small"
             (onClick)="openCreateModal()" 
-            severity="contrast">
+            severity="contrast"
+            class="w-full sm:w-auto">
           </p-button>
           }
         </p-card>
@@ -188,24 +197,24 @@
           <p class="text-sm font-semibold">All Society Vehicles</p>
           <p-divider />
 
-          <div class="flex flex-wrap gap-3 items-end">
-            <p-floatlabel variant="on">
-              <input pInputText id="societyRegNo" [(ngModel)]="societyFilter.registrationNumber" />
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="societyRegNo" [(ngModel)]="societyFilter.registrationNumber" class="w-full" />
               <label for="societyRegNo">Registration Number</label>
             </p-floatlabel>
 
-            <p-floatlabel variant="on">
-              <input pInputText id="societyBrand" [(ngModel)]="societyFilter.brand" />
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="societyBrand" [(ngModel)]="societyFilter.brand" class="w-full" />
               <label for="societyBrand">Brand</label>
             </p-floatlabel>
 
-            <p-floatlabel variant="on">
-              <input pInputText id="societyModel" [(ngModel)]="societyFilter.model" />
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="societyModel" [(ngModel)]="societyFilter.model" class="w-full" />
               <label for="societyModel">Model</label>
             </p-floatlabel>
 
             <p-select 
-              class="w-56"
+              class="w-full sm:w-56"
               [options]="vehicleTypes"
               [(ngModel)]="societyFilter.vehicleType"
               optionLabel="name" 
@@ -214,21 +223,25 @@
               placeholder="Select Type">
             </p-select>
 
-            <p-button 
-              label="Search" 
-              icon="pi pi-search" 
-              size="small"
-              (onClick)="applySocietyFilters()" 
-              severity="contrast">
-            </p-button>
+            <div class="flex gap-3 w-full sm:w-auto">
+              <p-button 
+                label="Search" 
+                icon="pi pi-search" 
+                size="small"
+                (onClick)="applySocietyFilters()" 
+                severity="contrast"
+                class="flex-1 sm:flex-initial">
+              </p-button>
 
-            <p-button 
-              label="Clear" 
-              icon="pi pi-times" 
-              size="small"
-              (onClick)="clearSocietyFilters()" 
-              severity="secondary">
-            </p-button>
+              <p-button 
+                label="Clear" 
+                icon="pi pi-times" 
+                size="small"
+                (onClick)="clearSocietyFilters()" 
+                severity="secondary"
+                class="flex-1 sm:flex-initial">
+              </p-button>
+            </div>
           </div>
         </p-card>
 
@@ -241,9 +254,9 @@
 
         <!-- Society Vehicles Grid -->
         @if (!loading && societyVehiclesPage) {
-        <div class="flex flex-wrap gap-4 mt-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
           @for (vehicle of societyVehiclesPage.content; track vehicle.id) {
-          <p-card [style]="{ width: '22rem', overflow: 'hidden' }">
+          <p-card class="w-full" [style]="{ overflow: 'hidden' }">
             <ng-template #header>
               <div class="relative bg-gradient-to-r from-emerald-500 to-teal-600 h-32 flex items-center justify-center">
                 <i class="pi pi-car text-white text-6xl"></i>
@@ -256,7 +269,7 @@
             </ng-template>
 
             <div class="flex justify-between items-center mb-2">
-              <p class="font-semibold text-lg">{{ vehicle.registrationNumber }}</p>
+              <p class="font-semibold text-base sm:text-lg truncate pr-2">{{ vehicle.registrationNumber }}</p>
             </div>
 
             <p-divider />
@@ -264,12 +277,12 @@
             <div class="flex flex-col gap-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-500">Brand</span>
-                <span class="font-semibold">{{ vehicle.brand }}</span>
+                <span class="font-semibold truncate ml-2">{{ vehicle.brand }}</span>
               </div>
 
               <div class="flex justify-between">
                 <span class="text-gray-500">Model</span>
-                <span class="font-semibold">{{ vehicle.model }}</span>
+                <span class="font-semibold truncate ml-2">{{ vehicle.model }}</span>
               </div>
 
               <div class="flex justify-between">
@@ -277,57 +290,36 @@
                 <span class="font-semibold">{{ vehicle.owner.block }} - {{ vehicle.owner.number }}</span>
               </div>
             </div>
-
-            <!-- <ng-template #footer>
-              <div class="flex justify-end gap-2">
-                @if (permission !== "READ") {
-                <p-button 
-                  icon="pi pi-pencil" 
-                  size="small" 
-                  label="Edit" 
-                  (onClick)="openEditModal(vehicle)"
-                  severity="secondary">
-                </p-button>
-                }
-                @if (permission === 'CREATE') {
-                <p-button 
-                  icon="pi pi-trash" 
-                  size="small" 
-                  label="Delete" 
-                  (onClick)="openDeleteModal(vehicle.id)"
-                  severity="danger">
-                </p-button>
-                }
-              </div>
-            </ng-template> -->
           </p-card>
           }
 
-          <!-- Society Pagination -->
-          <div class="w-full">
-            <p-paginator 
-              [first]="societyPage * pageSize" 
-              [rows]="pageSize"
-              [totalRecords]="societyVehiclesPage.totalElements"
-              (onPageChange)="onSocietyPageChange($event)">
-            </p-paginator>
-          </div>
+        </div>
+
+        <!-- Society Pagination -->
+        <div class="w-full mt-6">
+          <p-paginator 
+            [first]="societyPage * pageSize" 
+            [rows]="pageSize"
+            [totalRecords]="societyVehiclesPage.totalElements"
+            (onPageChange)="onSocietyPageChange($event)">
+          </p-paginator>
         </div>
         }
 
         <!-- Society Empty State -->
         @if (!loading && societyVehiclesPage?.content?.length === 0) {
-        <p-card class="text-center py-20 mt-6">
-          <i class="pi pi-building text-5xl text-gray-300 mb-3"></i>
-          <h3 class="text-lg font-bold mb-1">No Vehicles Found</h3>
-          <p class="text-gray-500 mb-4">No vehicles have been registered in the society yet.</p>
+        <p-card class="text-center py-12 sm:py-20 mt-6">
+          <i class="pi pi-building text-4xl sm:text-5xl text-gray-300 mb-3"></i>
+          <h3 class="text-base sm:text-lg font-bold mb-1">No Vehicles Found</h3>
+          <p class="text-sm sm:text-base text-gray-500 mb-4">No vehicles have been registered in the society yet.</p>
           @if (permission === "CREATE") {
           <p-button 
             label="Add Vehicle" 
             icon="pi pi-plus" 
             size="small"
             (onClick)="openCreateModal()" 
-            severity="contrast">
+            severity="contrast"
+            class="w-full sm:w-auto">
           </p-button>
           }
         </p-card>
@@ -426,18 +418,20 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-row justify-end gap-3 w-full mt-4">
       <p-button 
         label="Cancel" 
         (click)="closeVehicleModal()" 
         severity="secondary"
         [text]="true"
+        class="sm:w-auto"
       ></p-button>
 
       <p-button 
         [label]="isEditMode ? 'Update' : 'Create'" 
         (click)="saveVehicle()" 
         severity="contrast"
+        class=" sm:w-auto"
       ></p-button>
     </div>
   </ng-template>

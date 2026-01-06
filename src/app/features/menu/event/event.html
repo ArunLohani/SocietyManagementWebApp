@@ -1,15 +1,15 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-lg">Events</h3>
+      <h3 class="font-semibold text-lg sm:text-xl">Events</h3>
       <p class="text-xs text-gray-500">Manage and organize events.</p>
     </div>
 
     @if (this.permission === "CREATE") {
     <p-button label="Add Event" icon="pi pi-plus" size="small"
-      (onClick)="toggleCreateModal()" severity="contrast"></p-button>
+      (onClick)="toggleCreateModal()" severity="contrast" class="w-full sm:w-auto"></p-button>
     }
   </div>
 
@@ -19,19 +19,19 @@
       <p class="text-sm font-semibold">All Events</p>
       <p-divider />
 
-      <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
 
-        <p-floatlabel variant="on">
-          <input pInputText id="eventName" [(ngModel)]="filter.name" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[200px]">
+          <input pInputText id="eventName" [(ngModel)]="filter.name" class="w-full" />
           <label for="eventName">Search by name</label>
         </p-floatlabel>
 
-        <p-floatlabel variant="on">
-          <input pInputText id="location" [(ngModel)]="filter.location" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[200px]">
+          <input pInputText id="location" [(ngModel)]="filter.location" class="w-full" />
           <label for="location">Location</label>
         </p-floatlabel>
 
-        <p-select class="w-56"
+        <p-select class="w-full sm:w-56"
           [options]="statusOptions"
           [(ngModel)]="filter.status"
           optionLabel="name" optionValue="code"
@@ -39,11 +39,13 @@
           placeholder="Select Status">
         </p-select>
 
-        <p-button label="Search" icon="pi pi-search" size="small"
-          (onClick)="searchEvents()" severity="contrast"></p-button>
+        <div class="flex  justify-end gap-3 w-full sm:w-auto">
+          <p-button label="Search" icon="pi pi-search" size="small"
+            (onClick)="searchEvents()" severity="contrast" class="sm:flex-initial"></p-button>
 
-        <p-button label="Clear" icon="pi pi-times" size="small"
-          (onClick)="clearFilters()" severity="secondary"></p-button>
+          <p-button label="Clear" icon="pi pi-times" size="small"
+            (onClick)="clearFilters()" severity="secondary" class="sm:flex-initial"></p-button>
+        </div>
 
       </div>
     </p-card>
@@ -56,10 +58,10 @@
 
   <!-- Cards Grid -->
   @if (!loading && eventsPage) {
-  <div class="flex flex-wrap gap-4 mt-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
 
     @for (event of eventsPage.content; track $index) {
-    <p-card [style]="{ width: '22rem', overflow: 'hidden' }">
+    <p-card class="w-full" [style]="{ overflow: 'hidden' }">
 
       <ng-template #header>
         <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-32 flex items-center justify-center">
@@ -68,7 +70,7 @@
       </ng-template>
 
       <div class="flex justify-between items-center mb-2">
-        <p class="font-semibold text-lg">{{ event.name }}</p>
+        <p class="font-semibold text-base sm:text-lg truncate pr-2">{{ event.name }}</p>
         <p-badge 
           [value]="event.status" 
           [severity]="getStatusSeverity(event.status)">
@@ -80,56 +82,56 @@
       <div class="flex flex-col gap-2 text-xs mb-3">
 
         <div class="flex items-start gap-2">
-          <i class="pi pi-map-marker text-gray-400 mt-0.5"></i>
-          <span class="font-bold">{{ event.location }}</span>
+          <i class="pi pi-map-marker text-gray-400 mt-0.5 flex-shrink-0"></i>
+          <span class="font-bold break-words">{{ event.location }}</span>
         </div>
 
         <div class="flex items-start gap-2">
-          <i class="pi pi-clock text-gray-400 mt-0.5"></i>
+          <i class="pi pi-clock text-gray-400 mt-0.5 flex-shrink-0"></i>
           <div class="flex flex-col">
-            <span class="font-semibold">{{ event.startDateTime | date:'medium' }}</span>
+            <span class="font-semibold">{{ event.startDateTime | date:'short' }}</span>
             <span class="text-gray-500">to {{ event.endDateTime | date:'short' }}</span>
           </div>
         </div>
 
         <div class="flex items-start gap-2">
-          <i class="pi pi-info-circle text-gray-400 mt-0.5"></i>
+          <i class="pi pi-info-circle text-gray-400 mt-0.5 flex-shrink-0"></i>
           <span class="text-gray-600 line-clamp-2">{{ event.description }}</span>
         </div>
 
       </div>
 
       <ng-template #footer>
-        <div class="flex justify-end gap-2">
+        <div class="flex flex-row justify-end sm:justify-between gap-2">
           <p-button icon="pi pi-eye" size="small" label="View" variant="outlined" 
-            (onClick)="goToEvent(event.id)" severity="secondary"></p-button>
+            (onClick)="goToEvent(event.id)" severity="secondary" class=""></p-button>
           <p-button icon="pi pi-users" size="small" label="Participants" 
-            (onClick)="openParticipants(event.id, event.name)" severity="info"></p-button>
+            (onClick)="openParticipants(event.id, event.name)" severity="info" class=""></p-button>
         </div>
       </ng-template>
 
     </p-card>
     }
 
-    <!-- Pagination -->
-    <div class="w-full">
-      <p-paginator [first]="page * pageSize" [rows]="pageSize"
-        [totalRecords]="eventsPage.totalElements"
-        (onPageChange)="onPageChange($event)">
-      </p-paginator>
-    </div>
+  </div>
 
+  <!-- Pagination -->
+  <div class="w-full mt-6">
+    <p-paginator [first]="page * pageSize" [rows]="pageSize"
+      [totalRecords]="eventsPage.totalElements"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
   </div>
   }
 
   <!-- Empty State -->
   @if (!loading && eventsPage?.content?.length === 0) {
-  <p-card class="text-center py-20 mt-6">
-    <h3 class="text-xl font-bold mb-1">No events found</h3>
-    <p class="text-gray-500 mb-4">Create your first event to get started.</p>
+  <p-card class="text-center py-12 sm:py-20 mt-6">
+    <h3 class="text-lg sm:text-xl font-bold mb-1">No events found</h3>
+    <p class="text-sm sm:text-base text-gray-500 mb-4">Create your first event to get started.</p>
     @if (this.permission === "CREATE") {
     <p-button label="Add Event" icon="pi pi-plus" severity="contrast"
-      (onClick)="toggleCreateModal()"></p-button>
+      (onClick)="toggleCreateModal()" class="w-full sm:w-auto"></p-button>
     }
   </p-card>
   }
@@ -166,73 +168,35 @@
       <label for="newLoc">Location</label>
     </p-floatlabel>
 
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <p-floatlabel variant="on">
-        <!-- <p-calendar 
-          [(ngModel)]="newEvent.startDateTime" 
-          [showTime]="true" 
-          dateFormat="mm/dd/yy"
-          inputId="startDate"
-          styleClass="w-full"
-          [inputStyle]="{ width: '100%' }">
-        </p-calendar> -->
-        <p-datepicker [(ngModel)]="newEvent.startDateTime" [showTime]="true"    appendTo="body"/>
+        <p-datepicker [(ngModel)]="newEvent.startDateTime" [showTime]="true" appendTo="body" class="w-full"/>
         <label for="startDate">Start Date & Time</label>
       </p-floatlabel>
 
       <p-floatlabel variant="on">
-        <!-- <p-calendar 
-          [(ngModel)]="newEvent.endDateTime" 
-          [showTime]="true" 
-          dateFormat="mm/dd/yy"
-          inputId="endDate"
-          styleClass="w-full"
-          [inputStyle]="{ width: '100%' }">
-        </p-calendar> -->
-         <p-datepicker [(ngModel)]="newEvent.endDateTime" [showTime]="true"     appendTo="body"/>
+         <p-datepicker [(ngModel)]="newEvent.endDateTime" [showTime]="true" appendTo="body" class="w-full"/>
         <label for="endDate">End Date & Time</label>
       </p-floatlabel>
     </div>
 
-    <!-- <div class="flex gap-4">
-    <div>
-        <p-checkbox 
-        [(ngModel)]="newEvent.isPublic" 
-        [binary]="true" 
-        inputId="isPublic"
-        label="Public">
-      </p-checkbox>
-   <label for="regRequired" class="ml-2"> Public </label>
-    </div>
-
-    <div>
-        <p-checkbox 
-        [(ngModel)]="newEvent.registrationRequired" 
-        [binary]="true" 
-        inputId="regRequired"
-        label="Requires Registration">
-      </p-checkbox>
-          <label for="regRequired" class="ml-2"> Requires Registration </label>
-    </div>
-    </div> -->
-
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 w-full mt-4">
       <p-button 
         label="Cancel" 
         (click)="toggleCreateModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
 
       <p-button 
         label="Create" 
         (click)="createEvent()" 
         severity="contrast"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
     </div>
   </ng-template>
@@ -257,10 +221,10 @@
 
   <div *ngIf="!loadingParticipants" class="flex flex-col gap-3 mt-2">
     <div *ngFor="let p of participants" 
-         class="flex justify-between items-center border-b pb-3">
-      <div>
-        <div class="font-semibold text-sm">{{ p.name }}</div>
-        <div class="text-xs text-gray-500">{{ p.email }}</div>
+         class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3">
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm truncate">{{ p.name }}</div>
+        <div class="text-xs text-gray-500 truncate">{{ p.email }}</div>
       </div>
     @if (this.permission === 'CREATE') {
         <p-button 
@@ -268,7 +232,8 @@
         size="small" 
         [text]="true"
         severity="danger"
-        (onClick)="removeParticipant(selectedEventId!, p.id)">
+        (onClick)="removeParticipant(selectedEventId!, p.id)"
+        class="flex-shrink-0">
       </p-button>
     }
     </div>
@@ -284,7 +249,7 @@
         label="Close" 
         (click)="closeParticipants()" 
         severity="secondary"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
     </div>
   </ng-template>

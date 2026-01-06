@@ -1,4 +1,17 @@
 <p-menubar class="sticky top-0 z-50">
+
+  <ng-template pTemplate="start">
+    <div class="lg:hidden flex items-center gap-3">
+
+      <button class="lg:hidden p-button p-button-text" (click)="openSidebar()">
+        <i class="pi pi-bars text-xl"></i>
+
+      </button>
+      <span class="font-bold text-lg">Homely</span>
+    </div>
+
+  </ng-template>
+
   <ng-template pTemplate="end">
     <div class="flex items-center gap-4">
       
@@ -6,7 +19,7 @@
       <div class="flex justify-center">
         <p-popover #notificationPopover>
           <ng-template pTemplate="content">
-            <div class="notification-panel" style="min-width: 400px; max-width: 500px;">
+            <div class="notification-panel">
               <div class="flex justify-between items-center mb-3 px-3 pt-3">
                 <h4 class="m-0 font-semibold">Notifications</h4>
               </div>
@@ -16,10 +29,10 @@
               <p-tabs value="0">
                 <p-tablist>
                   <!-- Society Notifications Tab -->
-                  <p-tab value="0">
-                    <div class="flex items-center gap-2">
+                  <p-tab value="0" class="flex-1">
+                    <div class="flex items-center gap-2 flex-1 justify-center">
                       <i class="pi pi-building"></i>
-                      <span>Society</span>
+                      <span class="hidden lg:flex"> Society</span>
                       <p-badge 
                         *ngIf="unreadSocietyCount > 0" 
                         [value]="unreadSocietyCount.toString()" 
@@ -29,10 +42,10 @@
                   </p-tab>
                   
                   <!-- User Notifications Tab -->
-                  <p-tab value="1">
-                    <div class="flex items-center gap-2">
+                  <p-tab value="1" class="flex-1">
+                    <div class="flex items-center gap-2 flex-1  justify-center">
                       <i class="pi pi-user"></i>
-                      <span>Personal</span>
+                      <span class="hidden lg:flex">Personal</span>
                       <p-badge 
                         *ngIf="unreadUserCount > 0" 
                         [value]="unreadUserCount.toString()" 
@@ -50,7 +63,7 @@
                       <p class="m-0">No society notifications</p>
                     </div>
                     
-                    <p-scrollPanel *ngIf="societyNotifications.length > 0" [style]="{width: '100%', height: '300px'}">
+                    <p-scrollPanel *ngIf="societyNotifications.length > 0" styleClass="notification-scroll-panel">
                       <div class="flex flex-col gap-2">
                         <div 
                           *ngFor="let notification of societyNotifications"
@@ -106,7 +119,7 @@
                       <p class="m-0">No personal notifications</p>
                     </div>
                     
-                    <p-scrollPanel *ngIf="userNotifications.length > 0" [style]="{width: '100%', height: '300px'}">
+                    <p-scrollPanel *ngIf="userNotifications.length > 0" styleClass="notification-scroll-panel">
                       <div class="flex flex-col gap-2">
                         <div 
                           *ngFor="let notification of userNotifications"
@@ -182,7 +195,7 @@
       <div class="flex justify-center">
         <p-popover #profilePopover>
           <ng-template pTemplate="content">
-            <div class="profile-panel" style="min-width: 250px;">
+            <div class="profile-panel">
               <div class="flex gap-2 p-2">
                 <i class="pi pi-user text-muted-color"></i>
                 <div class="flex-1">

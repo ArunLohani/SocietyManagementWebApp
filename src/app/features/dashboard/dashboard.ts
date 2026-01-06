@@ -124,7 +124,7 @@ export class Dashboard implements OnInit {
     private mailService: MailService
   ) {
     this.isAdmin = this.authService.isUserAdmin();
-    this.currentUserId = this.authService.getUserIdFromToken();
+    this.currentUserId = this.authService.getUserId();
   }
 
   ngOnInit(): void {

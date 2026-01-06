@@ -116,7 +116,7 @@ export class ComplaintsManagerComponent implements OnInit {
 
   ngOnInit(): void {
     try {
-      const uid = this.auth.getUserIdFromToken?.();
+      const uid = this.auth.getUserId();
       this.currentUserId = uid ?? this.currentUserId;
     } catch {}
     this.newComplaint.raisedByUser = this.currentUserId;

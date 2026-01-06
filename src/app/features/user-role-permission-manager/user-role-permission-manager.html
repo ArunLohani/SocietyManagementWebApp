@@ -1,58 +1,58 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-4 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-2xl">Permission Management</h3>
-      <p class="text-sm text-gray-500">Configure menu and action permissions for roles in your societies</p>
+      <h3 class="font-semibold text-xl sm:text-2xl">Permission Management</h3>
+      <p class="text-sm text-gray-500">
+        Configure menu and action permissions for roles in your societies
+      </p>
     </div>
-    <!-- <p-button label="Add Menu" icon="pi pi-plus" size="small" (onClick)="toggleAddMenuModal()" 
-              severity="contrast"></p-button> -->
   </div>
-
-
 
   <!-- Initial Loading -->
   @if (loading) {
-  <div class="flex justify-center items-center py-20">
-    <p-progressSpinner></p-progressSpinner>
-  </div>
+    <div class="flex justify-center items-center py-20">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
   }
 
   <!-- Main Content -->
   @if (!loading) {
+
   <!-- Selection Card -->
   <p-card styleClass="mb-4">
     <ng-template pTemplate="header">
-      <div class="px-6 py-4 border-b">
-        <h3 class="text-lg font-semibold">Select Society & Role</h3>
+      <div class="px-4 sm:px-6 py-4 border-b">
+        <h3 class="text-base sm:text-lg font-semibold">Select Society & Role</h3>
       </div>
     </ng-template>
 
     <div class="flex flex-col gap-4">
-      <!-- Tenant Display -->
+
+      <!-- Society -->
       <div>
         <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
           <i class="pi pi-building text-orange-600"></i>
           Society
         </label>
-        <div class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-sm sm:text-base">
           <span class="font-medium">{{ selectedTenant?.name }}</span>
         </div>
       </div>
 
-      <!-- Role Selection -->
+      <!-- Role -->
       @if (selectedTenantId) {
       <div>
         <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
           <i class="pi pi-users text-orange-600"></i>
           Role
         </label>
-        <p-select 
-          [options]="tenantRoles" 
+        <p-select
+          [options]="tenantRoles"
           [(ngModel)]="selectedTenantRoleId"
           (onChange)="onRoleSelect($event)"
-          optionLabel="role.role" 
+          optionLabel="role.role"
           optionValue="id"
           placeholder="-- Select a Role --"
           [showClear]="true"
@@ -62,45 +62,47 @@
       </div>
       }
 
-      <!-- Selection Info -->
+      <!-- Info -->
       @if (selectedTenant && selectedTenantRole) {
       <p-message severity="info" styleClass="w-full">
-        <div class="flex items-start gap-3">
-          <div class="flex-1">
-            <p class="font-semibold mb-1">
-              Managing: {{ selectedTenant.name }} - {{ selectedTenantRole.role.role }}
-            </p>
-            <p class="text-sm">
-              {{ menusWithAccessCount }} of {{ allMenus.length }} menus accessible •
-              {{ totalPermissionsGranted }} total permissions granted
-            </p>
-          </div>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+          <p class="font-semibold text-sm sm:text-base">
+            {{ selectedTenant.name }} – {{ selectedTenantRole.role.role }}
+          </p>
+          <p class="text-xs sm:text-sm text-gray-600">
+            {{ menusWithAccessCount }} / {{ allMenus.length }} menus •
+            {{ totalPermissionsGranted }} permissions
+          </p>
         </div>
       </p-message>
       }
+
     </div>
   </p-card>
 
   <!-- Permissions Section -->
   @if (selectedTenantRoleId) {
-  
+
   <!-- Loading Permissions -->
   @if (loadingPermissions) {
-  <div class="flex justify-center items-center py-20">
-    <p-progressSpinner></p-progressSpinner>
-  </div>
+    <div class="flex justify-center items-center py-20">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
   }
 
-  <!-- Permissions Grid -->
+  <!-- Menu Cards -->
   @if (!loadingPermissions && filteredMenus.length > 0) {
   <div class="flex flex-col gap-4">
+
     @for (menuWithActions of filteredMenus; track menuWithActions.menu.id) {
     <p-card>
+
       <!-- Menu Header -->
       <ng-template pTemplate="header">
-        <div class="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
-          <div class="flex items-center gap-4 flex-1 min-w-0">
-            <p-checkbox 
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-b bg-gray-50">
+
+          <div class="flex items-start gap-3 flex-1 min-w-0">
+            <p-checkbox
               [binary]="true"
               [(ngModel)]="menuWithActions.hasMenuAccess"
               [disabled]="processingMenuId === menuWithActions.menu.id"
@@ -108,168 +110,141 @@
             ></p-checkbox>
 
             <div class="flex-1 min-w-0">
-              <h3 class="text-lg font-semibold text-gray-900">
+              <h3 class="font-semibold text-sm sm:text-lg truncate">
                 {{ menuWithActions.menu.menuName }}
               </h3>
-              @if (menuWithActions.menu.menuDescription) {
-              <p class="text-sm text-gray-600">
+              <p *ngIf="menuWithActions.menu.menuDescription"
+                 class="text-xs sm:text-sm text-gray-600">
                 {{ menuWithActions.menu.menuDescription }}
               </p>
-              }
             </div>
 
             @if (processingMenuId === menuWithActions.menu.id) {
-            <i class="pi pi-spin pi-spinner text-blue-600"></i>
+              <i class="pi pi-spin pi-spinner text-blue-600"></i>
             }
           </div>
 
           @if (menuWithActions.hasMenuAccess) {
-          <p-badge 
-            [value]="getGrantedActionsCount(menuWithActions) + '/' + allActions.length + ' actions'" 
+          <p-badge
+            [value]="getGrantedActionsCount(menuWithActions) + '/' + allActions.length"
             severity="contrast"
           ></p-badge>
           }
         </div>
       </ng-template>
 
-      <!-- Actions Grid -->
+      <!-- Actions -->
       @if (menuWithActions.hasMenuAccess && menuWithActions.actions.length > 0) {
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-6">
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-4 sm:p-6"
+      >
         @for (actionPermission of menuWithActions.actions; track actionPermission.action.id) {
-        <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-all"
-             [ngClass]="{'border-orange-500 bg-orange-50': actionPermission.granted}">
-          <p-checkbox 
+        <div
+          class="flex items-center gap-3 p-3 rounded-lg border transition"
+          [ngClass]="{
+            'border-orange-500 bg-orange-50': actionPermission.granted,
+            'border-gray-200 hover:bg-gray-50': !actionPermission.granted
+          }"
+        >
+          <p-checkbox
             [binary]="true"
             [(ngModel)]="actionPermission.granted"
             [disabled]="processingActionId === actionPermission.action.id"
             (onChange)="toggleAction(menuWithActions, actionPermission, $event)"
           ></p-checkbox>
 
-          <div class="flex items-center gap-2 flex-1 min-w-0">
-            @if (processingActionId === actionPermission.action.id) {
-            <i class="pi pi-spin pi-spinner text-xs text-orange-600"></i>
-            }
-            <span class="text-sm font-medium truncate"
-                  [ngClass]="actionPermission.granted ? 'text-gray-900' : 'text-gray-600'">
-              {{ actionPermission.action.action }}
-            </span>
-          </div>
+          <span
+            class="text-sm font-medium truncate"
+            [ngClass]="actionPermission.granted ? 'text-gray-900' : 'text-gray-600'"
+          >
+            {{ actionPermission.action.action }}
+          </span>
+
+          @if (processingActionId === actionPermission.action.id) {
+            <i class="pi pi-spin pi-spinner text-xs text-orange-600 ml-auto"></i>
+          }
         </div>
         }
       </div>
       }
 
-      <!-- No Actions Message -->
-      @if (menuWithActions.hasMenuAccess && menuWithActions.actions.length === 0) {
-      <div class="p-6 text-center">
-        <p class="text-sm text-gray-500">No actions available for this menu</p>
-      </div>
-      }
-
-      <!-- Menu Locked Message -->
+      <!-- Locked -->
       @if (!menuWithActions.hasMenuAccess) {
       <div class="p-6 text-center bg-gray-50">
-        <i class="pi pi-lock text-4xl text-gray-400 mb-2"></i>
+        <i class="pi pi-lock text-3xl text-gray-400 mb-2"></i>
         <p class="text-sm text-gray-600">
-          Enable menu access to configure action permissions
+          Enable menu access to configure actions
         </p>
       </div>
       }
+
     </p-card>
     }
 
     <!-- Pagination -->
-    <div class="mt-2">
-      <p-paginator 
-        [first]="first" 
-        [rows]="row" 
-        [totalRecords]="totalRecords" 
+    <div class="mt-4 flex justify-center">
+      <p-paginator
+        [first]="first"
+        [rows]="row"
+        [totalRecords]="totalRecords"
         (onPageChange)="onPageChange($event)"
       ></p-paginator>
     </div>
 
-    <!-- Results Info -->
-    <div class="text-center text-sm text-gray-600">
-      Showing <span class="font-semibold text-gray-900">{{ filteredMenus.length }}</span>
-      of <span class="font-semibold text-gray-900">{{ menusWithActions.length }}</span> menus
-    </div>
+    <!-- Count -->
+    <p class="text-center text-sm text-gray-600">
+      Showing <b>{{ filteredMenus.length }}</b> of <b>{{ menusWithActions.length }}</b> menus
+    </p>
+
   </div>
   }
 
-  <!-- No Results -->
-  @if (!loadingPermissions && filteredMenus.length === 0 && menusWithActions.length > 0) {
-  <p-card class="text-center py-12">
-    <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
-    <h3 class="text-xl font-bold mb-2">No menus match your filters</h3>
-    <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
-    <p-button label="Clear Filters" icon="pi pi-times" (onClick)="clearFilters()" 
-              severity="secondary"></p-button>
-  </p-card>
-  }
-
-  <!-- No Menus Available -->
+  <!-- Empty States -->
   @if (!loadingPermissions && menusWithActions.length === 0) {
-  <p-card class="text-center py-12">
-    <i class="pi pi-th-large text-6xl text-gray-400 mb-4"></i>
-    <h3 class="text-xl font-bold mb-2">No menus available</h3>
-    <p class="text-gray-500">Add menus to the system to configure permissions</p>
-  </p-card>
-  }
-  }
+    <p-card class="text-center py-12">
+      <i class="pi pi-th-large text-6xl text-gray-400 mb-4"></i>
+      <h3 class="text-xl font-bold">No menus available</h3>
+      <p class="text-gray-500">Add menus to configure permissions</p>
+    </p-card>
   }
 
+  }
+  }
 </div>
 
 <!-- Add Menu Modal -->
-<p-dialog 
-  [(visible)]="showMenuAddModal" 
+<p-dialog
+  [(visible)]="showMenuAddModal"
   [modal]="true"
-  [style]="{ width: '32rem' }"
-  [draggable]="false"
   header="Create New Menu"
-  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"
-  [baseZIndex]="10000"
+  [style]="{ width: '32rem' }"
+  [breakpoints]="{ '1024px': '75vw', '640px': '90vw' }"
+  [draggable]="false"
 >
   <p class="text-sm text-gray-500 mb-4">
-    Enter a unique menu name and description for your society.
+    Enter menu name and description
   </p>
 
-  <div class="flex flex-col gap-5">
-    <p-floatlabel variant="on">
-      <input 
-        pInputText 
-        id="menuName" 
-        [(ngModel)]="menuName"
-        class="w-full"
-      />
+  <div class="flex flex-col gap-4">
+    <p-floatlabel>
+      <input pInputText id="menuName" [(ngModel)]="menuName" class="w-full" />
       <label for="menuName">Menu Name</label>
     </p-floatlabel>
 
-    <p-floatlabel variant="on">
-      <input 
-        pInputText 
-        id="menuDescription" 
-        [(ngModel)]="menuDescription"
-        class="w-full"
-      />
+    <p-floatlabel>
+      <input pInputText id="menuDescription" [(ngModel)]="menuDescription" class="w-full" />
       <label for="menuDescription">Menu Description</label>
     </p-floatlabel>
   </div>
 
   <ng-template pTemplate="footer">
     <div class="flex justify-end gap-3">
-      <p-button 
-        label="Cancel" 
-        (onClick)="toggleAddMenuModal()" 
-        severity="secondary"
-        [text]="true"
-      ></p-button>
-      <p-button 
-        label="Create Menu" 
-        (onClick)="addMenu(menuName, menuDescription)" 
+      <p-button label="Cancel" severity="secondary" [text]="true"
+        (onClick)="toggleAddMenuModal()"></p-button>
+      <p-button label="Create Menu" severity="contrast"
         [disabled]="!menuName.trim() || !menuDescription"
-        severity="contrast"
-      ></p-button>
+        (onClick)="addMenu(menuName, menuDescription)">
+      </p-button>
     </div>
   </ng-template>
 </p-dialog>

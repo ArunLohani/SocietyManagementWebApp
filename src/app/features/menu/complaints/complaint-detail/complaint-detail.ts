@@ -88,7 +88,7 @@ this.tenantRoleMenuService.getPriority("Complaints").subscribe({
 
   ngOnInit(): void {
     this.complaintId = Number(this.route.snapshot.paramMap.get('id'));
-    this.currentUserId = this.auth.getUserIdFromToken?.() ?? null;
+    this.currentUserId = this.auth.getUserId() ?? null;
     this.loadComplaint();
     if(this.isAdmin()){
   this.searchAssignableUsers("")
@@ -100,12 +100,12 @@ this.tenantRoleMenuService.getPriority("Complaints").subscribe({
   }
 
   isAuthor(){
-    return this.complaint?.raisedByUser.id === this.auth.getUserIdFromToken()
+    return this.complaint?.raisedByUser.id === this.auth.getUserId()
   }
 
   isAssigned(){
       if(this.complaint?.assignedToUser) 
-        this.complaint?.assignedToUser.id === this.auth.getUserIdFromToken()
+        this.complaint?.assignedToUser.id === this.auth.getUserId()
       return false;
   }
 

@@ -1,8 +1,8 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
-  <div class="mx-auto">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
+  <div class="mx-auto max-w-4xl">
 
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-6">
+    <div class="flex items-center gap-3 mb-4 sm:mb-6">
       <p-button 
         icon="pi pi-arrow-left" 
         [text]="true"
@@ -11,8 +11,8 @@
         (onClick)="goBack()">
       </p-button>
       <div class="flex flex-col">
-        <h3 class="font-semibold text-2xl">Maintenance Payment</h3>
-        <p class="text-sm text-gray-500">Pay your society maintenance securely</p>
+        <h3 class="font-semibold text-lg sm:text-2xl">Maintenance Payment</h3>
+        <p class="text-xs sm:text-sm text-gray-500">Pay your society maintenance securely</p>
       </div>
     </div>
 
@@ -20,14 +20,14 @@
     <p-card>
       
       <ng-template #header>
-        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
-          <i class="pi pi-wallet text-4xl mb-2"></i>
-          <h2 class="text-xl font-bold">Pay Maintenance</h2>
-          <p class="text-sm opacity-90">Secure payment powered by Razorpay</p>
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 sm:p-6 text-white">
+          <i class="pi pi-wallet text-3xl sm:text-4xl mb-2"></i>
+          <h2 class="text-lg sm:text-xl font-bold">Pay Maintenance</h2>
+          <p class="text-xs sm:text-sm opacity-90">Secure payment powered by Razorpay</p>
         </div>
       </ng-template>
 
-      <form (ngSubmit)="initiatePayment()" class="flex flex-col gap-5">
+      <form (ngSubmit)="initiatePayment()" class="flex flex-col gap-4 sm:gap-5">
 
         <!-- Flat Selection -->
         <div class="flex flex-col gap-2">
@@ -57,7 +57,7 @@
           >
             <ng-template let-flat pTemplate="item">
               <div class="flex justify-between items-center">
-                <span class="font-semibold">Block {{ flat.block }} - {{ flat.number }}</span>
+                <span class="font-semibold text-sm">Block {{ flat.block }} - {{ flat.number }}</span>
                 <span class="text-xs text-gray-500">{{ flat.category }}</span>
               </div>
             </ng-template>
@@ -74,7 +74,7 @@
 
         <!-- Checking Active Payment Loader -->
         @if (checkingActivePayment) {
-        <div class="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
           <p-progressSpinner [style]="{ width: '20px', height: '20px' }"></p-progressSpinner>
           <span>Checking for active payments...</span>
         </div>
@@ -82,33 +82,33 @@
 
         <!-- Active Payment Warning -->
         @if (hasActivePayment && activePaymentInfo && !checkingActivePayment) {
-        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-5 shadow-sm">
-          <div class="flex items-start gap-3">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-4 sm:p-5 shadow-sm">
+          <div class="flex flex-col sm:flex-row items-start gap-3">
             <div class="flex-shrink-0">
               <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                 <i class="pi pi-check text-white text-xl"></i>
               </div>
             </div>
             <div class="flex-1">
-              <p class="font-bold text-base text-green-900 mb-2 flex items-center gap-2">
+              <p class="font-bold text-sm sm:text-base text-green-900 mb-2 flex items-center gap-2">
                 ✓ Active Payment Found
               </p>
-              <div class="text-sm text-green-800 space-y-2">
+              <div class="text-xs sm:text-sm text-green-800 space-y-2">
                 <p class="leading-relaxed">
                   Your maintenance is already paid and active for the current period.
                 </p>
                 <div class="bg-white/60 rounded-md p-3 space-y-1">
-                  <div class="flex justify-between items-center">
+                  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
                     <span class="text-xs font-semibold text-green-700">Valid From:</span>
-                    <span class="font-bold text-green-900">{{ formatDate(activePaymentInfo.billingStartDate) }}</span>
+                    <span class="font-bold text-green-900 text-sm">{{ formatDate(activePaymentInfo.billingStartDate) }}</span>
                   </div>
-                  <div class="flex justify-between items-center">
+                  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
                     <span class="text-xs font-semibold text-green-700">Valid Until:</span>
-                    <span class="font-bold text-green-900">{{ formatDate(activePaymentInfo.billingEndDate) }}</span>
+                    <span class="font-bold text-green-900 text-sm">{{ formatDate(activePaymentInfo.billingEndDate) }}</span>
                   </div>
-                  <div class="flex justify-between items-center">
+                  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
                     <span class="text-xs font-semibold text-green-700">Reference:</span>
-                    <span class="font-mono text-sm text-green-900">{{ activePaymentInfo.referenceNumber }}</span>
+                    <span class="font-mono text-xs sm:text-sm text-green-900 break-all">{{ activePaymentInfo.referenceNumber }}</span>
                   </div>
                 </div>
                 <p class="text-xs text-green-700 mt-3 italic">
@@ -123,11 +123,11 @@
 
         <!-- Selected Flat Info (only show if no active payment) -->
         @if (selectedFlat && !hasActivePayment && !checkingActivePayment) {
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-          <div class="flex items-start gap-3">
-            <i class="pi pi-info-circle text-blue-600 mt-1"></i>
+        <div class="bg-blue-50 border border-blue-200 p-3 sm:p-4 rounded-lg">
+          <div class="flex flex-col sm:flex-row items-start gap-3">
+            <i class="pi pi-info-circle text-blue-600 mt-1 flex-shrink-0"></i>
             <div class="flex-1">
-              <p class="font-semibold text-sm text-blue-900 mb-2">Flat Details</p>
+              <p class="font-semibold text-xs sm:text-sm text-blue-900 mb-2">Flat Details</p>
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span class="text-blue-600">Block:</span>
@@ -175,57 +175,58 @@
 
         <!-- Amount Preview -->
         @if (calculating) {
-        <div class="flex justify-center items-center py-8">
+        <div class="flex justify-center items-center py-6 sm:py-8">
           <div class="flex flex-col items-center gap-3">
             <p-progressSpinner [style]="{ width: '40px', height: '40px' }"></p-progressSpinner>
-            <p class="text-sm text-gray-600">Calculating payment amount...</p>
+            <p class="text-xs sm:text-sm text-gray-600">Calculating payment amount...</p>
           </div>
         </div>
         }
 
         @if (showAmountPreview && calculatedAmount && !calculating && !hasActivePayment) {
-        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-lg p-5">
-          <h3 class="text-lg font-bold text-emerald-900 mb-4 flex items-center gap-2">
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-lg p-4 sm:p-5">
+          <h3 class="text-base sm:text-lg font-bold text-emerald-900 mb-3 sm:mb-4 flex items-center gap-2">
             <i class="pi pi-check-circle"></i>Payment Summary
           </h3>
           
           <div class="flex flex-col gap-3">
             
             <div class="flex justify-between items-center pb-2 border-b border-emerald-200">
-              <span class="text-sm text-emerald-700">Billing Cycle</span>
-              <span class="font-semibold text-emerald-900">{{ getSelectedCycleName() }}</span>
+              <span class="text-xs sm:text-sm text-emerald-700">Billing Cycle</span>
+              <span class="font-semibold text-emerald-900 text-sm text-right">{{ getSelectedCycleName() }}</span>
             </div>
 
             <div class="flex justify-between items-center pb-2 border-b border-emerald-200">
-              <span class="text-sm text-emerald-700">Duration</span>
-              <span class="font-semibold text-emerald-900">{{ calculatedAmount.monthsCovered }} month(s)</span>
+              <span class="text-xs sm:text-sm text-emerald-700">Duration</span>
+              <span class="font-semibold text-emerald-900 text-sm">{{ calculatedAmount.monthsCovered }} month(s)</span>
             </div>
 
             <div class="flex justify-between items-center pb-2 border-b border-emerald-200">
-              <span class="text-sm text-emerald-700">Monthly Fee</span>
-              <span class="font-semibold text-emerald-900">{{ formatCurrency(calculatedAmount.monthlyFee) }}</span>
+              <span class="text-xs sm:text-sm text-emerald-700">Monthly Fee</span>
+              <span class="font-semibold text-emerald-900 text-sm">{{ formatCurrency(calculatedAmount.monthlyFee) }}</span>
             </div>
 
             @if (calculatedAmount.penalty > 0) {
-            <div class="flex justify-between items-center pb-2 border-b border-red-200 bg-red-50/50 -mx-5 px-5 py-2">
-              <span class="text-sm text-red-700 flex items-center gap-1">
+            <div class="flex justify-between items-center pb-2 border-b border-red-200 bg-red-50/50 -mx-4 sm:-mx-5 px-4 sm:px-5 py-2">
+              <span class="text-xs sm:text-sm text-red-700 flex items-center gap-1">
                 <i class="pi pi-exclamation-triangle text-xs"></i>
-                Penalty Fee (Late Payment)
+                <span class="break-words">Penalty Fee (Late)</span>
               </span>
-              <span class="font-semibold text-red-600">{{ formatCurrency(calculatedAmount.penalty) }}</span>
+              <span class="font-semibold text-red-600 text-sm">{{ formatCurrency(calculatedAmount.penalty) }}</span>
             </div>
             }
 
-            <div class="flex justify-between items-center pb-2 border-b border-emerald-200">
-              <span class="text-sm text-emerald-700">Billing Period</span>
-              <span class="font-semibold text-emerald-900 text-right">
-                {{ formatDate(calculatedAmount.billingStartDate) }}<br>to {{ formatDate(calculatedAmount.billingEndDate) }}
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center pb-2 border-b border-emerald-200 gap-1">
+              <span class="text-xs sm:text-sm text-emerald-700">Billing Period</span>
+              <span class="font-semibold text-emerald-900 text-xs sm:text-sm text-left sm:text-right">
+                {{ formatDate(calculatedAmount.billingStartDate) }}<br class="hidden sm:inline">
+                <span class="hidden sm:inline">to </span><span class="sm:hidden">to </span>{{ formatDate(calculatedAmount.billingEndDate) }}
               </span>
             </div>
 
             <div class="flex justify-between items-center pt-2 mt-2 border-t-2 border-emerald-300">
-              <span class="text-base font-bold text-emerald-900">Total Amount</span>
-              <span class="text-2xl font-bold text-emerald-600">{{ formatCurrency(calculatedAmount.finalAmount) }}</span>
+              <span class="text-sm sm:text-base font-bold text-emerald-900">Total Amount</span>
+              <span class="text-xl sm:text-2xl font-bold text-emerald-600">{{ formatCurrency(calculatedAmount.finalAmount) }}</span>
             </div>
 
           </div>
@@ -262,7 +263,7 @@
 
       <!-- Message Display -->
       @if (message) {
-      <div class="mt-5">
+      <div class="mt-4 sm:mt-5">
         <p-message 
           [severity]="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'" 
           [text]="message"
@@ -272,16 +273,16 @@
       }
 
       <!-- Info Note -->
-      <div class="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
+      <div class="mt-4 sm:mt-6 bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4">
         <div class="flex items-start gap-3">
-          <i class="pi pi-info-circle text-amber-600 mt-1"></i>
-          <div class="flex-1 text-sm">
+          <i class="pi pi-info-circle text-amber-600 mt-1 flex-shrink-0"></i>
+          <div class="flex-1 text-xs sm:text-sm">
             <p class="font-semibold text-amber-900 mb-1">Important Information</p>
             <ul class="list-disc list-inside text-amber-800 space-y-1">
-              <li>Payment verification happens instantly after successful payment</li>
-              <li>You will receive a confirmation email after payment</li>
-              <li>Your maintenance validity will be extended automatically</li>
-              <li>Duplicate payments for the same period are not allowed</li>
+              <li class="break-words">Payment verification happens instantly after successful payment</li>
+              <li class="break-words">You will receive a confirmation email after payment</li>
+              <li class="break-words">Your maintenance validity will be extended automatically</li>
+              <li class="break-words">Duplicate payments for the same period are not allowed</li>
             </ul>
           </div>
         </div>

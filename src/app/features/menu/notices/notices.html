@@ -1,15 +1,15 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-lg">Notices</h3>
+      <h3 class="font-semibold text-lg sm:text-xl">Notices</h3>
       <p class="text-xs text-gray-500">Manage and publish notices.</p>
     </div>
 
       @if (permission === "CREATE") {
            <p-button label="New Notice" icon="pi pi-plus" size="small"
-      (onClick)="toggleCreateModal()" severity="contrast"></p-button>
+      (onClick)="toggleCreateModal()" severity="contrast" class="w-full sm:w-auto"></p-button>
       }
   </div>
 
@@ -19,19 +19,19 @@
       <p class="text-sm font-semibold">All Notices</p>
       <p-divider />
 
-      <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
 
-        <p-floatlabel variant="on">
-          <input pInputText id="title" [(ngModel)]="filter.title" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+          <input pInputText id="title" [(ngModel)]="filter.title" class="w-full" />
           <label for="title">Title</label>
         </p-floatlabel>
 
-        <p-floatlabel variant="on">
-          <input pInputText id="category" [(ngModel)]="filter.category" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+          <input pInputText id="category" [(ngModel)]="filter.category" class="w-full" />
           <label for="category">Category</label>
         </p-floatlabel>
 
-        <p-select class="w-48"
+        <p-select class="w-full sm:w-48"
           [options]="publicOptions"
           [(ngModel)]="filter.isPublic"
           optionLabel="name" optionValue="code"
@@ -39,7 +39,7 @@
           placeholder="Visibility">
         </p-select>
 
-        <p-select class="w-48"
+        <p-select class="w-full sm:w-48"
           [options]="expiredOptions"
           [(ngModel)]="filter.isExpired"
           optionLabel="name" optionValue="code"
@@ -47,11 +47,13 @@
           placeholder="Status">
         </p-select>
 
-        <p-button label="Search" icon="pi pi-search" size="small"
-          (onClick)="searchNotices()" severity="contrast"></p-button>
+        <div class="flex justify-end gap-3 w-full sm:w-auto">
+          <p-button label="Search" icon="pi pi-search" size="small"
+            (onClick)="searchNotices()" severity="contrast" class=""></p-button>
 
-        <p-button label="Clear" icon="pi pi-times" size="small"
-          (onClick)="clearFilters()" severity="secondary"></p-button>
+          <p-button label="Clear" icon="pi pi-times" size="small"
+            (onClick)="clearFilters()" severity="secondary" class=""></p-button>
+        </div>
 
       </div>
     </p-card>
@@ -64,10 +66,10 @@
 
   <!-- Cards Grid -->
   @if (!loading && noticesPage) {
-  <div class="flex flex-wrap gap-4 mt-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
 
     @for (notice of noticesPage.content; track $index) {
-    <p-card [style]="{ width: '22rem', overflow: 'hidden' }">
+    <p-card class="w-full" [style]="{ overflow: 'hidden' }">
 
       <ng-template #header>
         <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-32 flex items-center justify-center">
@@ -76,7 +78,7 @@
       </ng-template>
 
       <div class="flex justify-between items-center mb-2">
-        <p class="font-semibold text-lg line-clamp-1">{{ notice.title }}</p>
+        <p class="font-semibold text-base sm:text-lg line-clamp-1 pr-2">{{ notice.title }}</p>
         <p-badge 
           [value]="notice.isExpired ? 'Expired' : 'Active'" 
           [severity]="getStatusSeverity(notice.isExpired)">
@@ -89,12 +91,12 @@
 
         <div class="flex justify-between">
           <span class="text-gray-500 font-semibold">Category</span>
-          <span class="font-bold">{{ notice.category }}</span>
+          <span class="font-bold truncate ml-2">{{ notice.category }}</span>
         </div>
 
         <div class="flex justify-between">
           <span class="text-gray-500 font-semibold">Tenant</span>
-          <span class="font-bold">{{ notice.tenant.name || '—' }}</span>
+          <span class="font-bold truncate ml-2">{{ notice.tenant.name || '—' }}</span>
         </div>
 
         <div class="flex justify-between">
@@ -103,16 +105,16 @@
         </div>
 
         <div class="mt-2">
-          <p class="text-gray-600 line-clamp-3">{{ notice.message }}</p>
+          <p class="text-gray-600 line-clamp-3 break-words">{{ notice.message }}</p>
         </div>
 
       </div>
 
       <ng-template #footer>
         <div class="flex flex-col gap-2">
-          <div class="flex justify-end gap-2">
+          <div class="flex flex-row justify-end gap-2">
             <p-button icon="pi pi-eye" size="small" label="View" variant="outlined" 
-              (onClick)="goToNotice(notice.id)" severity="secondary"></p-button>
+              (onClick)="goToNotice(notice.id)" severity="secondary" class=" sm:w-auto"></p-button>
        @if (permission !== "READ") {
              <p-button 
               [icon]="notice.isPublic ? 'pi pi-lock' : 'pi pi-lock-open'"
@@ -120,7 +122,8 @@
               [label]="notice.isPublic ? 'Private' : 'Public'"
               variant="outlined"
               (onClick)="togglePublic(notice.id)" 
-              severity="info">
+              severity="info"
+              class=" sm:w-auto">
             </p-button>
        }
           </div>
@@ -133,7 +136,8 @@
               size="small" 
               [label]="notice.isExpired ? 'Activate' : 'Expire'"
               (onClick)="toggleExpired(notice.id)" 
-              [severity]="notice.isExpired ? 'success' : 'warn'">
+              [severity]="notice.isExpired ? 'success' : 'warn'"
+              class=" sm:w-auto">
             </p-button>
           }
           </div>
@@ -143,24 +147,24 @@
     </p-card>
     }
 
-    <!-- Pagination -->
-    <div class="w-full">
-      <p-paginator [first]="page * pageSize" [rows]="pageSize"
-        [totalRecords]="noticesPage.totalElements"
-        (onPageChange)="onPageChange($event)">
-      </p-paginator>
-    </div>
+  </div>
 
+  <!-- Pagination -->
+  <div class="w-full mt-6">
+    <p-paginator [first]="page * pageSize" [rows]="pageSize"
+      [totalRecords]="noticesPage.totalElements"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
   </div>
   }
 
   <!-- Empty State -->
   @if (!loading && noticesPage?.content?.length === 0) {
-  <p-card class="text-center py-20 mt-6">
-    <h3 class="text-xl font-bold mb-1">No notices found</h3>
-    <p class="text-gray-500 mb-4">Create your first notice to get started.</p>
+  <p-card class="text-center py-12 sm:py-20 mt-6">
+    <h3 class="text-lg sm:text-xl font-bold mb-1">No notices found</h3>
+    <p class="text-sm sm:text-base text-gray-500 mb-4">Create your first notice to get started.</p>
     <p-button label="New Notice" icon="pi pi-plus" severity="contrast"
-      (onClick)="toggleCreateModal()"></p-button>
+      (onClick)="toggleCreateModal()" class="w-full sm:w-auto"></p-button>
   </p-card>
   }
 
@@ -206,35 +210,25 @@
       </p-checkbox>
    <label for="regRequired" class="ml-2"> Public </label>
     </div>
-
-    <!-- <div>
-        <p-checkbox 
-        [(ngModel)]="newNotice.isExpired" 
-        [binary]="true" 
-        inputId="regRequired"
-        label="Expire">
-      </p-checkbox>
-          <label for="regRequired" class="ml-2"> Expire </label>
-    </div> -->
     </div>
 
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 w-full mt-4">
       <p-button 
         label="Cancel" 
         (click)="toggleCreateModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
 
       <p-button 
         label="Create" 
         (click)="createNotice()" 
         severity="contrast"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
     </div>
   </ng-template>

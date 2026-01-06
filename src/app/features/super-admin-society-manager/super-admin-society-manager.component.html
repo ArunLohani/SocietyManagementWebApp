@@ -1,25 +1,29 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-4 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
     <div class="flex flex-col gap-1">
       <h3 class="font-semibold text-lg">Society Management</h3>
       <p class="text-xs text-gray-500">Manage societies and assign admins</p>
     </div>
-    <div class="flex gap-2">
-      <p-button 
-        label="View Unassigned Users" 
-        icon="pi pi-users" 
+
+    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+      <p-button
+        label="View Unassigned Users"
+        icon="pi pi-users"
         size="small"
-        (onClick)="openUnassignedUsersDialog()" 
+        class="w-full sm:w-auto"
+        (onClick)="openUnassignedUsersDialog()"
         severity="secondary"
         [outlined]="true">
       </p-button>
-      <p-button 
-        label="Create Society" 
-        icon="pi pi-plus" 
+
+      <p-button
+        label="Create Society"
+        icon="pi pi-plus"
         size="small"
-        (onClick)="toggleCreateTenant()" 
+        class="w-full sm:w-auto"
+        (onClick)="toggleCreateTenant()"
         severity="contrast">
       </p-button>
     </div>
@@ -32,7 +36,8 @@
 
   <!-- Main Content -->
   @if (!loading()) {
-    <!-- Society Selection Card -->
+
+    <!-- Society Selection -->
     <div class="mt-4">
       <p-card>
         <p class="text-sm font-semibold">Select Society</p>
@@ -48,16 +53,15 @@
             placeholder="-- Select a Society --"
             [showClear]="true"
             class="w-full"
-            styleClass="w-full"
             appendTo="body">
           </p-select>
 
           @if (selectedTenant()) {
-            <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <i class="pi pi-info-circle text-blue-600 mt-0.5"></i>
               <div>
-                <p class="font-semibold text-sm mb-1">Managing: {{ selectedTenant()!.name }}</p>
-                <p class="text-xs text-gray-600">{{ totalUsers() }} users found in this society</p>
+                <p class="font-semibold text-sm">Managing: {{ selectedTenant()!.name }}</p>
+                <p class="text-xs text-gray-600">{{ totalUsers() }} users found</p>
               </div>
             </div>
           }
@@ -65,8 +69,9 @@
       </p-card>
     </div>
 
-    <!-- Users Section -->
+    <!-- Users -->
     @if (selectedTenantId()) {
+
       @if (loadingUsers()) {
         <div class="flex justify-center items-center py-20">
           <p-progressSpinner></p-progressSpinner>
@@ -76,23 +81,31 @@
       @if (!loadingUsers() && users().length > 0) {
         <div class="mt-4">
           <p-card>
-            <p class="text-sm font-semibold mb-2">Users in {{ selectedTenant()?.name }}</p>
+            <p class="text-sm font-semibold mb-2">
+              Users in {{ selectedTenant()?.name }}
+            </p>
             <p-divider />
 
             <div class="flex flex-col gap-3">
               @for (user of users(); track user.id) {
-                <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div class="flex items-center gap-4 flex-1">
-                    <p-avatar 
+                <div
+                  class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4
+                         p-4 border rounded-lg hover:bg-gray-50 transition">
+
+                  <!-- User Info -->
+                  <div class="flex items-center gap-4 flex-1 min-w-0">
+                    <p-avatar
                       [label]="getUserInitials(user.name)"
                       size="large"
-                      [style]="{'background-color': '#3b82f6', 'color': '#ffffff'}"
-                      shape="circle">
+                      shape="circle"
+                      [style]="{'background-color':'#3b82f6','color':'#fff'}">
                     </p-avatar>
 
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 mb-1">
-                        <p class="font-semibold text-sm truncate">{{ user.name }}</p>
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <p class="font-semibold text-sm truncate">
+                          {{ user.name }}
+                        </p>
                         @if (isAdmin(user)) {
                           <p-badge value="Admin" severity="success"></p-badge>
                         }
@@ -103,44 +116,46 @@
                       }
                     </div>
                   </div>
+<div class="w-full sm:w-auto ml-auto">
 
-                  <div class="ml-4">
-                    @if (!isAdmin(user)) {
-                      <p-button
-                        label="Assign Admin"
-                        icon="pi pi-user-plus"
-                        size="small"
-                        (onClick)="assignAdmin(user)"
-                        [disabled]="processingUserId() === user.id"
-                        [loading]="processingUserId() === user.id"
-                        severity="contrast">
-                      </p-button>
-                    } @else {
-                      <p-button
-                        label="Remove Admin"
-                        icon="pi pi-user-minus"
-                        size="small"
-                        (onClick)="removeAdmin(user)"
-                        [disabled]="processingUserId() === user.id"
-                        [loading]="processingUserId() === user.id"
-                        severity="danger"
-                        [outlined]="true">
-                      </p-button>
-                    }
-                  </div>
+  @if (!isAdmin(user)) {
+    <p-button
+      label="Assign Admin"
+      icon="pi pi-user-plus"
+      size="small"
+      class="w-full sm:w-auto"
+      severity="contrast"
+      [loading]="processingUserId() === user.id"
+      (onClick)="assignAdmin(user)">
+    </p-button>
+  } @else {
+    <p-button
+      label="Remove Admin"
+      icon="pi pi-user-minus"
+      size="small"
+      class="w-full sm:w-auto"
+      severity="danger"
+      [outlined]="true"
+      [loading]="processingUserId() === user.id"
+      (onClick)="removeAdmin(user)">
+    </p-button>
+  }
+</div>
+
                 </div>
               }
             </div>
 
             <!-- Pagination -->
-            <div class="mt-4">
-              <p-paginator 
-                [first]="currentPage() * pageSize()" 
+            <div class="mt-4 flex flex-col gap-2 items-center">
+              <p-paginator
+                [first]="currentPage() * pageSize()"
                 [rows]="pageSize()"
                 [totalRecords]="totalUsers()"
                 (onPageChange)="onPageChange($event)">
               </p-paginator>
-              <p class="text-xs text-gray-600 text-center mt-2">
+
+              <p class="text-xs text-gray-600">
                 Showing <span class="font-semibold">{{ filteredUsersCount }}</span> users
               </p>
             </div>
@@ -148,17 +163,17 @@
         </div>
       }
 
-      <!-- No Results -->
+      <!-- Empty State -->
       @if (!loadingUsers() && users().length === 0) {
-        <p-card class="text-center py-20 mt-4">
-          <i class="pi pi-users text-6xl text-gray-400 mb-4"></i>
-          <h3 class="text-xl font-bold mb-1">No users found</h3>
-          <p class="text-gray-500 mb-4">No users in this society yet</p>
-          <p-button 
-            label="Add Users from Unassigned" 
-            icon="pi pi-user-plus" 
-            (onClick)="openUnassignedUsersDialog()"
-            severity="contrast">
+        <p-card class="text-center py-16 mt-4">
+          <i class="pi pi-users text-5xl text-gray-400 mb-4"></i>
+          <h3 class="text-lg font-bold">No users found</h3>
+          <p class="text-gray-500 mb-4">This society has no users yet</p>
+          <p-button
+            label="Add Users"
+            icon="pi pi-user-plus"
+            severity="contrast"
+            (onClick)="openUnassignedUsersDialog()">
           </p-button>
         </p-card>
       }
