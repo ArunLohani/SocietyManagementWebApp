@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
@@ -45,7 +45,8 @@ export class Sidebar {
 
   constructor(
     private authService: AuthService,
-    private menuService: MenuService
+    private menuService: MenuService,
+    private router : Router
   ) {
 
     // Dynamic Menu
@@ -108,7 +109,11 @@ export class Sidebar {
   }
 
   logout() {
-    this.authService.logout();
+    this.authService.logout().subscribe({
+      next : (res)=>{
+        this.router.navigateByUrl("/login")
+      }
+    });
   }
 }
 
