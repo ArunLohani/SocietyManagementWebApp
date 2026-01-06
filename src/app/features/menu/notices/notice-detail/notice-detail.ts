@@ -67,10 +67,10 @@ export class NoticeDetailComponent implements OnInit {
   ngOnInit(): void {
     this.noticeId = Number(this.route.snapshot.paramMap.get('id'));
     try {
-      this.tenantId = this.auth.getTenantIdFromToken?.() ?? null;
+      this.tenantId = this.auth.getTenantId() ?? null;
     } catch {}
     try {
-      this.currentUserId = this.auth.getUserIdFromToken?.() ?? null;
+      this.currentUserId = this.auth.getUserId() ?? null;
     } catch {}
     this.loadNotice();
   }

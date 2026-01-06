@@ -1,15 +1,15 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-lg">Complaints</h3>
+      <h3 class="font-semibold text-lg sm:text-xl">Complaints</h3>
       <p class="text-xs text-gray-500">Manage and track complaints.</p>
     </div>
 
    @if (permission === 'CREATE') {
      <p-button label="New Complaint" icon="pi pi-plus" size="small"
-      (onClick)="toggleCreateModal()" severity="contrast"></p-button>
+      (onClick)="toggleCreateModal()" severity="contrast" class="w-full sm:w-auto"></p-button>
    }
   </div>
 
@@ -19,19 +19,19 @@
       <p class="text-sm font-semibold">All Complaints</p>
       <p-divider />
 
-      <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
 
-        <p-floatlabel variant="on">
-          <input pInputText id="title" [(ngModel)]="filter.title" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+          <input pInputText id="title" [(ngModel)]="filter.title" class="w-full" />
           <label for="title">Title</label>
         </p-floatlabel>
 
-        <p-floatlabel variant="on">
-          <input pInputText id="category" [(ngModel)]="filter.category" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+          <input pInputText id="category" [(ngModel)]="filter.category" class="w-full" />
           <label for="category">Category</label>
         </p-floatlabel>
 
-        <p-select class="w-48"
+        <p-select class="w-full sm:w-48"
           [options]="statusOptions"
           [(ngModel)]="filter.status"
           optionLabel="name" optionValue="code"
@@ -39,7 +39,7 @@
           placeholder="Status">
         </p-select>
 
-        <p-select class="w-48"
+        <p-select class="w-full sm:w-48"
           [options]="priorityOptions"
           [(ngModel)]="filter.priority"
           optionLabel="name" optionValue="code"
@@ -47,11 +47,13 @@
           placeholder="Priority">
         </p-select>
 
-        <p-button label="Search" icon="pi pi-search" size="small"
-          (onClick)="loadComplaints(0)" severity="contrast"></p-button>
+        <div class="flex  justify-end gap-3 w-full sm:w-auto">
+          <p-button label="Search" icon="pi pi-search" size="small"
+            (onClick)="loadComplaints(0)" severity="contrast" class=""></p-button>
 
-        <p-button label="Clear" icon="pi pi-times" size="small"
-          (onClick)="clearFilters()" severity="secondary"></p-button>
+          <p-button label="Clear" icon="pi pi-times" size="small"
+            (onClick)="clearFilters()" severity="secondary" class=""></p-button>
+        </div>
 
       </div>
     </p-card>
@@ -64,10 +66,10 @@
 
   <!-- Cards Grid -->
   @if (!loading && complaintsPage) {
-  <div class="flex flex-wrap gap-4 mt-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
 
     @for (complaint of complaintsPage.content; track $index) {
-    <p-card [style]="{ width: '20rem', overflow: 'hidden' }">
+    <p-card class="w-full" [style]="{ overflow: 'hidden' }">
 
       <ng-template #header>
         <div class="bg-gradient-to-r from-orange-500 to-red-500 h-32 flex items-center justify-center">
@@ -76,7 +78,7 @@
       </ng-template>
 
       <div class="flex justify-between items-start mb-2">
-        <p class="font-semibold text-lg line-clamp-1">{{ complaint.title }}</p>
+        <p class="font-semibold text-base sm:text-lg line-clamp-1 pr-2">{{ complaint.title }}</p>
         <p-badge 
           [value]="complaint.status" 
           [severity]="getStatusSeverity(complaint.status)">
@@ -89,7 +91,7 @@
 
         <div class="flex justify-between">
           <span class="text-gray-500 font-semibold">Category</span>
-          <span class="font-bold">{{ complaint.category }}</span>
+          <span class="font-bold truncate ml-2">{{ complaint.category }}</span>
         </div>
 
         <div class="flex justify-between items-center">
@@ -102,22 +104,22 @@
         </div>
 
         <div class="mt-2">
-          <p class="text-gray-600 line-clamp-3">{{ complaint.description }}</p>
+          <p class="text-gray-600 line-clamp-3 break-words">{{ complaint.description }}</p>
         </div>
 
       </div>
 
       <ng-template #footer>
         <div class="flex flex-col gap-2">
-          <div class="flex justify-end gap-2">
+          <div class="flex flex-row justify-end gap-2">
             <p-button icon="pi pi-eye" size="small" label="View" variant="outlined" 
-              (onClick)="viewDetail(complaint.id)" severity="secondary"></p-button>
+              (onClick)="viewDetail(complaint.id)" severity="secondary" class=" sm:w-auto"></p-button>
                 @if (permission != 'READ' && isAdmin()) {
             <p-button  *ngIf="complaint.status !== 'RESOLVED'" icon="pi pi-user" size="small" label="Assign" variant="outlined"
-              (onClick)="reassign(complaint.id)" severity="info"></p-button>}
+              (onClick)="reassign(complaint.id)" severity="info" class=" sm:w-auto"></p-button>}
           </div>
           
-          <div class="flex justify-end gap-2">
+          <div class="flex flex-row justify-end gap-2">
               @if (permission != 'READ' && isAdmin()) {
             <p-button 
               *ngIf="complaint.status === 'OPEN'"
@@ -125,7 +127,8 @@
               size="small" 
               label="Start"
               (onClick)="changeStatus(complaint.id, 'IN_PROGRESS')" 
-              severity="warn">
+              severity="warn"
+              class=" sm:w-auto">
             </p-button>
             
             <p-button 
@@ -134,7 +137,8 @@
               size="small" 
               label="Resolve"
               (onClick)="changeStatus(complaint.id, 'RESOLVED')" 
-              severity="success">
+              severity="success"
+              class=" sm:w-auto">
             </p-button>
           }
           </div>
@@ -144,25 +148,25 @@
     </p-card>
     }
 
-    <!-- Pagination -->
-    <div class="w-full">
-      <p-paginator [first]="page * pageSize" [rows]="pageSize"
-        [totalRecords]="complaintsPage.totalElements"
-        (onPageChange)="onPageChange($event)">
-      </p-paginator>
-    </div>
+  </div>
 
+  <!-- Pagination -->
+  <div class="w-full mt-6">
+    <p-paginator [first]="page * pageSize" [rows]="pageSize"
+      [totalRecords]="complaintsPage.totalElements"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
   </div>
   }
 
   <!-- Empty State -->
   @if (!loading && complaintsPage?.content?.length === 0) {
-  <p-card class="text-center py-20 mt-6">
-    <h3 class="text-xl font-bold mb-1">No complaints found</h3>
-    <p class="text-gray-500 mb-4">Create your first complaint to get started.</p>
+  <p-card class="text-center py-12 sm:py-20 mt-6">
+    <h3 class="text-lg sm:text-xl font-bold mb-1">No complaints found</h3>
+    <p class="text-sm sm:text-base text-gray-500 mb-4">Create your first complaint to get started.</p>
      @if (permission === 'CREATE') {
     <p-button label="New Complaint" icon="pi pi-plus" severity="contrast"
-      (onClick)="toggleCreateModal()"></p-button>}
+      (onClick)="toggleCreateModal()" class="w-full sm:w-auto"></p-button>}
   </p-card>
   }
 
@@ -193,7 +197,6 @@
       <label for="newDesc">Description</label>
     </p-floatlabel>
 
-
     <p-floatlabel variant="on">
       <input pInputText id="newCategory" [(ngModel)]="newComplaint.category" class="w-full" />
       <label for="newCategory">Category</label>
@@ -216,20 +219,20 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 w-full mt-4">
       <p-button 
         label="Cancel" 
         (click)="toggleCreateModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
 
       <p-button 
         label="Create" 
         (click)="createComplaint()" 
         severity="contrast"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
     </div>
   </ng-template>
@@ -267,16 +270,17 @@
 
     <div *ngIf="!loadingUsers" class="flex flex-col gap-2 max-h-64 overflow-y-auto">
       <div *ngFor="let u of availableUsers" 
-           class="flex justify-between items-center border-b pb-2">
-        <div>
-          <div class="font-semibold text-sm">{{ u.name }}</div>
-          <div class="text-xs text-gray-500">{{ u.email }}</div>
+           class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-2">
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm truncate">{{ u.name }}</div>
+          <div class="text-xs text-gray-500 truncate">{{ u.email }}</div>
         </div>
         <p-button 
           label="Assign" 
           size="small"
           (onClick)="assignToUser(u.id)" 
-          severity="contrast">
+          severity="contrast"
+          class="w-full sm:w-auto">
         </p-button>
       </div>
 
@@ -293,7 +297,7 @@
         label="Close" 
         (click)="closeAssignModal()" 
         severity="secondary"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
     </div>
   </ng-template>

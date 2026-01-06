@@ -1,15 +1,15 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-lg">Parking Bookings</h3>
-      <p class="text-xs text-gray-500">Manage and review parking slot requests.</p>
+      <h3 class="font-semibold text-xl sm:text-2xl">Parking Bookings</h3>
+      <p class="text-xs sm:text-sm text-gray-500">Manage and review parking slot requests.</p>
     </div>
 
     @if (this.permission === 'CREATE') {
-          <p-button label="New Request" icon="pi pi-plus" size="small"
-      (onClick)="openRequestModal()" severity="contrast"></p-button>
+      <p-button label="New Request" icon="pi pi-plus" size="small"
+        (onClick)="openRequestModal()" severity="contrast" class="w-full sm:w-auto"></p-button>
     }
   </div>
 
@@ -18,15 +18,15 @@
     <p-card>
       <p class="text-sm font-semibold">All Booking Requests</p>
       <p-divider />
+      
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
 
-      <div class="flex flex-wrap gap-3 items-end">
-
-        <p-floatlabel variant="on">
-          <input pInputText id="requestId" type="number" [(ngModel)]="filter.id" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[120px]">
+          <input pInputText id="requestId" type="number" [(ngModel)]="filter.id" class="w-full" />
           <label for="requestId">Request ID</label>
         </p-floatlabel>
 
-        <p-select class="w-56"
+        <p-select class="w-full sm:w-56"
           [options]="statusOptions"
           [(ngModel)]="filter.status"
           optionLabel="name" optionValue="code"
@@ -34,24 +34,28 @@
           placeholder="Select Status">
         </p-select>
 
-        <p-floatlabel variant="on">
-          <input pInputText id="userId" type="number" [(ngModel)]="filter.flat" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[120px]">
+          <input pInputText id="userId" type="number" [(ngModel)]="filter.flat" class="w-full" />
           <label for="userId">User ID</label>
         </p-floatlabel>
 
-        <p-floatlabel variant="on">
-          <input pInputText id="slotId" type="number" [(ngModel)]="filter.requestedSlot" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[120px]">
+          <input pInputText id="slotId" type="number" [(ngModel)]="filter.requestedSlot" class="w-full" />
           <label for="slotId">Parking Slot ID</label>
         </p-floatlabel>
 
-        <p-button label="Search" icon="pi pi-search" size="small"
-          (onClick)="applyFilters()" severity="contrast"></p-button>
-
-        <p-button label="Clear" icon="pi pi-times" size="small"
-          (onClick)="clearFilters()" severity="secondary"></p-button>
+        <div class="flex justify-end gap-3 w-full sm:w-auto">
+          <p-button label="Search" icon="pi pi-search" size="small"
+            (onClick)="applyFilters()" severity="contrast" class=""></p-button>
+          
+          <p-button label="Clear" icon="pi pi-times" size="small"
+            (onClick)="clearFilters()" severity="secondary" class=""></p-button>
+        </div>
 
       </div>
+      
     </p-card>
+      
   </div>
 
   <!-- Loading -->
@@ -59,9 +63,108 @@
     <p-progressSpinner></p-progressSpinner>
   </div>
 
-  <!-- Table -->
+  <!-- Mobile Cards View -->
   @if (!loading && requestsPage.length > 0) {
-  <div class="mt-6">
+  <div class="block lg:hidden mt-6">
+    <div class="flex flex-col gap-4">
+      @for (request of requestsPage; track request.id) {
+        <p-card class="w-full">
+          <div class="flex flex-col gap-3">
+            
+            <!-- Status Badge -->
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs text-gray-500">Request ID: {{ request.id }}</p>
+                <p class="font-semibold text-base">Flat: {{ request.flat.block }} - {{ request.flat.number }}</p>
+              </div>
+              <p-badge 
+                [value]="request.status" 
+                [severity]="getStatusSeverity(request.status)">
+              </p-badge>
+            </div>
+
+            <p-divider />
+
+            <!-- Details -->
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="">
+                <p class="text-gray-500 text-xs mb-1">Parking Slot</p>
+              <div class="flex flex-row items-center gap-2">
+                  <p class="font-semibold truncate">{{ request.requestedSlot.area }}</p>
+                <p class="text-xs">{{ request.requestedSlot.slotNumber }}</p>
+              </div>
+              </div>
+              <div>
+                <p class="text-gray-500 text-xs mb-1">Floor</p>
+                <p class="font-semibold">{{ request.flat.floor }}</p>
+              </div>
+            </div>
+
+            <!-- Admin Comment -->
+            @if (request.adminComment) {
+              <div class="bg-gray-50 p-2 rounded">
+                <p class="text-xs text-gray-500 mb-1">Admin Comment</p>
+                <p class="text-xs break-words">{{ request.adminComment }}</p>
+              </div>
+            }
+
+            <!-- Actions -->
+            <div class="flex justify-end flex-wrap gap-2">
+              <p-button 
+                icon="pi pi-eye" 
+                label="View"
+                size="small" 
+                severity="info"
+                (onClick)="openDetailsModal(request)"
+                class="">
+              </p-button>
+              
+              @if (this.currentUserId == request.createdBy && request.status.toString() == "PENDING") {
+                <p-button 
+                  icon="pi pi-trash" 
+                  label="Delete"
+                  size="small" 
+                  severity="danger"
+                  (onClick)="openDeleteModal(request.id)"
+                  class="">
+                </p-button>
+              }
+
+              @if (isAdmin && request.status.toString() === 'PENDING') {
+                <p-button 
+                  icon="pi pi-check" 
+                  label="Accept"
+                  size="small" 
+                  severity="success"
+                  (onClick)="openAcceptModal(request.id)"
+                  class="">
+                </p-button>
+
+                <p-button 
+                  icon="pi pi-times" 
+                  label="Reject"
+                  size="small" 
+                  severity="danger"
+                  (onClick)="openRejectModal(request.id)"
+                  class="">
+                </p-button>
+              }
+            </div>
+
+          </div>
+        </p-card>
+      }
+    </div>
+     <p-paginator 
+        [first]="page * pageSize" 
+        [rows]="pageSize"
+        [totalRecords]="totalElements"
+        (onPageChange)="onPageChange($event)" class="mt-4">
+      </p-paginator>
+  </div>
+
+  <!-- Desktop Table View -->
+  <div class="hidden lg:block mt-6">
     <p-card>
       <p-table [value]="requestsPage" [tableStyle]="{ 'min-width': '60rem' }">
         
@@ -80,12 +183,11 @@
             <!-- User Column -->
             <td>
               <div class="flex items-center gap-3">
-                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
                   <i class="pi pi-user text-lg"></i>
                 </div>
                 <div>
                   <div class="font-semibold text-sm">Flat : {{ request.flat.block }} - {{ request.flat.number }}</div>
-                  
                 </div>
               </div>
             </td>
@@ -131,10 +233,9 @@
                   [rounded]="true"
                   severity="danger"
                   (onClick)="openDeleteModal(request.id)"
-                  pTooltip="View Details">
+                  pTooltip="Delete Request">
                 </p-button>
                 }
-
 
                 @if (isAdmin) {
                   <p-button 
@@ -178,11 +279,11 @@
 
   <!-- Empty State -->
   @if (!loading && requestsPage.length === 0) {
-  <p-card class="text-center py-20 mt-6">
-    <h3 class="text-xl font-bold mb-1">No parking requests found</h3>
-    <p class="text-gray-500 mb-4">Create a new request to get started.</p>
+  <p-card class="text-center py-12 sm:py-20 mt-6">
+    <h3 class="text-lg sm:text-xl font-bold mb-1">No parking requests found</h3>
+    <p class="text-sm sm:text-base text-gray-500 mb-4">Create a new request to get started.</p>
     <p-button label="Create Request" icon="pi pi-plus" severity="contrast"
-      (onClick)="openRequestModal()"></p-button>
+      (onClick)="openRequestModal()" class="w-full sm:w-auto"></p-button>
   </p-card>
   }
 
@@ -205,27 +306,24 @@
     <!-- Slot Filters -->
     <div>
       <p class="text-sm font-semibold mb-3">Filter Available Slots</p>
-      <div class="flex flex-wrap gap-3">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3">
         
-        <p-floatlabel variant="on">
-          <input pInputText id="filterArea" [(ngModel)]="slotFilter.area" 
-             />
+        <p-floatlabel variant="on" class="w-full sm:flex-1">
+          <input pInputText id="filterArea" [(ngModel)]="slotFilter.area" class="w-full" />
           <label for="filterArea">Area</label>
         </p-floatlabel>
 
-        <p-floatlabel variant="on">
-          <input pInputText id="filterSlotNumber" [(ngModel)]="slotFilter.slotNumber" 
-             />
+        <p-floatlabel variant="on" class="w-full sm:flex-1">
+          <input pInputText id="filterSlotNumber" [(ngModel)]="slotFilter.slotNumber" class="w-full" />
           <label for="filterSlotNumber">Slot Number</label>
         </p-floatlabel>
 
-            <p-button 
-        label="Filter" 
-        (click)="loadAvailableSlots()" 
-        severity="contrast"
-       
-        class="px-4"
-      ></p-button>
+        <p-button 
+          label="Filter" 
+          (click)="loadAvailableSlots()" 
+          severity="contrast"
+          class="px-4 w-full sm:w-auto"
+        ></p-button>
 
       </div>
     </div>
@@ -271,10 +369,10 @@
     <div *ngIf="!loadingSlots && availableSlots.length > 0">
       <p class="text-sm font-semibold mb-3">Select a Parking Slot ({{ availableSlots.length }} available)</p>
       
-      <div class="flex flex-wrap gap-3 max-h-96 overflow-y-auto p-2">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto p-2">
         <p-card 
           *ngFor="let slot of availableSlots" 
-          [style]="{ width: '15rem', cursor: 'pointer' }"
+          class="w-full cursor-pointer"
           [class.border-2]="selectedSlot?.id === slot.id"
           [class.border-blue-500]="selectedSlot?.id === slot.id"
           (click)="selectSlot(slot)">
@@ -287,8 +385,8 @@
             </p-badge>
           </div>
 
-          <div class="font-bold text-lg mb-1">{{ slot.slotNumber }}</div>
-          <div class="text-sm text-gray-600 mb-1">Area: {{ slot.area }}</div>
+          <div class="font-bold text-base sm:text-lg mb-1 truncate">{{ slot.slotNumber }}</div>
+          <div class="text-sm text-gray-600 mb-1 truncate">Area: {{ slot.area }}</div>
           <div class="text-xs text-gray-400">ID: {{ slot.id }}</div>
 
           <div *ngIf="selectedSlot?.id === slot.id" class="mt-3 flex items-center gap-2 text-blue-600">
@@ -302,7 +400,7 @@
     <!-- No Slots Available -->
     <div *ngIf="!loadingSlots && availableSlots.length === 0" 
          class="flex flex-col items-center justify-center py-10">
-      <i class="pi pi-ban text-6xl text-gray-300 mb-3"></i>
+      <i class="pi pi-ban text-5xl sm:text-6xl text-gray-300 mb-3"></i>
       <p class="text-sm text-gray-600 mb-1">No available parking slots found</p>
       <p class="text-xs text-gray-400">Try adjusting the filters</p>
     </div>
@@ -310,14 +408,14 @@
     <!-- Selected Slot Info -->
     <div *ngIf="selectedSlot" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
       <p class="text-sm font-semibold text-blue-900 mb-3">Selected Slot Details</p>
-      <div class="grid grid-cols-2 gap-3 text-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         <div>
           <span class="text-gray-600">Slot Number:</span>
-          <span class="font-semibold ml-2">{{ selectedSlot.slotNumber }}</span>
+          <span class="font-semibold ml-2 break-words">{{ selectedSlot.slotNumber }}</span>
         </div>
         <div>
           <span class="text-gray-600">Area:</span>
-          <span class="font-semibold ml-2">{{ selectedSlot.area }}</span>
+          <span class="font-semibold ml-2 break-words">{{ selectedSlot.area }}</span>
         </div>
         <div>
           <span class="text-gray-600">Status:</span>
@@ -333,13 +431,13 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-row justify-end gap-3 w-full mt-4">
       <p-button 
         label="Cancel" 
         (click)="closeRequestModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
+        class="px-4  sm:w-auto"
       ></p-button>
 
       <p-button 
@@ -347,7 +445,7 @@
       [disabled]="!selectedSlot || !requestForm.flatId || requestForm.flatId.toString().trim() === ''"
         (click)="submitRequest()" 
         severity="contrast"
-        class="px-4"
+        class="px-4 sm:w-auto"
       ></p-button>
     </div>
   </ng-template>
@@ -372,7 +470,7 @@
     <!-- User Information -->
     <div>
       <p class="text-sm font-semibold mb-3">Flat Information</p>
-      <div class="grid grid-cols-2 gap-3 text-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         <div>
           <span class="text-gray-500">Block:</span>
           <span class="font-semibold ml-2">{{ selectedRequest.flat.block }}</span>
@@ -394,14 +492,14 @@
     <!-- Parking Slot Information -->
     <div>
       <p class="text-sm font-semibold mb-3">Parking Slot Information</p>
-      <div class="grid grid-cols-2 gap-3 text-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         <div>
           <span class="text-gray-500">Slot Number:</span>
-          <span class="font-semibold ml-2">{{ selectedRequest.requestedSlot.slotNumber }}</span>
+          <span class="font-semibold ml-2 break-words">{{ selectedRequest.requestedSlot.slotNumber }}</span>
         </div>
         <div>
           <span class="text-gray-500">Area:</span>
-          <span class="font-semibold ml-2">{{ selectedRequest.requestedSlot.area }}</span>
+          <span class="font-semibold ml-2 break-words">{{ selectedRequest.requestedSlot.area }}</span>
         </div>
         <div>
           <span class="text-gray-500">Slot ID:</span>
@@ -427,20 +525,20 @@
       
       <div *ngIf="selectedRequest.adminComment" class="mt-4 bg-gray-50 rounded-lg p-3">
         <p class="text-xs font-semibold text-gray-600 mb-1">Admin Comment</p>
-        <p class="text-sm text-gray-800">{{ selectedRequest.adminComment }}</p>
+        <p class="text-sm text-gray-800 break-words">{{ selectedRequest.adminComment }}</p>
       </div>
     </div>
 
   </div>
    @if (isAdmin) {
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 w-full mt-4">
       <p-button 
         label="Close" 
         (click)="closeDetailsModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
 
       <p-button 
@@ -448,7 +546,7 @@
         label="Accept" 
         (click)="openAcceptModal(selectedRequest.id); closeDetailsModal()" 
         severity="success"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
 
       <p-button 
@@ -456,7 +554,7 @@
         label="Reject" 
         (click)="openRejectModal(selectedRequest.id); closeDetailsModal()" 
         severity="danger"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
     </div>
   </ng-template>
@@ -474,7 +572,7 @@
 >
 
   <div class="flex flex-col items-center text-center py-4">
-    <i class="pi pi-check-circle text-6xl text-green-500 mb-3"></i>
+    <i class="pi pi-check-circle text-5xl sm:text-6xl text-green-500 mb-3"></i>
     <p class="text-sm mb-2">Are you sure you want to accept this parking request?</p>
   </div>
 
@@ -486,7 +584,8 @@
   </ng-template>
 
 </p-dialog>
-<!-- DElete Confirmation Modal -->
+
+<!-- Delete Confirmation Modal -->
 <p-dialog 
   [(visible)]="showDeleteModal" 
   header="Delete Request" 
@@ -497,7 +596,7 @@
 >
 
   <div class="flex flex-col items-center text-center py-4">
-    <i class="pi pi-trash text-6xl text-red-500 mb-3"></i>
+    <i class="pi pi-trash text-5xl sm:text-6xl text-red-500 mb-3"></i>
     <p class="text-sm mb-2">Are you sure you want to delete this parking request?</p>
   </div>
 
@@ -509,6 +608,7 @@
   </ng-template>
 
 </p-dialog>
+
 <!-- Reject Confirmation Modal -->
 <p-dialog 
   [(visible)]="showRejectModal" 
@@ -520,7 +620,7 @@
 >
 
   <div class="flex flex-col items-center text-center py-4">
-    <i class="pi pi-times-circle text-6xl text-red-500 mb-3"></i>
+    <i class="pi pi-times-circle text-5xl sm:text-6xl text-red-500 mb-3"></i>
     <p class="text-sm mb-2">Are you sure you want to reject this parking request? This action cannot be undone.</p>
   </div>
 

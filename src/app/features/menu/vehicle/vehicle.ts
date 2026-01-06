@@ -110,7 +110,7 @@ export class VehiclesManagerComponent implements OnInit {
     private flatService: FlatService
   ) {
     this.isAdmin = this.auth.isUserAdmin();
-    this.currentUserId = this.auth.getUserIdFromToken();
+    this.currentUserId = this.auth.getUserId();
     
     this.tenantRoleMenuService.getPriority("Vehicle").subscribe({
       next: (res) => {

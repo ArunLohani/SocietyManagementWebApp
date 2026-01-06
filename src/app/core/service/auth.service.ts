@@ -7,7 +7,8 @@ import {
   RegisterRequestData,
   JwtPayload,
   ApiResponse,
-  AuthSuccessData
+  AuthSuccessData,
+  UserDetails
 } from '../../types/types';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
@@ -45,14 +46,10 @@ export class AuthService {
     return this.token;
   }
 
-  /* ---------------- AUTH CHECKS ---------------- */
-
-  /** ✅ Sync check (used for token decoding & UI logic) */
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
-  /** ✅ API-level auth check (used in Guards) */
   isAuthenticated$(): Observable<boolean> {
     return this.profileService.getMyProfile().pipe(
       map(() => true),
@@ -60,44 +57,40 @@ export class AuthService {
     );
   }
 
-  /* ---------------- TOKEN DECODING ---------------- */
+  /* ---------------- USER DETAILS (FROM PROFILE) ---------------- */
 
-  private decodeToken(): JwtPayload | null {
-    const token = this.getToken();
-    if (!token) return null;
-
-    try {
-      return jwtDecode<JwtPayload>(token);
-    } catch {
-      return null;
-    }
+  getUser(): UserDetails | null {
+    return this.profileService.getUser();
   }
 
-  getEmailFromToken(): string | null {
-    return this.decodeToken()?.email ?? null;
+  getEmail(): string | null {
+    return this.getUser()?.email ?? null;
   }
 
-  getUserIdFromToken(): number | null {
-    const sub = this.decodeToken()?.sub;
-    return sub ? Number(sub) : null;
+  getUserId(): number | null {
+    return this.getUser()?.id ?? null;
   }
 
-  getRolesFromToken(): string[] {
-    return this.decodeToken()?.roles?.split(',') ?? [];
+  getRoles(): string[] {
+    return this.getUser()?.roles ?? [];
   }
 
-  getTenantIdFromToken(): number | null {
-    return this.decodeToken()?.tenantId ?? null;
+  getTenantId(): number | null {
+    return this.getUser()?.tenantId ?? null;
+  }
+
+  getSocietyName(): string | null {
+    return this.getUser()?.societyName ?? null;
   }
 
   /* ---------------- ROLE HELPERS ---------------- */
 
   isUserSuperAdmin(): boolean {
-    return this.getRolesFromToken().includes('SUPER_ADMIN');
+    return this.getRoles().includes('SUPER_ADMIN');
   }
 
   isUserAdmin(): boolean {
-    return this.getRolesFromToken().includes('ADMIN');
+    return this.getRoles().includes('ADMIN');
   }
 
   /* ---------------- AUTH ACTIONS ---------------- */
@@ -119,6 +112,7 @@ export class AuthService {
   logout(): void {
     this.cookieService.delete('access_token', '/');
     this.token = null;
+    this.profileService.clearUser();
     this.router.navigate(['/login']);
   }
 }

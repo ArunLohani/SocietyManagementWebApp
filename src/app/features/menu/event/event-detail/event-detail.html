@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
 
   <!-- Loading -->
   <div *ngIf="loading" class="flex justify-center items-center py-20">
@@ -10,26 +10,27 @@
 
     <!-- Header Card -->
     <p-card class="mb-4">
-      <div class="flex justify-between items-start">
+      <div class="flex flex-col gap-4">
         <div class="flex-1">
-          <div class="flex items-center gap-3 mb-2">
-            <h1 class="text-2xl font-bold">{{ event.name }}</h1>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+            <h1 class="text-xl sm:text-2xl font-bold break-words flex-1">{{ event.name }}</h1>
             <p-badge 
               [value]="event.status" 
-              [severity]="getStatusSeverity(event.status)">
+              [severity]="getStatusSeverity(event.status)"
+              class="self-start sm:self-auto">
             </p-badge>
           </div>
           
           <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
-            <i class="pi pi-map-marker"></i>
-            <span>{{ event.location }}</span>
+            <i class="pi pi-map-marker flex-shrink-0"></i>
+            <span class="break-words">{{ event.location }}</span>
           </div>
 
-          <p class="text-gray-700 mb-3">{{ event.description }}</p>
+          <p class="text-sm sm:text-base text-gray-700 mb-3 break-words">{{ event.description }}</p>
 
-          <div class="flex items-center gap-2 text-sm text-gray-600">
-            <i class="pi pi-clock"></i>
-            <span>{{ event.startDateTime | date:'medium' }} - {{ event.endDateTime | date:'short' }}</span>
+          <div class="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+            <i class="pi pi-clock mt-1 flex-shrink-0"></i>
+            <span class="break-words">{{ event.startDateTime | date:'short' }} - {{ event.endDateTime | date:'short' }}</span>
           </div>
         </div>
       </div>
@@ -37,35 +38,36 @@
       <p-divider></p-divider>
 
       <!-- Action Buttons -->
-    
-      <div class="flex gap-2 flex-wrap">
+      <div class="flex flex-row gap-2 flex-wrap">
         <p-button 
           label="Back" 
           icon="pi pi-arrow-left" 
           size="small"
           (onClick)="backToList()" 
-          severity="secondary">
+          severity="secondary"
+          class="">
         </p-button>
         
-
         @if (event.status.toString() == "PUBLISHED") {
            <p-button 
           [label]="isUserParticipant ? 'Leave' : 'Join'" 
           [icon]="isUserParticipant ? 'pi pi-sign-out' : 'pi pi-sign-in'"
           size="small"
           (onClick)="joinLeave()" 
-          [severity]="isUserParticipant ? 'danger' : 'success'">
+          [severity]="isUserParticipant ? 'danger' : 'success'"
+          class="">
         </p-button>
         }
 
-@if (this.permission != "READ") {
+        @if (this.permission != "READ") {
         <p-button 
           *ngIf="!editMode"
           label="Edit" 
           icon="pi pi-pencil" 
           size="small"
           (onClick)="enterEdit()" 
-          severity="secondary">
+          severity="secondary"
+          class="">
         </p-button>
 
         <p-button 
@@ -74,7 +76,8 @@
           icon="pi pi-check" 
           size="small"
           (onClick)="saveEdit()" 
-          severity="success">
+          severity="success"
+          class="">
         </p-button>
 
         <p-button 
@@ -84,16 +87,18 @@
           size="small"
           (onClick)="cancelEdit()" 
           severity="secondary"
-          [text]="true">
+          [text]="true"
+          class="">
         </p-button>
 
-        <div class="ml-auto flex gap-2">
+        <div class="flex flex-row w-full sm:w-auto sm:ml-auto gap-2">
           <p-button 
             label="Cancel Event" 
             icon="pi pi-ban" 
             size="small"
             (onClick)="markStatus('CANCELLED')" 
-            severity="warn">
+            severity="warn"
+            class="">
           </p-button>
 
           <p-button 
@@ -101,12 +106,14 @@
             icon="pi pi-check-circle" 
             size="small"
             (onClick)="markStatus('COMPLETED')" 
-            severity="success">
+            severity="success"
+            class="">
           </p-button>
         </div>
-       }
+        }
       </div>
-  @if (this.permission != "READ") {
+
+      @if (this.permission != "READ") {
       <!-- Edit Form -->
       <div *ngIf="editMode" class="mt-4">
         <p-divider></p-divider>
@@ -128,55 +135,17 @@
             <label for="editLoc">Location</label>
           </p-floatlabel>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <p-floatlabel variant="on">
-              <!-- <p-calendar 
-                [(ngModel)]="editModel.startDateTime" 
-                [showTime]="true" 
-                dateFormat="mm/dd/yy"
-                inputId="editStart"
-                styleClass="w-full"
-                [inputStyle]="{ width: '100%' }">
-              </p-calendar> -->
-                <p-datepicker [(ngModel)]="editModel.startDateTime" [showTime]="true"  />
+                <p-datepicker [(ngModel)]="editModel.startDateTime" [showTime]="true" class="w-full" />
               <label for="editStart">Start Date & Time</label>
             </p-floatlabel>
 
             <p-floatlabel variant="on">
-              <!-- <p-calendar 
-                [(ngModel)]="editModel.endDateTime" 
-                [showTime]="true" 
-                dateFormat="mm/dd/yy"
-                inputId="editEnd"
-                styleClass="w-full"
-                [inputStyle]="{ width: '100%' }">
-              </p-calendar> -->
-                 <p-datepicker [(ngModel)]="editModel.endDateTime" [showTime]="true"  />
+                 <p-datepicker [(ngModel)]="editModel.endDateTime" [showTime]="true" class="w-full" />
               <label for="editEnd">End Date & Time</label>
             </p-floatlabel>
           </div>
-
-          <!-- <div class="flex gap-4">
-           <div>
-        <p-checkbox 
-        [(ngModel)]="editModel.isPublic" 
-        [binary]="true" 
-        inputId="isPublic"
-        label="Public">
-      </p-checkbox>
-   <label for="regRequired" class="ml-2"> Public </label>
-    </div>
-
-    <div>
-        <p-checkbox 
-        [(ngModel)]="editModel.registrationRequired" 
-        [binary]="true" 
-        inputId="regRequired"
-        label="Requires Registration">
-      </p-checkbox>
-          <label for="regRequired" class="ml-2"> Requires Registration </label>
-    </div>
-          </div> -->
 
         </div>
       </div>
@@ -187,8 +156,8 @@
     <!-- Participants Card -->
     <p-card>
       <ng-template #header>
-        <div class="px-6 pt-6 pb-3">
-          <h3 class="text-lg font-semibold flex items-center gap-2">
+        <div class="px-3 sm:px-6 pt-4 sm:pt-6 pb-3">
+          <h3 class="text-base sm:text-lg font-semibold flex items-center gap-2">
             <i class="pi pi-users"></i>
             Participants ({{ showParticipants().length }})
           </h3>
@@ -202,23 +171,21 @@
       <div *ngIf="!loadingParticipants && showParticipants().length > 0" 
            class="flex flex-col gap-2">
         <div *ngFor="let p of showParticipants()" 
-             class="flex justify-between items-center p-3 border-b hover:bg-gray-50">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 text-purple-600">
-              <i class="pi pi-user"></i>
-            </div>
-            <div>
-              <div class="font-semibold text-sm">{{ p.name }}</div>
-              <div class="text-xs text-gray-500">{{ p.email }}</div>
-            </div>
+             class="flex items-center p-3 border-b hover:bg-gray-50 gap-3">
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex-shrink-0">
+            <i class="pi pi-user"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm truncate">{{ p.name }}</div>
+            <div class="text-xs text-gray-500 truncate">{{ p.email }}</div>
           </div>
         </div>
       </div>
 
       <div *ngIf="!loadingParticipants && showParticipants().length === 0" 
            class="text-center py-10 text-gray-500">
-        <i class="pi pi-users text-4xl mb-3 block"></i>
-        <p>No participants yet</p>
+        <i class="pi pi-users text-3xl sm:text-4xl mb-3 block"></i>
+        <p class="text-sm sm:text-base">No participants yet</p>
       </div>
 
     </p-card>

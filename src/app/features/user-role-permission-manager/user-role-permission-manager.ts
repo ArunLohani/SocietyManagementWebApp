@@ -103,8 +103,8 @@ export class UserRolePermissionManager implements OnInit {
 
   loadInitialData(): void {
     this.loading = true;
-    const tenantId = this.authService.getTenantIdFromToken()?.toString() || '';
-    
+    const tenantId = this.authService.getTenantId()?.toString() || '';
+    console.log("tenantId",this.authService.getTenantId())
     forkJoin({
       tenant: this.tenantService.getTenantById(tenantId),
       menus: this.menuService.getAllMenusPaginated(),

@@ -1,6 +1,6 @@
 {
-  "name": "client",
-  "short_name": "client",
+  "name": "Homely - Society Management App",
+  "short_name": "Homely",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

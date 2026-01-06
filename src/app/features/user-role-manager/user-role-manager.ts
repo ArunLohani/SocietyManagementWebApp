@@ -37,8 +37,7 @@ import { Tooltip } from 'primeng/tooltip';
     BadgeModule,
     DialogModule,
     ProgressSpinnerModule,
-    MessageModule,
-    Tooltip
+    MessageModule
   ],
   templateUrl: './user-role-manager.html',
   styleUrl: './user-role-manager.css'
@@ -85,7 +84,7 @@ unAssignedUsersOption: { name: string; email: string; id: number }[] = [];
 
   loadInitialData(): void {
     this.loading = true;
-    const tenantId = this.authService.getTenantIdFromToken()?.toString();
+    const tenantId = this.authService.getTenantId()?.toString();
   
     if (tenantId) {
       this.tenantService.getTenantById(tenantId).subscribe({

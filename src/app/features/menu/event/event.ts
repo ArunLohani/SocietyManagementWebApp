@@ -97,10 +97,10 @@ export class EventsManagerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const tenantId = this.auth.getTenantIdFromToken?.() ?? null;
+    const tenantId = this.auth.getTenantId() ?? null;
     
     try {
-      const idStr = this.auth.getUserIdFromToken();
+      const idStr = this.auth.getTenantId();
       this.currentUserId = Number(idStr);
     } catch { }
     this.loadEvents(0);

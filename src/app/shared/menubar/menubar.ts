@@ -92,31 +92,34 @@ export class MenuBar implements OnInit, OnDestroy {
     this.stompService.disconnect();
   }
 
-  private loadUserProfile(): void {
-    this.profileService.getMyProfile()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.user = res.data;
-          this.user.tenantId = this.authService.getTenantIdFromToken() || 0;
-          
-          // Subscribe to notifications after user profile is loaded
-          const userId = this.authService.getUserIdFromToken();
-          if (userId) {
-            console.log("Subscribing to notifications for user:", userId);
-            this.stompService.subscribeToUserNotifications(userId);
-          }
+private loadUserProfile(): void {
+  this.profileService.getMyProfile()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (res) => {
+        this.user = res.data;
 
-          // If you have society ID, subscribe to society notifications too
-          if (this.user.tenantId) {
-            this.stompService.subscribeToSocietyNotifications(this.user.tenantId);
-          }
-        },
-        error: (err) => {
-          console.error('Failed to load user profile:', err);
+        // ✅ Use UserDetails directly
+        const userId = this.user.id;
+        const tenantId = this.user.tenantId;
+
+        /* ---------------- USER NOTIFICATIONS ---------------- */
+        if (userId) {
+          console.log('Subscribing to notifications for user:', userId);
+          this.stompService.subscribeToUserNotifications(userId);
         }
-      });
-  }
+
+        /* ---------------- SOCIETY NOTIFICATIONS ---------------- */
+        if (tenantId) {
+          console.log('Subscribing to society notifications:', tenantId);
+          this.stompService.subscribeToSocietyNotifications(tenantId);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load user profile:', err);
+      }
+    });
+}
 
   private loadDatabaseNotifications(): void {
     forkJoin({

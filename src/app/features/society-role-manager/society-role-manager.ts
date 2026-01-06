@@ -65,7 +65,7 @@
 
 //   loadData(): void {
 //     this.loading = true;
-//     const tenantId = this.authService.getTenantIdFromToken()?.toString() || ''
+//     const tenantId = this.authService.getTenantId()?.toString() || ''
 //     forkJoin({
 //       roles: this.roleService.getAllRoles(),
 //       tenant: this.tenantService.getTenantById(tenantId)
@@ -245,7 +245,7 @@ export class SocietyRoleManager implements OnInit {
 
   loadData(): void {
     this.loading = true;
-    const tenantId = this.authService.getTenantIdFromToken()?.toString() || ''
+    const tenantId = this.authService.getTenantId()?.toString() || ''
     forkJoin({
       roles: this.roleService.getAllRoles(),
       tenant: this.tenantService.getTenantById(tenantId)

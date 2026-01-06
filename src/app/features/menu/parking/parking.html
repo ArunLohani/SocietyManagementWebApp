@@ -1,17 +1,16 @@
-<div class="min-h-screen bg-[#f8f8f8] p-6 font-sans">
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
 
   <!-- Header -->
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
     <div class="flex flex-col gap-1">
-      <h3 class="font-semibold text-lg">Parking Management</h3>
+      <h3 class="font-semibold text-lg sm:text-xl">Parking Management</h3>
       <p class="text-xs text-gray-500">Monitor and manage parking slots.</p>
     </div>
 
     @if (permission === 'CREATE') {  
        <p-button label="Add Parking Slot" icon="pi pi-plus" size="small"
-      (onClick)="openCreateModal()" severity="contrast"></p-button>
+      (onClick)="openCreateModal()" severity="contrast" class="w-full sm:w-auto"></p-button>
     }
- 
   </div>
 
   <!-- Filters -->
@@ -20,19 +19,19 @@
       <p class="text-sm font-semibold">All Parking Slots</p>
       <p-divider />
 
-      <div class="flex flex-wrap gap-3 items-end">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
 
-        <p-floatlabel variant="on">
-          <input pInputText id="slotNumber" [(ngModel)]="filter.slotNumber" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+          <input pInputText id="slotNumber" [(ngModel)]="filter.slotNumber" class="w-full" />
           <label for="slotNumber">Slot Number</label>
         </p-floatlabel>
 
-        <p-floatlabel variant="on">
-          <input pInputText id="area" [(ngModel)]="filter.area" />
+        <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+          <input pInputText id="area" [(ngModel)]="filter.area" class="w-full" />
           <label for="area">Area</label>
         </p-floatlabel>
 
-        <p-select class="w-56"
+        <p-select class="w-full sm:w-56"
           [options]="statusOptions"
           [(ngModel)]="filter.status"
           optionLabel="name" optionValue="code"
@@ -40,11 +39,14 @@
           placeholder="Select Status">
         </p-select>
 
-        <p-button label="Search" icon="pi pi-search" size="small"
-          (onClick)="applyFilters()" severity="contrast"></p-button>
+        <div class="flex justify-end
+         gap-3 w-full sm:w-auto">
+          <p-button label="Search" icon="pi pi-search" size="small"
+            (onClick)="applyFilters()" severity="contrast" class=""></p-button>
 
-        <p-button label="Clear" icon="pi pi-times" size="small"
-          (onClick)="clearFilters()" severity="secondary"></p-button>
+          <p-button label="Clear" icon="pi pi-times" size="small"
+            (onClick)="clearFilters()" severity="secondary" class=""></p-button>
+        </div>
 
       </div>
     </p-card>
@@ -57,10 +59,10 @@
 
   <!-- Cards Grid -->
   @if (!loading && parkingSlotsPage) {
-  <div class="flex flex-wrap gap-4 mt-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
 
     @for (slot of parkingSlotsPage.content; track $index) {
-    <p-card [style]="{ width: '20rem', overflow: 'hidden' }">
+    <p-card class="w-full" [style]="{ overflow: 'hidden' }">
 
       <ng-template #header>
         <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-32 flex items-center justify-center">
@@ -69,7 +71,7 @@
       </ng-template>
 
       <div class="flex justify-between items-center mb-2">
-        <p class="font-semibold text-lg">{{ slot.slotNumber }}</p>
+        <p class="font-semibold text-base sm:text-lg">{{ slot.slotNumber }}</p>
         <p-badge [value]="getStatusLabel(slot.status)"
           [severity]="getStatusSeverity(slot.status)"></p-badge>
       </div>
@@ -80,7 +82,7 @@
 
         <div class="flex justify-between">
           <span class="text-gray-500 font-semibold">Area</span>
-          <span class="font-bold">{{ slot.area || 'N/A' }}</span>
+          <span class="font-bold truncate ml-2">{{ slot.area || 'N/A' }}</span>
         </div>
 
         <div class="flex justify-between">
@@ -91,7 +93,7 @@
         @if (slot.status.toString() == "OCCUPIED") {
            <div class="flex justify-between">
           <span class="text-gray-500 font-semibold">Occupied by</span>
-          <span class="font-bold">{{ slot?.flat?.block}} - {{slot?.flat?.number }}</span>
+          <span class="font-bold truncate ml-2">{{ slot?.flat?.block}} - {{slot?.flat?.number }}</span>
         </div>
         }
 
@@ -99,24 +101,24 @@
      @if (permission !== 'READ') { 
       <ng-template #footer>
         <div class="flex flex-col gap-2">
-          <div class="flex justify-end gap-2">
+          <div class="flex flex-row justify-end gap-2">
             <p-button icon="pi pi-pencil" size="small" label="Edit" variant="outlined" 
-              (onClick)="openEditModal(slot)" severity="secondary"></p-button>
+              (onClick)="openEditModal(slot)" severity="secondary" class=" sm:w-auto"></p-button>
             <p-button icon="pi pi-sync" size="small" label="Status" variant="outlined"
-              (onClick)="openStatusModal(slot.id)" severity="info"></p-button>
+              (onClick)="openStatusModal(slot.id)" severity="info" class=" sm:w-auto"></p-button>
           </div>
           
-          <div class="flex justify-end gap-2">
+          <div class="flex flex-row justify-end gap-2">
             <p-button *ngIf="slot.status.toString() === 'AVAILABLE'" 
               icon="pi pi-lock" size="small" label="Reserve" variant="outlined"
-              (onClick)="reserveSlot(slot.id)" severity="warn"></p-button>
+              (onClick)="reserveSlot(slot.id)" severity="warn" class=" sm:w-auto"></p-button>
             
             <p-button *ngIf="slot.status.toString() === 'RESERVED' || slot.status.toString() === 'OCCUPIED'" 
               icon="pi pi-lock-open" size="small" label="Free" variant="outlined"
-              (onClick)="freeSlot(slot.id)" severity="success"></p-button>
+              (onClick)="freeSlot(slot.id)" severity="success" class=" sm:w-auto"></p-button>
             
             <p-button icon="pi pi-trash" size="small" label="Delete" 
-              (onClick)="openDeleteModal(slot.id)" severity="danger"></p-button>
+              (onClick)="openDeleteModal(slot.id)" severity="danger" class=" sm:w-auto"></p-button>
           </div>
         </div>
       </ng-template>
@@ -124,25 +126,25 @@
     </p-card>
     }
 
-    <!-- Pagination -->
-    <div class="w-full">
-      <p-paginator [first]="page * pageSize" [rows]="pageSize"
-        [totalRecords]="parkingSlotsPage.totalElements"
-        (onPageChange)="onPageChange($event)">
-      </p-paginator>
-    </div>
+  </div>
 
+  <!-- Pagination -->
+  <div class="w-full mt-6">
+    <p-paginator [first]="page * pageSize" [rows]="pageSize"
+      [totalRecords]="parkingSlotsPage.totalElements"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
   </div>
   }
 
   <!-- Empty State -->
   @if (!loading && parkingSlotsPage?.content?.length === 0) {
-  <p-card class="text-center py-20">
-    <h3 class="text-xl font-bold mb-1">No parking slots found</h3>
+  <p-card class="text-center py-12 sm:py-20">
+    <h3 class="text-lg sm:text-xl font-bold mb-1">No parking slots found</h3>
      @if (permission === 'CREATE') {  
-    <p class="text-gray-500 mb-4">Create your first parking slot to start managing your parking facility.</p>
+    <p class="text-sm sm:text-base text-gray-500 mb-4">Create your first parking slot to start managing your parking facility.</p>
     <p-button label="Add Parking Slot" icon="pi pi-plus" severity="contrast"
-      (onClick)="openCreateModal()"></p-button>
+      (onClick)="openCreateModal()" class="w-full sm:w-auto"></p-button>
      }
   </p-card>
   }
@@ -186,21 +188,21 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-row justify-end gap-3 w-full mt-4">
 
       <p-button 
         label="Cancel" 
         (click)="closeSlotModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
+        class="px-4  sm:w-auto"
       ></p-button>
 
       <p-button 
         [label]="isEditMode ? 'Update' : 'Create'" 
         (click)="saveSlot()" 
         severity="contrast"
-        class="px-4"
+        class="px-4  sm:w-auto"
       ></p-button>
 
     </div>
@@ -236,21 +238,21 @@
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-3 w-full mt-4">
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 w-full mt-4">
 
       <p-button 
         label="Cancel" 
         (click)="closeStatusModal()" 
         severity="secondary"
         [text]="true"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
 
       <p-button 
         label="Update" 
         (click)="updateStatus()" 
         severity="contrast"
-        class="px-4"
+        class="px-4 w-full sm:w-auto"
       ></p-button>
 
     </div>
