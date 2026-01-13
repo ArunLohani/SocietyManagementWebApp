@@ -42,6 +42,9 @@
           @for (child of item.children; track $index) {
             <a
               [routerLink]="child.route"
+              routerLinkActive="bg-white text-black hover:bg-white"
+              [routerLinkActiveOptions]="{exact:
+true}"
               (click)="closeOnMobile()"
               class="block px-4 py-2 rounded hover:bg-[#161A29]"
             >
@@ -54,6 +57,9 @@
       @else {
         <a
           [routerLink]="item.route"
+            routerLinkActive="bg-white text-black hover:bg-white"
+              [routerLinkActiveOptions]="{exact:
+true}"
           (click)="closeOnMobile()"
           class="flex items-center gap-4 px-4 py-3 rounded-md hover:bg-[#161A29]"
         >
@@ -64,7 +70,7 @@
     }
 
     <!-- Logout -->
-    <div class="border-t border-white pt-4 mt-6">
+    @if (!isImpersonating()) {<div class="border-t border-white pt-4 mt-6">
       <button
         (click)="logout()"
         class="w-full flex items-center gap-4 px-4 py-3 rounded-md
@@ -73,7 +79,19 @@
         <fa-icon [icon]="power_off"></fa-icon>
         Logout
       </button>
-    </div>
+    </div>}
+    @else {
+      <div class="border-t border-white pt-4 mt-6">
+      <button
+        (click)="endImpersonation()"
+        class="w-full flex items-center gap-4 px-4 py-3 rounded-md
+               hover:bg-white hover:text-black transition"
+      >
+        <fa-icon [icon]="power_off"></fa-icon>
+Exit Session
 
+      </button>
+    </div>
+    }
   </nav>
 </aside>

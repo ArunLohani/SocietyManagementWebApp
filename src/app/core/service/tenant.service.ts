@@ -39,4 +39,7 @@ export class TenantService {
 
   }
 
+  removeTenant(tenantId:number): Observable<ApiResponse<Tenant>> {
+    return this.httpClient.delete<ApiResponse<Tenant>>(`${this.url}/${tenantId}`);
+  }
 }

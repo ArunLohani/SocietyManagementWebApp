@@ -83,6 +83,15 @@ export class AuthService {
     return this.getUser()?.societyName ?? null;
   }
 
+  getIsImpersonating():Boolean {
+    return this.getUser()?.isImpersonating ?? false;
+  }
+
+  getSessionId() : number | null {
+       return this.getUser()?.sessionId ?? null;
+
+  }
+
   /* ---------------- ROLE HELPERS ---------------- */
 
   isUserSuperAdmin(): boolean {
@@ -109,10 +118,10 @@ export class AuthService {
     );
   }
 
-  logout(): void {
-    this.cookieService.delete('access_token', '/');
-    this.token = null;
-    this.profileService.clearUser();
-    this.router.navigate(['/login']);
+  logout(): Observable<ApiResponse<String>> {
+     return this.httpClient.post<ApiResponse<String>>(
+      `${this.url}/logout`,
+      {}
+    );
   }
 }

@@ -25,6 +25,9 @@ import { ParkingBooking } from './features/menu/parking-booking/parking-booking'
 import { Payment } from './features/payment/payment';
 import { MaintenancePricingComponent } from './features/menu/maintenance-pricing/maintenance-pricing';
 import { PaymentComponent } from './features/menu/my-payments/my-payments';
+import { SupportTicket } from './core/service/support-ticket';
+import { SupportTicketsComponent } from './features/ticket-management/ticket-management';
+import { ImpersonationSessionsComponent } from './features/session-management/session-management';
 
 export const routes: Routes = [
 
@@ -131,8 +134,8 @@ export const routes: Routes = [
                     {
                         path:"maintenance_pricing",
                         component : MaintenancePricingComponent,
-                        //         canActivate: [menuGuard],
-                        // data: { menu: "Maintenance Pricing" }
+                                canActivate: [menuGuard],
+                        data: { menu: "Maintenance Pricing" }
 
                     }
                 ]
@@ -145,7 +148,10 @@ export const routes: Routes = [
                     {
                         path: "society",
                         component: SuperAdminSocietyManager
-                    },
+                    },{
+                        path: "ticket",
+                        component: SupportTicketsComponent
+                    }
                 ]
             }, {
                 path: "admin",
@@ -163,6 +169,14 @@ export const routes: Routes = [
                         path: "user",
                         component: UserRoleManager
                     },
+                    {
+                        path: "ticket",
+                        component: SupportTicketsComponent
+                    },
+                    {
+                        path : "session",
+                        component : ImpersonationSessionsComponent
+                    }
                 ]
             }
         ]

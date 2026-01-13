@@ -192,42 +192,100 @@
       </div>
       
       <!-- User Profile -->
-      <div class="flex justify-center">
-        <p-popover #profilePopover>
-          <ng-template pTemplate="content">
-            <div class="profile-panel">
-              <div class="flex gap-2 p-2">
-                <i class="pi pi-user text-muted-color"></i>
-                <div class="flex-1">
-                  <p class="m-0 text-sm font-medium">{{ user?.name || 'User' }}</p>
-                </div>
-              </div>
+     <div class="flex justify-center">
+  <p-popover #profilePopover>
+    <ng-template pTemplate="content">
 
-              <div class="flex items-center gap-2 p-2">
-                <i class="pi pi-envelope text-muted-color"></i>
-                <div class="flex-1">
-                  <p class="m-0 text-sm font-medium">{{ user?.email }}</p>
-                </div>
-              </div>
-              
-              <div class="flex items-center gap-2 p-2">
-                <i class="pi pi-building text-muted-color"></i>
-                <div class="flex-1">
-                  <p class="m-0 text-sm font-medium">{{ user?.societyName || 'N/A' }}</p>
-                </div>
-              </div>
+      <!-- 🔴 IMPERSONATION MODE -->
+      <ng-container *ngIf="user?.isImpersonating; else normalProfile">
+
+        <div class="profile-panel border-round p-3 bg-red-50">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-eye text-red-600"></i>
+            <span class="font-semibold text-red-600">
+              Impersonation Mode
+            </span>
+          </div>
+
+          <p-divider></p-divider>
+
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-user"></i>
+            <span class="text-sm">
+              Logged in as <b>{{ user?.name }}</b>
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 mb-2">
+            <i class="pi pi-shield"></i>
+            <span class="text-sm">
+              Super Admin: <b>{{ user?.superAdminEmail }}</b>
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 mb-3">
+            <i class="pi pi-clock"></i>
+            <span class="text-sm">
+              Expires at:
+              <b>{{ user?.impersonationExpiresAt | date:'short' }}</b>
+            </span>
+          </div>
+
+          <p-divider></p-divider>
+
+          <p-button
+            label="Exit Impersonation"
+            icon="pi pi-sign-out"
+            severity="danger"
+            size="small"
+            class="w-full"
+            (onClick)="exitImpersonation()">
+          </p-button>
+        </div>
+
+      </ng-container>
+
+      <!-- 🟢 NORMAL PROFILE -->
+      <ng-template #normalProfile>
+        <div class="profile-panel">
+          <div class="flex gap-2 p-2">
+            <i class="pi pi-user text-muted-color"></i>
+            <div class="flex-1">
+              <p class="m-0 text-sm font-medium">{{ user?.name || 'User' }}</p>
             </div>
-          </ng-template>
-        </p-popover>
-        
-        <p-avatar 
-          (click)="profilePopover.toggle($event)" 
-          [label]="getUserInitials()"
-          size="normal" 
-          shape="circle"
-          styleClass="cursor-pointer">
-        </p-avatar>
-      </div>
+          </div>
+
+          <div class="flex items-center gap-2 p-2">
+            <i class="pi pi-envelope text-muted-color"></i>
+            <div class="flex-1">
+              <p class="m-0 text-sm font-medium">{{ user?.email }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 p-2">
+            <i class="pi pi-building text-muted-color"></i>
+            <div class="flex-1">
+              <p class="m-0 text-sm font-medium">
+                {{ user?.societyName || 'N/A' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+
+    </ng-template>
+  </p-popover>
+
+  <!-- Avatar -->
+  <p-avatar
+    (click)="profilePopover.toggle($event)"
+    [label]="getUserInitials()"
+    size="normal"
+    shape="circle"
+    styleClass="cursor-pointer"
+    [styleClass]="user?.isImpersonating ? 'border-2 border-red-500' : ''">
+  </p-avatar>
+</div>
       
     </div>
   </ng-template>

@@ -24,6 +24,7 @@ import { StompService } from '../../core/service/stomp.service';
 import { UserDetails, Notification } from '../../types/types';
 import { NotificationService } from '../../core/service/notification.service';
 import { EventEmitter,Output } from '@angular/core';
+import {ImpersonationSessionService } from '../../core/service/impersonation-session';
 @Component({
   selector: 'app-menubar',
   standalone: true,
@@ -73,7 +74,8 @@ export class MenuBar implements OnInit, OnDestroy {
     private profileService: ProfileService,
     private stompService: StompService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private impersonationService : ImpersonationSessionService
   ) {}
 
   openSidebar(){
@@ -344,4 +346,20 @@ private loadUserProfile(): void {
     if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
   }
+
+ exitImpersonation(): void {
+  if (!this.user?.impersonationSessionId) return;
+
+  this.impersonationService.endImpersonation(this.user.impersonationSessionId)
+    .subscribe({
+      next: () => {
+       window.location.href = '/';
+
+      },
+      error: (err) => {
+        console.error('Failed to exit impersonation', err);
+      }
+    });
+}
+
 }
