@@ -1,3 +1,4 @@
+
 export type LoginRequestData = {
 
   email: string,
@@ -175,7 +176,12 @@ export interface UserDetails {
   phoneNumber?: string;
   roles?: Array<string>;
   tenantId?: number;
-  societyName?: string
+  societyName?: string;
+    isImpersonating : Boolean;
+  impersonationSessionId : number;
+    superAdminEmail : string;
+    impersonationExpiresAt : Date;
+    sessionId : number
 }
 
 
@@ -664,14 +670,135 @@ export interface SortFilter {
   asc: boolean;
 }
 
-export interface GuestRequestDTO{
-    visitorName: string;
+export interface GuestRequestDTO {
+  visitorName: string;
   visitorPhone: string;
   visitorEmail: string;
   purpose: string;
-    // Visit timing
+  // Visit timing
   expectedIn: Date;
   expectedOut: Date;
-    // Relationships
-  flat : number;
+  // Relationships
+  flat: number;
+}
+
+export enum TicketStatus {
+  OPEN,
+  IN_PROGRESS,
+  CLOSED
+}
+
+export interface SupportTicket {
+  id: number
+  title: string;
+  description: string;
+  raisedBy: User;
+  status: TicketStatus;
+  allowImpersonation: Boolean;
+  impersonationUntil: Date;
+}
+
+export interface TicketRaiseRequest {
+  title: string;
+  description: string;
+}
+
+export interface SupportTicketFilter {
+  id?: number
+  title?: string;
+  description?: string;
+  raisedBy?: number;
+  status?: string;
+  allowImpersonation?: Boolean;
+  impersonationUntil?: Date;
+  isActive?: Boolean;
+  sortFilter?: SortFilter;
+}
+
+export interface StartImpersonationResponseDto {
+
+  sessionId: number;
+  adminEmail: string;
+  expiresAt: Date;
+  ticketId: number;
+}
+
+export interface CurrentImpersonationDto {
+  sessionId: number;
+  adminEmail: string;
+  expiresAt: Date;
+  ticketId: number;
+  isImpersonating: Boolean;
+  superAdminEmail: string;
+}
+
+export interface ImpersonationSession {
+  id: number;
+  ticket: SupportTicket;
+  admin: User;
+  superAdmin: User;
+  expiresAt: Date;
+  endedAt: Date;
+  createdAt:Date;
+}
+
+export interface ImpersonationSessionFilter {
+  id?: number;
+  admin?: number;
+  superAdmin?: number;
+  ticket?: number;
+  expiresAtFrom?: Date;
+  expiresAtTo?: Date;
+  endedAtFrom?: Date;
+  endedAtTo?: Date;
+  endedAtIsNull?: boolean; // NEW: Check if endedAt is null
+  isActive?: boolean;
+  sortFilter?: SortFilter
+}
+
+
+
+export interface SocietyConfigurationRole {
+  id?: number; // For existing roles
+  name: string;
+  isNew: boolean;
+  menus: SocietyConfigurationMenu[];
+}
+
+export interface SocietyConfigurationMenu {
+  id: number;
+  menuName: string;
+  menuDescription?: string;
+  actions: SocietyConfigurationAction[];
+}
+
+export interface SocietyConfigurationAction {
+  id: number;
+  action: string;
+  granted: boolean;
+}
+
+export interface SocietyConfiguration {
+  societyName: string;
+  roles: SocietyConfigurationRole[];
+}
+
+export interface SocietySetupRequest {
+  societyName: string;
+  configuration: {
+    roles: Array<{
+      roleId?: number;
+      roleName: string;
+      isNew: boolean;
+      menuPermissions: Array<{
+        menuId: number;
+        actionIds: number[];
+      }>;
+    }>;
+  };
+}
+
+export interface DragDropItem {
+  type: 'role' | 'menu';
+  data: any;
 }

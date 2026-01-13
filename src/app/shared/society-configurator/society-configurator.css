@@ -1,0 +1,75 @@
+/* Scroll containers */
+.scroll-container {
+  overflow-y: auto;
+  height: 100%;
+  padding-right: 4px;
+}
+
+/* Prevent body scroll during drag */
+body {
+  overflow: hidden;
+}
+
+/* Role stacking area */
+.role-drop-zone {
+  min-height: 200px;
+}
+
+/* Role cards animation */
+.role-card {
+  animation: slideIn 0.25s ease-out;
+}
+
+/* Sticky role header */
+.role-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+/* Drag while scrolling visual */
+.dragging {
+  opacity: 0.5;
+}
+
+/* Smooth scrollbar */
+.scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Drop highlight */
+.drag-over {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+}
+
+/* Prevent role overlap */
+.space-y-4 > * {
+  margin-bottom: 1rem;
+}
+
+/* Mobile fallback */
+@media (max-width: 1024px) {
+  .lg\:col-span-4,
+  .lg\:col-span-8 {
+    height: auto;
+  }
+
+  .scroll-container {
+    max-height: 400px;
+  }
+}

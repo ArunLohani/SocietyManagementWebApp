@@ -1,0 +1,592 @@
+<div class="p-4 max-w-7xl mx-auto">
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h2 class="text-3xl font-bold text-gray-900 mb-2">Impersonation Sessions</h2>
+    <p class="text-gray-600">Monitor and manage impersonation sessions for support tickets.</p>
+  </div>
+
+  <!-- Tabs -->
+  <p-tabs [(value)]="activeTab" styleClass="mb-4">
+    <p-tablist>
+      
+            <p-tab [value]="0">Active Sessions</p-tab>
+          
+    
+      <p-tab [value]="1">All Sessions</p-tab>
+      
+    </p-tablist>
+    <p-tabpanels>
+      <!-- Active Sessions Tab -->
+      <p-tabpanel header="Active Sessions" [value]="0">
+        <div class="mt-4">
+          <!-- Filters Card -->
+          <p-card class="mb-4 shadow-sm">
+            <ng-template pTemplate="header">
+              <div class="px-4 pt-4">
+                <h3 class="text-lg font-semibold text-gray-800">Filter Active Sessions</h3>
+              </div>
+            </ng-template>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p-floatlabel>
+                  <input 
+                    pInputText 
+                    [(ngModel)]="activeSessionsFilter.ticket" 
+                    id="ticket-filter"
+                    class="w-full" />
+                  <label for="ticket-filter">Ticket ID</label>
+                </p-floatlabel>
+              </div>
+              <div>
+                <p-floatlabel>
+                  <input 
+                    pInputText 
+                    [(ngModel)]="activeSessionsFilter.admin" 
+                    id="admin-filter"
+                    class="w-full" />
+                  <label for="admin-filter">Admin ID</label>
+                </p-floatlabel>
+              </div>
+              <div>
+                <p-floatlabel>
+                  <input 
+                    pInputText 
+                    [(ngModel)]="activeSessionsFilter.superAdmin" 
+                    id="superadmin-filter"
+                    class="w-full" />
+                  <label for="superadmin-filter">Super Admin ID</label>
+                </p-floatlabel>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <p-button 
+                label="Apply Filters" 
+                icon="pi pi-filter"
+                size="small"
+                (onClick)="applyActiveSessionsFilters()">
+              </p-button>
+              <p-button 
+                label="Clear Filters" 
+                icon="pi pi-filter-slash"
+                severity="secondary"
+                size="small"
+                [outlined]="true"
+                (onClick)="clearActiveSessionsFilters()">
+              </p-button>
+            </div>
+          </p-card>
+
+          <!-- Loading State -->
+          @if (loading) {
+            <div class="flex justify-center items-center py-16">
+              <p-progressSpinner 
+                strokeWidth="3"
+                [style]="{width: '50px', height: '50px'}">
+              </p-progressSpinner>
+            </div>
+          }
+
+          <!-- Active Sessions List -->
+          @if (!loading && activeSessionsPage) {
+            <div class="space-y-4">
+              @for (session of activeSessionsPage.content; track session.id) {
+                <p-card class="shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <!-- Session Info -->
+                    <div class="flex-1 space-y-3">
+                      <!-- Header with Status -->
+                      <div class="flex items-center gap-3 flex-wrap">
+                        <h3 class="text-xl font-bold text-gray-900">Session #{{ session.id }}</h3>
+                        <p-badge 
+                          [value]="getSessionStatusLabel(session)" 
+                          [severity]="getSessionStatusSeverity(session)"
+                          styleClass="text-sm">
+                        </p-badge>
+                        @if (!session.endedAt && !isSessionExpired(session.expiresAt)) {
+                          <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded">
+                            {{ getTimeRemaining(session.expiresAt) }}
+                          </span>
+                        }
+                      </div>
+                      
+                      <p-divider></p-divider>
+
+                      <!-- Details Grid -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                          <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Ticket</p>
+                            <p class="text-sm font-medium text-gray-900">
+                              #{{ session.ticket.id }} - {{ session.ticket.title }}
+                            </p>
+                          </div>
+                          <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Admin (Impersonated)</p>
+                            <p class="text-sm font-medium text-gray-900">{{ session.admin.name }}</p>
+                            <p class="text-xs text-gray-600">{{ session.admin.email }}</p>
+                          </div>
+                        </div>
+                        <div class="space-y-2">
+                          <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Super Admin</p>
+                            <p class="text-sm font-medium text-gray-900">{{ getSuperAdminName(session) }}</p>
+                          </div>
+                          <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Session Timing</p>
+                            <p class="text-xs text-gray-600">
+                              <i class="pi pi-calendar mr-1"></i>
+                              Created: {{ formatDate(session.createdAt || session.expiresAt) }}
+                            </p>
+                            <p class="text-xs text-gray-600">
+                              <i class="pi pi-clock mr-1"></i>
+                              Expires: {{ formatDate(session.expiresAt) }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col gap-2 lg:min-w-[140px]">
+                      <p-button 
+                        label="View Details" 
+                        icon="pi pi-eye"
+                        severity="info"
+                        [outlined]="true"
+                        size="small"
+                        styleClass="w-full"
+                        (onClick)="openViewModal(session)">
+                      </p-button>
+                      @if (canRevokeSession(session)) {
+                        <p-button 
+                          label="Revoke" 
+                          icon="pi pi-ban"
+                          severity="danger"
+                          size="small"
+                          styleClass="w-full"
+                          (onClick)="confirmRevokeSession(session.id)">
+                        </p-button>
+                      }
+                    </div>
+                  </div>
+                </p-card>
+              }
+            </div>
+
+            <!-- Pagination -->
+            @if (activeSessionsPage.totalElements > pageSize) {
+              <p-paginator 
+                [rows]="pageSize"
+                [totalRecords]="activeSessionsPage.totalElements"
+                [first]="activeSessionsPageNum * pageSize"
+                (onPageChange)="onActiveSessionsPageChange($event)"
+                styleClass="mt-4">
+              </p-paginator>
+            }
+          }
+
+          <!-- Empty State -->
+          @if (!loading && activeSessionsPage?.content?.length === 0) {
+            <div class="text-center py-16 bg-gray-50 rounded-lg">
+              <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">No Active Sessions</h3>
+              <p class="text-gray-500">There are currently no active impersonation sessions.</p>
+            </div>
+          }
+        </div>
+      </p-tabpanel>
+
+      <!-- All Sessions Tab -->
+      <p-tabpanel header="All Sessions" [value]="1">
+        <div class="mt-4">
+          <!-- Filters Card -->
+          <p-card class="mb-4 shadow-sm">
+            <ng-template pTemplate="header">
+              <div class="px-4 pt-4">
+                <h3 class="text-lg font-semibold text-gray-800">Filter All Sessions</h3>
+              </div>
+            </ng-template>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <p-floatlabel>
+                  <input 
+                    pInputText 
+                    [(ngModel)]="allSessionsFilter.ticket" 
+                    id="all-ticket-filter"
+                    class="w-full" />
+                  <label for="all-ticket-filter">Ticket ID</label>
+                </p-floatlabel>
+              </div>
+              <div>
+                <p-floatlabel>
+                  <input 
+                    pInputText 
+                    [(ngModel)]="allSessionsFilter.admin" 
+                    id="all-admin-filter"
+                    class="w-full" />
+                  <label for="all-admin-filter">Admin ID</label>
+                </p-floatlabel>
+              </div>
+              <div>
+                <p-floatlabel>
+                  <input 
+                    pInputText 
+                    [(ngModel)]="allSessionsFilter.superAdmin" 
+                    id="all-superadmin-filter"
+                    class="w-full" />
+                  <label for="all-superadmin-filter">Super Admin ID</label>
+                </p-floatlabel>
+              </div>
+              <div>
+                <p-floatlabel>
+                  <p-datepicker 
+                    [(ngModel)]="allSessionsFilter.expiresAtFrom" 
+                    inputId="expires-from"
+                    [showTime]="true"
+                    dateFormat="dd/mm/yy"
+                    [showIcon]="true"
+                    class="w-full">
+                  </p-datepicker>
+                  <label for="expires-from">Expires From</label>
+                </p-floatlabel>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+              <p-button 
+                label="Apply Filters" 
+                icon="pi pi-filter"
+                size="small"
+                (onClick)="applyAllSessionsFilters()">
+              </p-button>
+              <p-button 
+                label="Clear Filters" 
+                icon="pi pi-filter-slash"
+                severity="secondary"
+                size="small"
+                [outlined]="true"
+                (onClick)="clearAllSessionsFilters()">
+              </p-button>
+            </div>
+          </p-card>
+
+          <!-- Loading State -->
+          @if (loading) {
+            <div class="flex justify-center items-center py-16">
+              <p-progressSpinner 
+                strokeWidth="3"
+                [style]="{width: '50px', height: '50px'}">
+              </p-progressSpinner>
+            </div>
+          }
+
+          <!-- All Sessions Table -->
+          @if (!loading && allSessionsPage) {
+            <p-card class="shadow-sm">
+              <p-table 
+                [value]="allSessionsPage.content" 
+                [tableStyle]="{'min-width': '60rem'}"
+                styleClass="p-datatable-sm"
+                [paginator]="false">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Session ID</th>
+                    <th>Ticket</th>
+                    <th>Admin</th>
+                    <th>Super Admin</th>
+                    <th>Expires At</th>
+                    <th>Ended At</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-session>
+                  <tr>
+                    <td class="font-semibold">#{{ session.id }}</td>
+                    <td>
+                      <div class="text-sm">
+                        <div class="font-medium">#{{ session.ticket.id }}</div>
+                        <div class="text-gray-600 truncate max-w-[200px]">{{ session.ticket.title }}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="text-sm">
+                        <div class="font-medium">{{ session.admin.name }}</div>
+                        <div class="text-gray-600 text-xs">{{ session.admin.email }}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="text-sm font-medium">{{ getSuperAdminName(session) }}</div>
+                    </td>
+                    <td class="text-sm">{{ formatDate(session.expiresAt) }}</td>
+                    <td class="text-sm">
+                      {{ session.endedAt ? formatDate(session.endedAt) : '-' }}
+                    </td>
+                    <td>
+                      <p-badge 
+                        [value]="getSessionStatusLabel(session)" 
+                        [severity]="getSessionStatusSeverity(session)">
+                      </p-badge>
+                    </td>
+                    <td>
+                      <div class="flex justify-center gap-1">
+                        <p-button 
+                          icon="pi pi-eye"
+                          [rounded]="true"
+                          [text]="true"
+                          severity="info"
+                          size="small"
+                          pTooltip="View Details"
+                          tooltipPosition="top"
+                          (onClick)="openViewModal(session)">
+                        </p-button>
+                        @if (canRevokeSession(session)) {
+                          <p-button 
+                            icon="pi pi-ban"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="danger"
+                            size="small"
+                            pTooltip="Revoke Session"
+                            tooltipPosition="top"
+                            (onClick)="confirmRevokeSession(session.id)">
+                          </p-button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </p-card>
+
+            <!-- Pagination -->
+            @if (allSessionsPage.totalElements > pageSize) {
+              <p-paginator 
+                [rows]="pageSize"
+                [totalRecords]="allSessionsPage.totalElements"
+                [first]="allSessionsPageNum * pageSize"
+                (onPageChange)="onAllSessionsPageChange($event)"
+                styleClass="mt-4">
+              </p-paginator>
+            }
+          }
+
+          <!-- Empty State -->
+          @if (!loading && allSessionsPage?.content?.length === 0) {
+            <div class="text-center py-16 bg-gray-50 rounded-lg">
+              <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">No Sessions Found</h3>
+              <p class="text-gray-500">No impersonation sessions match your current filters.</p>
+            </div>
+          }
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+
+  <!-- View Session Details Modal -->
+  <p-dialog 
+    header="Session Details" 
+    [(visible)]="showViewModal" 
+    [modal]="true"
+    [style]="{width: '700px'}"
+    [breakpoints]="{'960px': '90vw', '640px': '95vw'}"
+    [dismissableMask]="true">
+    @if (selectedSession) {
+      <div class="space-y-4">
+        <!-- Session Header -->
+        <div class="flex items-center justify-between pb-3 border-b">
+          <div class="flex items-center gap-3">
+            <h3 class="text-xl font-bold text-gray-900">Session #{{ selectedSession.id }}</h3>
+            <p-badge 
+              [value]="getSessionStatusLabel(selectedSession)" 
+              [severity]="getSessionStatusSeverity(selectedSession)"
+              styleClass="text-sm">
+            </p-badge>
+          </div>
+          @if (!selectedSession.endedAt && !isSessionExpired(selectedSession.expiresAt)) {
+            <span class="text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
+              {{ getTimeRemaining(selectedSession.expiresAt) }}
+            </span>
+          }
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Ticket Information -->
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <i class="pi pi-ticket text-blue-600"></i>
+              Ticket Information
+            </h4>
+            <div class="space-y-2 text-sm">
+              <div>
+                <span class="text-gray-600">Ticket ID:</span>
+                <span class="font-medium ml-2">#{{ selectedSession.ticket.id }}</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Title:</span>
+                <p class="font-medium mt-1">{{ selectedSession.ticket.title }}</p>
+              </div>
+              <div>
+                <span class="text-gray-600">Description:</span>
+                <p class="text-gray-700 mt-1">{{ selectedSession.ticket.description }}</p>
+              </div>
+              <div>
+                <span class="text-gray-600">Status:</span>
+                <p-tag 
+                  [value]="selectedSession.ticket.status.toString()" 
+                  severity="info"
+                  styleClass="ml-2">
+                </p-tag>
+              </div>
+            </div>
+          </div>
+
+          <!-- Session Information -->
+          <div class="bg-purple-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <i class="pi pi-clock text-purple-600"></i>
+              Session Timing
+            </h4>
+            <div class="space-y-2 text-sm">
+              <div>
+                <span class="text-gray-600">Created At:</span>
+                <p class="font-medium mt-1">{{ formatDate(selectedSession.createdAt || selectedSession.expiresAt) }}</p>
+              </div>
+              <div>
+                <span class="text-gray-600">Expires At:</span>
+                <p class="font-medium mt-1">{{ formatDate(selectedSession.expiresAt) }}</p>
+              </div>
+              @if (selectedSession.endedAt) {
+                <div>
+                  <span class="text-gray-600">Ended At:</span>
+                  <p class="font-medium mt-1">{{ formatDate(selectedSession.endedAt) }}</p>
+                </div>
+              } @else if (!isSessionExpired(selectedSession.expiresAt)) {
+                <div class="pt-2">
+                  <p class="text-green-600 font-semibold">
+                    ⏱️ {{ getTimeRemaining(selectedSession.expiresAt) }}
+                  </p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Admin Information -->
+          <div class="bg-amber-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <i class="pi pi-user text-amber-600"></i>
+              Admin (Impersonated)
+            </h4>
+            <div class="space-y-2 text-sm">
+              <div>
+                <span class="text-gray-600">ID:</span>
+                <span class="font-medium ml-2">{{ selectedSession.admin.id }}</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Name:</span>
+                <p class="font-medium mt-1">{{ selectedSession.admin.name }}</p>
+              </div>
+              <div>
+                <span class="text-gray-600">Email:</span>
+                <p class="font-medium mt-1">{{ selectedSession.admin.email }}</p>
+              </div>
+              @if (selectedSession.admin.phoneNumber) {
+                <div>
+                  <span class="text-gray-600">Phone:</span>
+                  <p class="font-medium mt-1">{{ selectedSession.admin.phoneNumber }}</p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Super Admin Information -->
+          <div class="bg-green-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <i class="pi pi-shield text-green-600"></i>
+              Super Admin
+            </h4>
+            <div class="space-y-2 text-sm">
+              @if (selectedSession.superAdmin) {
+                <div>
+                  <span class="text-gray-600">ID:</span>
+                  <span class="font-medium ml-2">{{ selectedSession.superAdmin.id }}</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Name:</span>
+                  <p class="font-medium mt-1">{{ selectedSession.superAdmin.name }}</p>
+                </div>
+                <div>
+                  <span class="text-gray-600">Email:</span>
+                  <p class="font-medium mt-1">{{ selectedSession.superAdmin.email }}</p>
+                </div>
+                @if (selectedSession.superAdmin.phoneNumber) {
+                  <div>
+                    <span class="text-gray-600">Phone:</span>
+                    <p class="font-medium mt-1">{{ selectedSession.superAdmin.phoneNumber }}</p>
+                  </div>
+                }
+              } @else {
+                <div>
+                  <p class="font-medium text-gray-700">{{ getSuperAdminInfo(selectedSession) }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Revoke Action -->
+        @if (canRevokeSession(selectedSession)) {
+          <div class="pt-4 border-t">
+            <p-button 
+              label="Revoke Session" 
+              icon="pi pi-ban"
+              severity="danger"
+              styleClass="w-full"
+              (onClick)="confirmRevokeSession(selectedSession.id); closeViewModal()">
+            </p-button>
+          </div>
+        }
+      </div>
+    }
+  </p-dialog>
+
+  <!-- Confirm Revoke Dialog -->
+  <p-dialog 
+    header="Confirm Session Revocation" 
+    [(visible)]="showConfirmDialog" 
+    [modal]="true"
+    [style]="{width: '450px'}"
+    [breakpoints]="{'960px': '75vw', '640px': '90vw'}"
+    [dismissableMask]="true">
+    <div class="space-y-4">
+      <div class="flex items-start gap-3">
+        <i class="pi pi-exclamation-triangle text-3xl text-amber-500"></i>
+        <div>
+          <p class="text-gray-900 font-medium mb-2">Are you sure you want to revoke this session?</p>
+          <p class="text-sm text-gray-600">
+            This will immediately terminate the impersonation session. This action cannot be undone.
+          </p>
+        </div>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <p-button 
+          label="Cancel" 
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="closeConfirmDialog()"
+          [disabled]="processingRevoke">
+        </p-button>
+        <p-button 
+          label="Revoke Session" 
+          severity="danger"
+          icon="pi pi-ban"
+          (onClick)="revokeSession()"
+          [loading]="processingRevoke">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

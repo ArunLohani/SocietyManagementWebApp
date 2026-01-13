@@ -22,6 +22,7 @@ import { DialogModule } from 'primeng/dialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { Tooltip } from 'primeng/tooltip';
+import { Avatar } from 'primeng/avatar';
 
 @Component({
   selector: 'app-user-role-manager',
@@ -37,7 +38,8 @@ import { Tooltip } from 'primeng/tooltip';
     BadgeModule,
     DialogModule,
     ProgressSpinnerModule,
-    MessageModule
+    MessageModule,
+    Avatar
   ],
   templateUrl: './user-role-manager.html',
   styleUrl: './user-role-manager.css'
@@ -307,6 +309,10 @@ loadUnassignedUsers(): void {
     }
   }
 
+    getUserInitials(name: string): string {
+    return name.charAt(0).toUpperCase();
+  }
+
 toggleAssignUserModal = () => {
   this.showAssignUserModal = !this.showAssignUserModal;
   if (this.showAssignUserModal) {
@@ -316,8 +322,10 @@ toggleAssignUserModal = () => {
   }
 }
 
-  assignUser(tenantId: number, userId: number): void {
+  assignUser(userId: number): void {
     this.loading = true;
+     const tenantId = this.authService.getTenantId();
+     if(!tenantId) return;
     this.tenantService.assignUserToTenant(tenantId, userId).subscribe({
       next: (response) => {
         this.loadUsersForTenant(tenantId);

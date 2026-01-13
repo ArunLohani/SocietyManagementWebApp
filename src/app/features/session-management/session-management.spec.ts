@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Menubar } from './menubar';
+import { SessionManagement } from './session-management';
 
-describe('Menubar', () => {
-  let component: Menubar;
-  let fixture: ComponentFixture<Menubar>;
+describe('SessionManagement', () => {
+  let component: SessionManagement;
+  let fixture: ComponentFixture<SessionManagement>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Menubar]
+      imports: [SessionManagement]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Menubar);
+    fixture = TestBed.createComponent(SessionManagement);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -203,7 +203,7 @@
         id="tenantName" 
         [(ngModel)]="newTenantName"
         class="w-full"
-        (keydown.enter)="createTenant()"
+        (keydown.enter)="goToTenantConfiguration()"
       />
       <label for="tenantName">Society Name</label>
     </p-floatlabel>
@@ -221,10 +221,11 @@
 
       <p-button 
         label="Create Society" 
-        (click)="createTenant()" 
+         size="small"
+        (click)="goToTenantConfiguration()" 
         severity="contrast"
         [disabled]="!newTenantName().trim()"
-        class="px-4">
+        class="px-0 sm:px-4">
       </p-button>
     </div>
   </ng-template>
@@ -328,4 +329,24 @@
       </p-button>
     </div>
   </ng-template>
+</p-dialog>
+
+
+<p-dialog
+  [(visible)]="showSocietyConfigurator"
+  [modal]="true"
+  [style]="{ width: '95vw', height: '95vh' }"
+  [draggable]="false"
+  [closable]="false"
+  [breakpoints]="{ '1199px': '98vw', '575px': '100vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="p-0"
+  styleClass="society-configurator-dialog">
+
+  <!-- The configurator component -->
+  <app-society-configurator
+    [societyName]="newTenantName"
+    (onComplete)="onConfiguratorComplete()"
+    (onCancelEvent)="onConfiguratorCancel()">
+  </app-society-configurator>
 </p-dialog>

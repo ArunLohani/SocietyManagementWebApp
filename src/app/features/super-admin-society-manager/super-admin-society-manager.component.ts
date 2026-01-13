@@ -1,4 +1,5 @@
-// components/super-admin-society-manager/super-admin-society-manager.component.ts
+// Updated super-admin-society-manager.component.ts
+// Add these changes to integrate the society configurator
 
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -9,6 +10,7 @@ import { Tenant, UserDetails, UserWithRoles } from '../../types/types';
 import { UserRoleService } from '../../core/service/user-role-manager-service';
 import { ToastrService } from 'ngx-toastr';
 import { PaginatorModule } from 'primeng/paginator';
+
 // PrimeNG imports
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -22,6 +24,9 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AvatarModule } from 'primeng/avatar';
 import { ChipModule } from 'primeng/chip';
 import { PaginatorState } from 'primeng/types/paginator';
+
+// Import the new Society Configurator Component
+import { SocietyConfiguratorComponent } from '../../shared/society-configurator/society-configurator';
 
 @Component({
   selector: 'app-super-admin-society-manager',
@@ -40,7 +45,8 @@ import { PaginatorState } from 'primeng/types/paginator';
     ProgressSpinnerModule,
     AvatarModule,
     ChipModule,
-    PaginatorModule
+    PaginatorModule,
+    SocietyConfiguratorComponent // Add this
   ],
   templateUrl: './super-admin-society-manager.component.html',
   styleUrls: ['./super-admin-society-manager.component.css']
@@ -59,7 +65,8 @@ export class SuperAdminSocietyManager implements OnInit {
   loadingUsers = signal(false);
   showCreateTenant = signal(false);
   processingUserId = signal<number | null>(null);
-  
+  showSocietyConfigurator = signal(false); // NEW: For the configurator modal
+
   // Pagination
   currentPage = signal(0);
   totalPages = signal(0);
@@ -73,9 +80,10 @@ export class SuperAdminSocietyManager implements OnInit {
   // New tenant form
   newTenantName = signal('');
 
-  //unassigned users
+  // Unassigned users
   loadingUnassignedUsers = false;
-    unAssignedUsers: Array<UserDetails> = [];
+  unAssignedUsers: Array<UserDetails> = [];
+  showUnassignedUsersDialog = signal(false);
   
   constructor(
     private tenantService: TenantService,
@@ -106,7 +114,10 @@ export class SuperAdminSocietyManager implements OnInit {
     });
   }
 
-    loadUnassignedUsers(): void {
+  /**
+   * Load unassigned users
+   */
+  loadUnassignedUsers(): void {
     this.loadingUnassignedUsers = true;
     this.unAssignedUsers = [];
     
@@ -122,7 +133,6 @@ export class SuperAdminSocietyManager implements OnInit {
       }
     });
   }
-
 
   /**
    * Handle tenant selection
@@ -142,13 +152,13 @@ export class SuperAdminSocietyManager implements OnInit {
   /**
    * Load users for selected tenant
    */
-  loadUsers(pageNumber = 0,pageSize = 6): void {
+  loadUsers(pageNumber = 0, pageSize = 6): void {
     const tenantId = this.selectedTenantId();
     if (!tenantId) return;
     
     this.loadingUsers.set(true);
     
-    this.userRoleService.getUsersByTenantPaginated(tenantId , pageNumber,pageSize).subscribe({
+    this.userRoleService.getUsersByTenantPaginated(tenantId, pageNumber, pageSize).subscribe({
       next: (response) => {
         this.users.set(response.content);
         this.loadingUsers.set(false);
@@ -162,7 +172,10 @@ export class SuperAdminSocietyManager implements OnInit {
     });
   }
 
-    onPageChange(e: PaginatorState) {
+  /**
+   * Page change handler
+   */
+  onPageChange(e: PaginatorState): void {
     this.loadUsers(e.page);
   }
 
@@ -185,33 +198,39 @@ export class SuperAdminSocietyManager implements OnInit {
   }
 
   /**
-   * Create new tenant
+   * NEW: Open society configurator instead of simple creation
    */
-  createTenant(): void {
+  goToTenantConfiguration(): void {
     const name = this.newTenantName().trim();
     if (!name) {
       this.toastr.error('Please enter a society name');
       return;
     }
 
-    this.loading.set(true);
-
-    this.tenantService.createTenant(name).subscribe({
-      next: (response) => {
-        this.toastr.success('Society created successfully!');
-        this.newTenantName.set('');
-        this.showCreateTenant.set(false);
-        this.loadTenants();
-      },
-      error: (err) => {
-        this.toastr.error(err.error?.message || 'Failed to create society');
-        this.loading.set(false);
-      }
-    });
+    // Close the simple dialog and open the configurator
+    this.showCreateTenant.set(false);
+    this.showSocietyConfigurator.set(true);
   }
 
   /**
-   * Toggle create tenant section
+   * NEW: Handle configurator completion
+   */
+  onConfiguratorComplete(): void {
+    this.showSocietyConfigurator.set(false);
+    this.newTenantName.set('');
+    this.loadTenants(); // Reload the tenants list
+  }
+
+  /**
+   * NEW: Handle configurator cancellation
+   */
+  onConfiguratorCancel(): void {
+    this.showSocietyConfigurator.set(false);
+    this.newTenantName.set('');
+  }
+
+  /**
+   * Toggle create tenant dialog
    */
   toggleCreateTenant(): void {
     this.showCreateTenant.update(value => !value);
@@ -220,55 +239,57 @@ export class SuperAdminSocietyManager implements OnInit {
     }
   }
 
+  /**
+   * Assign tenant and admin role to unassigned user
+   */
+  assignTenantAndAdminToUnAssignedUser(user: UserDetails): void {
+    if (this.selectedTenantId() == null) {
+      this.toastr.error('Please select a society first.');
+      return;
+    }
 
-// Fixed method to assign tenant and admin role
-assignTenantAndAdminToUnAssignedUser(user: UserDetails): void {
-  if (this.selectedTenantId() == null) {
-    this.toastr.error('Please select a society first.');
-    return;
+    this.processingUserId.set(user.id);
+
+    // First assign tenant
+    this.tenantService.assignUserToTenant(this.selectedTenantId()!, user.id).subscribe({
+      next: () => {
+        // Then assign admin role
+        this.userRoleService.assignRoleToUser(user.id, 1).subscribe({
+          next: () => {
+            this.toastr.success(`${user.name} assigned to society and made admin`);
+            this.processingUserId.set(null);
+            
+            // Reload both lists
+            this.loadUnassignedUsers();
+            this.loadUsers();
+          },
+          error: (err) => {
+            this.toastr.error(`Failed to assign admin role: ${err.error?.message || 'Unknown error'}`);
+            this.processingUserId.set(null);
+          }
+        });
+      },
+      error: (err) => {
+        this.toastr.error(`Failed to assign to society: ${err.error?.message || 'Unknown error'}`);
+        this.processingUserId.set(null);
+      }
+    });
   }
 
-  this.processingUserId.set(user.id);
+  /**
+   * Open unassigned users dialog
+   */
+  openUnassignedUsersDialog(): void {
+    this.showUnassignedUsersDialog.set(true);
+    this.loadUnassignedUsers();
+  }
 
-  // First assign tenant
-  this.tenantService.assignUserToTenant(this.selectedTenantId()!, user.id).subscribe({
-    next: () => {
-      // Then assign admin role
-      this.userRoleService.assignRoleToUser(user.id, 1).subscribe({
-        next: () => {
-          this.toastr.success(`${user.name} assigned to society and made admin`);
-          this.processingUserId.set(null);
-          
-          // Reload both lists
-          this.loadUnassignedUsers();
-          this.loadUsers();
-        },
-        error: (err) => {
-          this.toastr.error(`Failed to assign admin role: ${err.error?.message || 'Unknown error'}`);
-          this.processingUserId.set(null);
-        }
-      });
-    },
-    error: (err) => {
-      this.toastr.error(`Failed to assign to society: ${err.error?.message || 'Unknown error'}`);
-      this.processingUserId.set(null);
-    }
-  });
-}
-
-// Add signal for dialog visibility
-showUnassignedUsersDialog = signal(false);
-
-// Method to open dialog
-openUnassignedUsersDialog(): void {
-  this.showUnassignedUsersDialog.set(true);
-  this.loadUnassignedUsers();
-}
-
-// Method to close dialog
-closeUnassignedUsersDialog(): void {
-  this.showUnassignedUsersDialog.set(false);
-}
+  /**
+   * Close unassigned users dialog
+   */
+  closeUnassignedUsersDialog(): void {
+    this.showUnassignedUsersDialog.set(false);
+  }
 
   /**
    * Assign admin to user
@@ -286,6 +307,9 @@ closeUnassignedUsersDialog(): void {
     this.removeRole(user);
   }
 
+  /**
+   * Assign role to user
+   */
   assignRole(user: UserWithRoles): void {
     const roleId = 1;
 
@@ -312,6 +336,9 @@ closeUnassignedUsersDialog(): void {
     });
   }
 
+  /**
+   * Remove role from user
+   */
   removeRole(user: UserWithRoles): void {
     const roleId = 1;
     

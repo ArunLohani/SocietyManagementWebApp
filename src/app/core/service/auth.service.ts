@@ -83,6 +83,15 @@ export class AuthService {
     return this.getUser()?.societyName ?? null;
   }
 
+  getIsImpersonating():Boolean {
+    return this.getUser()?.isImpersonating ?? false;
+  }
+
+  getSessionId() : number | null {
+       return this.getUser()?.sessionId ?? null;
+
+  }
+
   /* ---------------- ROLE HELPERS ---------------- */
 
   isUserSuperAdmin(): boolean {

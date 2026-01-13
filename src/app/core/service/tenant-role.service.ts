@@ -11,11 +11,11 @@ export class TenantRoleService {
   url = `${environment.apiUrl}/tenant-roles`;
   constructor(private httpClient: HttpClient) {}
   // Assign a role to a tenant
-  assignRoleToTenant(tenantId: number, roleId: number): Observable<ApiResponse<string>> {
+  assignRoleToTenant(tenantId: number, roleId: number): Observable<ApiResponse<TenantRoles>> {
     const params = new HttpParams()
       .set('tenantId', tenantId.toString())
       .set('roleId', roleId.toString());
-    return this.httpClient.post<ApiResponse<string>>(`${this.url}/assign`, null, { params });
+    return this.httpClient.post<ApiResponse<TenantRoles>>(`${this.url}/assign`, null, { params });
   }
   // Remove a role from a tenant
   removeRoleFromTenant(tenantId: number, roleId: number): Observable<ApiResponse<string>> {

@@ -1,0 +1,378 @@
+<div class="min-h-screen bg-[#f8f8f8]">
+  <!-- Header -->
+  <div class="sticky top-0 z-50 bg-white border-b shadow-sm">
+    <div class="max-w-7xl mx-auto px-2 sm:px-6 py-4">
+      <div class="flex flex-col sm:flex-row items-center sm:justify-between gap-2">
+        <div class="">
+          <h2 class="text-xl font-bold">Society Configuration</h2>
+          <p class="text-sm text-gray-500">Configure {{ societyName() }} before creation</p>
+        </div>
+        <div class="flex justify-end w-full sm:w-fit  gap-2">
+          <p-button 
+           size="small"
+            label="Cancel" 
+            icon="pi pi-times"
+            (onClick)="onCancel()"
+            severity="secondary"
+            [outlined]="true">
+          </p-button>
+          <p-button 
+          size="small"
+            label="Create Society" 
+            icon="pi pi-check"
+            (onClick)="onSubmit()"
+            [loading]="submitting()"
+            [disabled]="!isValid()"
+            severity="contrast">
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 h-[calc(100vh-88px)]">
+
+    
+    @if (loading()) {
+      <div class="flex justify-center items-center py-20">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    }
+
+    @if (!loading()) {
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+
+        
+        <!-- Left Panel: Available Resources -->
+<div class="lg:col-span-4 space-y-4 h-full overflow-y-auto pr-2">
+
+          
+          <!-- Available Roles -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center justify-between px-6 py-4 border-b">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-users text-orange-600"></i>
+                  <h3 class="font-semibold">Available Roles</h3>
+                </div>
+                <p-button 
+                  icon="pi pi-plus"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="contrast"
+                  (onClick)="showCreateRoleDialog()">
+                </p-button>
+              </div>
+            </ng-template>
+
+            <div class="space-y-2">
+              @for (role of availableRoles(); track role.id) {
+                <div 
+                  class="p-3 border rounded-lg bg-white hover:bg-blue-50 cursor-move transition"
+                  draggable="true"
+                  (dragstart)="onRoleDragStart($event, role)"
+                  (dragend)="onDragEnd($event)">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-user text-gray-600"></i>
+                      <span class="font-medium text-sm">{{ role.role }}</span>
+                    </div>
+                    <i class="pi pi-arrows-alt text-gray-400"></i>
+                  </div>
+                </div>
+              }
+
+              @if (availableRoles().length === 0) {
+                <div class="text-center py-8 text-gray-500">
+                  <i class="pi pi-users text-4xl mb-2"></i>
+                  <p class="text-sm">No roles available</p>
+                  <p class="text-xs">Create a new role to get started</p>
+                </div>
+              }
+            </div>
+          </p-card>
+
+          <!-- Available Menus -->
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 px-6 py-4 border-b">
+                <i class="pi pi-th-large text-orange-600"></i>
+                <h3 class="font-semibold">Available Menus</h3>
+              </div>
+            </ng-template>
+
+            <div class="space-y-2 max-h-[400px] overflow-y-auto">
+              @for (menu of availableMenus(); track menu.id) {
+                <div 
+                  class="p-3 border rounded-lg bg-white hover:bg-green-50 cursor-move transition"
+                  draggable="true"
+                  (dragstart)="onMenuDragStart($event, menu)"
+                  (dragend)="onDragEnd($event)">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <i class="pi pi-list text-gray-600"></i>
+                        <span class="font-medium text-sm truncate">{{ menu.menuName }}</span>
+                      </div>
+                      @if (menu.menuDescription) {
+                        <p class="text-xs text-gray-500 mt-1 truncate">{{ menu.menuDescription }}</p>
+                      }
+                    </div>
+                    <i class="pi pi-arrows-alt text-gray-400 ml-2"></i>
+                  </div>
+                </div>
+              }
+
+              @if (availableMenus().length === 0) {
+                <div class="text-center py-8 text-gray-500">
+                  <i class="pi pi-th-large text-4xl mb-2"></i>
+                  <p class="text-sm">No menus available</p>
+                </div>
+              }
+            </div>
+          </p-card>
+        </div>
+
+        <!-- Right Panel: Configuration -->
+        <div class="lg:col-span-8 h-full overflow-y-auto pr-2">
+
+          <p-card>
+            <ng-template pTemplate="header">
+              <div class="px-6 py-4 border-b">
+                <h3 class="font-semibold text-lg">Role & Permission Configuration</h3>
+                <p class="text-sm text-gray-500 mt-1">
+                  Drag roles from the left panel, then drag menus to each role to configure permissions
+                </p>
+              </div>
+            </ng-template>
+
+
+            <!-- Configured Roles -->
+            @if (configuredRoles().length > 0) {
+              <div class="space-y-4">
+                @for (roleConfig of configuredRoles(); track $index) {
+                  <div class="border rounded-lg overflow-hidden">
+                    
+                    <!-- Role Header -->
+                    <div 
+                      class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 border-b"
+                      (dragover)="onDragOver($event)"
+                      (drop)="onMenuDrop($event, $index)">
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                          <i class="pi pi-user text-blue-600 text-xl"></i>
+                          <div>
+                            <h4 class="font-bold">{{ roleConfig.name }}</h4>
+                            @if (roleConfig.isNew) {
+                              <p-badge value="New Role" severity="info" class="mt-1"></p-badge>
+                            }
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <p-badge 
+                            [value]="roleConfig.menus.length + ' menus'"
+                            severity="contrast">
+                          </p-badge>
+                          <p-button 
+                            icon="pi pi-trash"
+                            [rounded]="true"
+                            [text]="true"
+                            severity="danger"
+                            (onClick)="removeRole($index)">
+                          </p-button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Menus Drop Zone -->
+                    <div class="p-4">
+                     
+                      
+                      
+
+                      @if (roleConfig.menus.length > 0) {
+                        <div class="space-y-3">
+                          @for (menuConfig of roleConfig.menus; track menuConfig.id; let menuIdx = $index) {
+                            <div class="border rounded-lg overflow-hidden">
+                              
+                              <!-- Menu Header -->
+                              <div class="bg-gray-50 p-3 border-b flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                  <i class="pi pi-list text-gray-600"></i>
+                                  <span class="font-semibold text-sm">{{ menuConfig.menuName }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                  <p-badge 
+                                    [value]="getGrantedActionsCount(menuConfig) + '/' + menuConfig.actions.length"
+                                    [severity]="getGrantedActionsCount(menuConfig) > 0 ? 'success' : 'secondary'">
+                                  </p-badge>
+                                  <p-button 
+                                    icon="pi pi-trash"
+                                    [rounded]="true"
+                                    [text]="true"
+                                    size="small"
+                                    severity="danger"
+                                    (onClick)="removeMenuFromRole($index, menuIdx)">
+                                  </p-button>
+                                </div>
+                              </div>
+
+                              <!-- Actions -->
+                              <div class="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                @for (action of menuConfig.actions; track action.id) {
+                                  <div 
+                                    class="flex items-center gap-2 p-2 rounded border transition"
+                                    [ngClass]="{
+                                      'border-orange-500 bg-orange-50': action.granted,
+                                      'border-gray-200 hover:bg-gray-50': !action.granted
+                                    }">
+                                    <p-checkbox
+                                      [binary]="true"
+                                      [(ngModel)]="action.granted"
+                                      (onChange)="onActionToggle()">
+                                    </p-checkbox>
+                                    <span class="text-xs font-medium truncate">
+                                      {{ action.action }}
+                                    </span>
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+
+                        <div 
+                          class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mt-4"
+                          (dragover)="onDragOver($event)"
+                          (drop)="onMenuDrop($event, $index)">
+                          <i class="pi pi-th-large text-4xl text-gray-400 mb-2"></i>
+                          <p class="text-sm text-gray-500">Drag menus here to assign permissions</p>
+                        </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Drop Zone for Roles -->
+       
+              <div 
+                class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center mt-4"
+                (dragover)="onDragOver($event)"
+                (drop)="onRoleDrop($event)">
+                <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
+                <h3 class="text-lg font-semibold mb-2">Drag Roles Here</h3>
+                <p class="text-sm text-gray-500">Start by dragging roles from the left panel</p>
+              </div>
+            
+          </p-card>
+
+          <!-- Configuration Summary -->
+          @if (configuredRoles().length > 0) {
+            <p-card class="mt-4">
+              <ng-template pTemplate="header">
+                <div class="px-6 py-4 border-b">
+                  <h3 class="font-semibold">Configuration Summary</h3>
+                </div>
+              </ng-template>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                  <i class="pi pi-users text-3xl text-blue-600 mb-2"></i>
+                  <p class="text-2xl font-bold">{{ configuredRoles().length }}</p>
+                  <p class="text-sm text-gray-600">Roles Configured</p>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                  <i class="pi pi-th-large text-3xl text-green-600 mb-2"></i>
+                  <p class="text-2xl font-bold">{{ getTotalMenusCount() }}</p>
+                  <p class="text-sm text-gray-600">Total Menu Assignments</p>
+                </div>
+                <div class="text-center p-4 bg-orange-50 rounded-lg">
+                  <i class="pi pi-check-square text-3xl text-orange-600 mb-2"></i>
+                  <p class="text-2xl font-bold">{{ getTotalPermissionsCount() }}</p>
+                  <p class="text-sm text-gray-600">Total Permissions</p>
+                </div>
+              </div>
+            </p-card>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create Role Dialog -->
+<p-dialog
+  [(visible)]="showRoleDialog"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Create New Role"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }">
+
+  <p class="text-sm text-gray-500 mb-4">
+    Enter a unique name for the new role (e.g., "MANAGER", "RESIDENT", "GUEST").
+  </p>
+
+  <div class="flex flex-col gap-4">
+    <p-floatlabel>
+      <input 
+        pInputText 
+        id="newRoleName" 
+        [(ngModel)]="newRoleName"
+        class="w-full"
+        (keydown.enter)="createNewRole()"
+      />
+      <label for="newRoleName">Role Name</label>
+    </p-floatlabel>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Cancel" 
+        (onClick)="closeRoleDialog()"
+        severity="secondary"
+        [text]="true">
+      </p-button>
+      <p-button 
+        label="Create & Add" 
+        (onClick)="createNewRole()"
+        [disabled]="!newRoleName().trim()"
+        severity="contrast">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- JSON Preview Dialog -->
+<p-dialog
+  [(visible)]="showJsonPreview"
+  [modal]="true"
+  [style]="{ width: '48rem' }"
+  [draggable]="false"
+  header="Configuration JSON Preview"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }">
+
+  <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs overflow-auto max-h-[500px]">
+    <pre>{{ getConfigurationJSON() }}</pre>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button 
+        label="Copy to Clipboard" 
+        icon="pi pi-copy"
+        (onClick)="copyJsonToClipboard()"
+        severity="secondary">
+      </p-button>
+      <p-button 
+        label="Close" 
+        (onClick)="showJsonPreview.set(false)"
+        severity="contrast">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

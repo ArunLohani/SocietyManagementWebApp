@@ -26,5 +26,194 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "profile-only",
+      "urls": [
+        "/api/v1/profile/me"
+      ],
+      "cacheConfig": {
+        "maxSize": 1,
+        "maxAge": "5m",
+        "strategy": "freshness",
+        "timeout": "15s"
+      }
+    },
+    {
+      "name": "user-data",
+      "urls": [
+        "http://localhost:8081/api/v1/user/**",
+        "http://localhost:8081/api/v1/user-roles/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 50,
+        "maxAge": "1h",
+        "strategy": "freshness",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "tenant-roles-menus",
+      "urls": [
+        "http://localhost:8081/api/v1/tenant/**",
+        "http://localhost:8081/api/v1/tenant-roles/**",
+        "http://localhost:8081/api/v1/tenantRoleMenu/**",
+        "http://localhost:8081/api/v1/tenantRoleMenuAction/**",
+        "http://localhost:8081/api/v1/role/**",
+        "http://localhost:8081/api/v1/menu/**",
+        "http://localhost:8081/api/v1/action/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "6h",
+        "strategy": "performance",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "flat-parking-data",
+      "urls": [
+        "http://localhost:8081/api/v1/flat/**",
+        "http://localhost:8081/api/v1/flat-member/**",
+        "http://localhost:8081/api/v1/parking-lot/**",
+        "http://localhost:8081/api/v1/category-pricing/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 150,
+        "maxAge": "2h",
+        "strategy": "performance",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "vehicle-data",
+      "urls": [
+        "http://localhost:8081/api/v1/vehicle/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1h",
+        "strategy": "performance",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "payment-receipts",
+      "urls": [
+        "http://localhost:8081/api/v1/maintenance-payments/*/receipt",
+        "http://localhost:8081/api/v1/maintenance-payments/*/receipt/html"
+      ],
+      "cacheConfig": {
+        "maxSize": 50,
+        "maxAge": "7d",
+        "strategy": "performance",
+        "timeout": "10s"
+      }
+    },
+    {
+      "name": "payment-search",
+      "urls": [
+        "http://localhost:8081/api/v1/maintenance-payments/search",
+        "http://localhost:8081/api/v1/maintenance-payments/my-payments",
+        "http://localhost:8081/api/v1/maintenance-payments/flat/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "5m",
+        "strategy": "freshness",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "payment-actions",
+      "urls": [
+        "http://localhost:8081/api/v1/maintenance-payments/calculate",
+        "http://localhost:8081/api/v1/maintenance-payments/initiate",
+        "http://localhost:8081/api/v1/maintenance-payments/verify",
+        "http://localhost:8081/api/v1/maintenance-payments/active-payment/**",
+        "http://localhost:8081/api/v1/maintenance-payments/get/active-payment/**",
+        "http://localhost:8081/api/v1/maintenance-payments/report-failure"
+      ],
+      "cacheConfig": {
+        "maxSize": 30,
+        "maxAge": "2m",
+        "strategy": "freshness",
+        "timeout": "8s"
+      }
+    },
+    {
+      "name": "events-notices",
+      "urls": [
+        "http://localhost:8081/api/v1/events/**",
+        "http://localhost:8081/api/v1/notices/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "30m",
+        "strategy": "freshness",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "complaints",
+      "urls": [
+        "http://localhost:8081/api/v1/complaints/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 80,
+        "maxAge": "15m",
+        "strategy": "freshness",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "parking-requests",
+      "urls": [
+        "http://localhost:8081/api/v1/parking-booking/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 60,
+        "maxAge": "10m",
+        "strategy": "freshness",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "visitor-management",
+      "urls": [
+        "http://localhost:8081/api/v1/visitor-requests/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 80,
+        "maxAge": "5m",
+        "strategy": "freshness",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "notifications",
+      "urls": [
+        "http://localhost:8081/api/v1/notification/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 50,
+        "maxAge": "2m",
+        "strategy": "freshness",
+        "timeout": "3s"
+      }
+    },
+    {
+      "name": "mail-service",
+      "urls": [
+        "http://localhost:8081/api/v1/mail/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 10,
+        "maxAge": "0s",
+        "strategy": "freshness",
+        "timeout": "10s"
+      }
+    }
   ]
 }

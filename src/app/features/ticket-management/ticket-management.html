@@ -1,0 +1,541 @@
+<div class="min-h-screen bg-[#f8f8f8] p-3 sm:p-6 font-sans">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
+    <div class="flex flex-col gap-1">
+      <h3 class="font-semibold text-xl sm:text-2xl">Support Tickets</h3>
+      <p class="text-xs sm:text-sm text-gray-500">Manage support tickets and requests.</p>
+    </div>
+    @if (!isSuperAdmin) {
+    <p-button 
+      label="Raise Ticket" 
+      icon="pi pi-plus" 
+      size="small"
+      (onClick)="openCreateModal()" 
+      severity="contrast"
+      class="w-full sm:w-auto">
+    </p-button>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <p-tabs [value]="activeTab">
+    <p-tablist>
+          @if (isAdmin) {
+            <p-tab [value]="0">My Tickets</p-tab>
+          }
+      @if (isSuperAdmin) {
+      <p-tab [value]="1">All Tickets</p-tab>
+      }
+    </p-tablist>
+
+    <p-tabpanels>
+      <!-- My Tickets Tab -->
+             @if (isAdmin) {
+      <p-tabpanel [value]="0">
+        <!-- Filters -->
+        <p-card>
+          <p class="text-sm font-semibold">My Tickets</p>
+          <p-divider />
+
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="myTitle" [(ngModel)]="myTicketsFilter.title" class="w-full" />
+              <label for="myTitle">Title</label>
+            </p-floatlabel>
+
+            <p-select 
+              class="w-full sm:w-56"
+              [options]="statusOptions"
+              [(ngModel)]="myTicketsFilter.status"
+              optionLabel="name" 
+              optionValue="code"
+              [showClear]="true"
+              placeholder="Select Status">
+            </p-select>
+
+            <div class="flex justify-end gap-3 w-full sm:w-auto">
+              <p-button 
+                label="Search" 
+                icon="pi pi-search" 
+                size="small"
+                (onClick)="applyMyTicketsFilters()" 
+                severity="contrast">
+              </p-button>
+
+              <p-button 
+                label="Clear" 
+                icon="pi pi-times" 
+                size="small"
+                (onClick)="clearMyTicketsFilters()" 
+                severity="secondary">
+              </p-button>
+            </div>
+          </div>
+        </p-card>
+
+        <!-- Loading -->
+        @if (loading) {
+        <div class="flex justify-center items-center py-20">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+        }
+
+        <!-- Tickets Grid -->
+        @if (!loading && myTicketsPage) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          @for (ticket of myTicketsPage.content; track ticket.id) {
+          <p-card class="w-full">
+            <ng-template #header>
+              <div class="relative bg-gradient-to-r from-blue-500 to-indigo-600 h-32 flex items-center justify-center">
+                <i class="pi pi-ticket text-white text-6xl"></i>
+                <p-badge 
+                  [value]="getStatusLabel(ticket.status.toString())" 
+                  [severity]="getStatusSeverity(ticket.status.toString())"
+                  class="absolute top-2 right-2">
+                </p-badge>
+              </div>
+            </ng-template>
+
+            <div class="mb-2">
+              <p class="font-semibold text-base sm:text-lg truncate">{{ ticket.title }}</p>
+              <p class="text-xs text-gray-500 mt-1">Ticket #{{ ticket.id }}</p>
+            </div>
+
+            <p-divider />
+
+            <div class="flex flex-col gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Status</span>
+                <span class="font-semibold">{{ getStatusLabel(ticket.status.toString()) }}</span>
+              </div>
+
+              @if (ticket.allowImpersonation) {
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Impersonation</span>
+                <p-badge value="Allowed" severity="success"></p-badge>
+              </div>
+              }
+
+              @if (ticket.impersonationUntil) {
+              <div class="flex flex-col">
+                <span class="text-gray-500 text-xs">Access Until</span>
+                <span class="text-xs font-semibold">{{ formatDate(ticket.impersonationUntil) }}</span>
+              </div>
+              }
+            </div>
+
+            <ng-template #footer>
+              <div class="flex flex-row justify-end gap-2">
+                <p-button 
+                  icon="pi pi-eye" 
+                  size="small" 
+                  label="View" 
+                  (onClick)="openViewModal(ticket)"
+                  severity="secondary">
+                </p-button>
+              </div>
+            </ng-template>
+          </p-card>
+          }
+        </div>
+
+        <!-- Pagination -->
+        <div class="w-full mt-6">
+          <p-paginator 
+            [first]="myTicketsPageNum * pageSize" 
+            [rows]="pageSize"
+            [totalRecords]="myTicketsPage.totalElements"
+            (onPageChange)="onMyTicketsPageChange($event)">
+          </p-paginator>
+        </div>
+        }
+
+        <!-- Empty State -->
+        @if (!loading && myTicketsPage?.content?.length === 0) {
+        <p-card class="text-center py-12 sm:py-20 mt-6">
+          <i class="pi pi-ticket text-4xl sm:text-5xl text-gray-300 mb-3"></i>
+          <h3 class="text-base sm:text-lg font-bold mb-1">No Tickets Found</h3>
+          <p class="text-sm sm:text-base text-gray-500 mb-4">You haven't raised any support tickets yet.</p>
+          <p-button 
+            label="Raise Ticket" 
+            icon="pi pi-plus" 
+            size="small"
+            (onClick)="openCreateModal()" 
+            severity="contrast">
+          </p-button>
+        </p-card>
+        }
+      </p-tabpanel>
+    }
+      <!-- All Tickets Tab (Super Admin Only) -->
+      @if (isSuperAdmin) {
+      <p-tabpanel [value]="1">
+        <!-- Filters -->
+        <p-card>
+          <p class="text-sm font-semibold">All Support Tickets</p>
+          <p-divider />
+
+          <div class="flex flex-col sm:flex-row sm:flex-wrap gap-3 items-stretch sm:items-end">
+            <p-floatlabel variant="on" class="w-full sm:w-auto sm:flex-1 sm:min-w-[150px]">
+              <input pInputText id="allTitle" [(ngModel)]="allTicketsFilter.title" class="w-full" />
+              <label for="allTitle">Title</label>
+            </p-floatlabel>
+
+            <p-select 
+              class="w-full sm:w-56"
+              [options]="statusOptions"
+              [(ngModel)]="allTicketsFilter.status"
+              optionLabel="name" 
+              optionValue="code"
+              [showClear]="true"
+              placeholder="Select Status">
+            </p-select>
+
+            <div class="flex gap-3 w-full sm:w-auto">
+              <p-button 
+                label="Search" 
+                icon="pi pi-search" 
+                size="small"
+                (onClick)="applyAllTicketsFilters()" 
+                severity="contrast">
+              </p-button>
+
+              <p-button 
+                label="Clear" 
+                icon="pi pi-times" 
+                size="small"
+                (onClick)="clearAllTicketsFilters()" 
+                severity="secondary">
+              </p-button>
+            </div>
+          </div>
+        </p-card>
+
+        <!-- Loading -->
+        @if (loading) {
+        <div class="flex justify-center items-center py-20">
+          <p-progressSpinner></p-progressSpinner>
+        </div>
+        }
+
+        <!-- Tickets Grid -->
+        @if (!loading && allTicketsPage) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          @for (ticket of allTicketsPage.content; track ticket.id) {
+          <p-card class="w-full">
+            <ng-template #header>
+              <div class="relative bg-gradient-to-r from-purple-500 to-pink-600 h-32 flex items-center justify-center">
+                <i class="pi pi-ticket text-white text-6xl"></i>
+                <p-badge 
+                  [value]="getStatusLabel(ticket.status.toString())" 
+                  [severity]="getStatusSeverity(ticket.status.toString())"
+                  class="absolute top-2 right-2">
+                </p-badge>
+              </div>
+            </ng-template>
+
+            <div class="mb-2">
+              <p class="font-semibold text-base sm:text-lg truncate">{{ ticket.title }}</p>
+              <p class="text-xs text-gray-500 mt-1">Ticket #{{ ticket.id }} by {{ ticket.raisedBy.name }}</p>
+            </div>
+
+            <p-divider />
+
+            <div class="flex flex-col gap-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Status</span>
+                <span class="font-semibold">{{ getStatusLabel(ticket.status.toString()) }}</span>
+              </div>
+
+              <div class="flex justify-between">
+                <span class="text-gray-500">Raised By</span>
+                <span class="font-semibold truncate ml-2">{{ ticket.raisedBy.email }}</span>
+              </div>
+
+          
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Impersonation</span>    @if (ticket.allowImpersonation) {
+                <p-badge value="Allowed" severity="success"></p-badge>
+              }
+              @else {
+                                <p-badge value="Not Allowed" severity="danger"></p-badge>
+
+              }
+              </div>
+            </div>
+
+            <ng-template #footer>
+              <div class="flex flex-col gap-2">
+                <div class="flex gap-2">
+                  <p-button 
+                    icon="pi pi-eye" 
+                    size="small" 
+                    label="View" 
+                    (onClick)="openViewModal(ticket)"
+                    severity="secondary"
+                    class="flex-1">
+                  </p-button>
+                </div>
+
+                <!-- @if (!ticket.allowImpersonation && ticket.status.toString() !== 'CLOSED') {
+                <p-button 
+                  icon="pi pi-unlock" 
+                  size="small" 
+                  label="Allow Impersonation" 
+                  (onClick)="openImpersonationModal(ticket)"
+                  severity="warn"
+                  class="w-full">
+                </p-button>
+                } -->
+
+                @if (ticket.allowImpersonation && ticket.status.toString() !== 'CLOSED') {
+                <p-button 
+                  icon="pi pi-sign-in" 
+                  size="small" 
+                  label="Start Impersonation" 
+                  (onClick)="startImpersonation(ticket.id)"
+                  [loading]="processingImpersonation"
+                  severity="contrast"
+                  class="w-full">
+                </p-button>
+                }
+              </div>
+            </ng-template>
+          </p-card>
+          }
+        </div>
+
+        <!-- Pagination -->
+        <div class="w-full mt-6">
+          <p-paginator 
+            [first]="allTicketsPageNum * pageSize" 
+            [rows]="pageSize"
+            [totalRecords]="allTicketsPage.totalElements"
+            (onPageChange)="onAllTicketsPageChange($event)">
+          </p-paginator>
+        </div>
+        }
+
+        <!-- Empty State -->
+        @if (!loading && allTicketsPage?.content?.length === 0) {
+        <p-card class="text-center py-12 sm:py-20 mt-6">
+          <i class="pi pi-ticket text-4xl sm:text-5xl text-gray-300 mb-3"></i>
+          <h3 class="text-base sm:text-lg font-bold mb-1">No Tickets Found</h3>
+          <p class="text-sm sm:text-base text-gray-500">No support tickets have been raised yet.</p>
+        </p-card>
+        }
+      </p-tabpanel>
+      }
+    </p-tabpanels>
+  </p-tabs>
+</div>
+
+<!-- Create Ticket Modal -->
+<p-dialog
+  [(visible)]="showCreateModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Raise Support Ticket"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }">
+
+  <div class="flex flex-col gap-5 mt-2">
+    <p-floatlabel variant="on">
+      <input 
+        pInputText 
+        id="ticketTitle" 
+        [(ngModel)]="ticketForm.title"
+        class="w-full"
+      />
+      <label for="ticketTitle">Title</label>
+    </p-floatlabel>
+
+    <p-floatlabel variant="on">
+      <textarea 
+        pInputTextarea 
+        id="ticketDescription" 
+        [(ngModel)]="ticketForm.description"
+        [rows]="5"
+        class="w-full">
+      </textarea>
+      <label for="ticketDescription">Description</label>
+    </p-floatlabel>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex flex-row justify-end gap-3 w-full mt-4">
+      <p-button 
+        label="Cancel" 
+        (click)="closeCreateModal()" 
+        severity="secondary"
+        [text]="true">
+      </p-button>
+
+      <p-button 
+        label="Raise Ticket" 
+        (click)="raiseTicket()" 
+        severity="contrast">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- View Ticket Modal -->
+<p-dialog
+  [(visible)]="showViewModal"
+  [modal]="true"
+  [style]="{ width: '32rem' }"
+  [draggable]="false"
+  header="Ticket Details"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }">
+
+  @if (selectedTicket) {
+  <div class="flex flex-col gap-4">
+    <div>
+      <label class="text-sm text-gray-500">Ticket ID</label>
+      <p class="font-semibold">#{{ selectedTicket.id }}</p>
+    </div>
+
+    <div>
+      <label class="text-sm text-gray-500">Title</label>
+      <p class="font-semibold">{{ selectedTicket.title }}</p>
+    </div>
+
+    <div>
+      <label class="text-sm text-gray-500">Description</label>
+      <p class="text-sm">{{ selectedTicket.description }}</p>
+    </div>
+
+    <div class="flex justify-between">
+      <label class="text-sm text-gray-500">Status</label>
+      <p-badge 
+        [value]="getStatusLabel(selectedTicket.status.toString())" 
+        [severity]="getStatusSeverity(selectedTicket.status.toString())">
+      </p-badge>
+    </div>
+
+    <div>
+      <label class="text-sm text-gray-500">Raised By</label>
+      <p class="font-semibold">{{ selectedTicket.raisedBy.name }} ({{ selectedTicket.raisedBy.email }})</p>
+    </div>
+
+    <div  class="flex justify-between">
+      <label class="text-sm text-gray-500">Impersonation Access</label>
+   @if (selectedTicket.allowImpersonation) {
+       <p-badge value="Allowed" severity="success"></p-badge>
+   }
+   @else{
+      <p-badge value="Not Allowed" severity="danger"></p-badge>
+   }
+      @if (selectedTicket.impersonationUntil) {
+      <p class="text-xs text-gray-500 mt-1">Until: {{ formatDate(selectedTicket.impersonationUntil) }}</p>
+      }
+    </div>
+    
+
+   
+    <div class="flex flex-col gap-2 mt-4">
+      <label class="text-sm font-semibold">Actions</label>
+      
+     @if (isSuperAdmin) {
+   <p-select
+  [options]="statusOptions"
+  [(ngModel)]="updatedTicketStatus"
+  optionLabel="name"
+  optionValue="code"
+  placeholder="Update Status"
+  appendTo="body"
+  class="w-full">
+</p-select>
+
+
+      <p-button 
+        label="Update Status" 
+        icon="pi pi-check"
+        (click)="updateTicketStatus(selectedTicket.id)" 
+        severity="contrast"
+        class="w-full">
+      </p-button>
+     }
+
+    @if (selectedTicket.status.toString() != "CLOSED") {
+        @if (selectedTicket.allowImpersonation && isAdmin) {
+      <p-button 
+        label="Revoke Impersonation" 
+        icon="pi pi-lock"
+        (click)="revokeImpersonation(selectedTicket.id)" 
+        severity="danger"
+        class="w-full">
+      </p-button>
+      }
+      @if (!selectedTicket.allowImpersonation && isAdmin) {
+      <p-button 
+        label="Allow Impersonation" 
+        icon="pi pi-unlock"
+        (click)="allowImpersonation()" 
+        severity="success"
+        class="w-full">
+      </p-button>
+      }
+    }
+    </div>
+    
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Close" 
+      (click)="closeViewModal()" 
+      severity="secondary">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- Allow Impersonation Modal -->
+<p-dialog
+  [(visible)]="showImpersonationModal"
+  [modal]="true"
+  [style]="{ width: '28rem' }"
+  [draggable]="false"
+  header="Allow Impersonation Access"
+  [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }">
+
+  <div class="flex flex-col gap-4 mt-2">
+    <p class="text-sm text-gray-600">
+      Allow impersonation access for this ticket. Select until when the super admin can impersonate this account.
+    </p>
+
+    <div>
+      <label class="text-sm font-semibold mb-2 block">Access Valid Until</label>
+     <p-datePicker
+  [(ngModel)]="impersonationUntil"
+  [showTime]="true"
+  [showIcon]="true"
+  [minDate]="minDate"
+  dateFormat="dd/mm/yy"
+  class="w-full">
+</p-datePicker>
+
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex flex-row justify-end gap-3 w-full">
+      <p-button 
+        label="Cancel" 
+        (click)="closeImpersonationModal()" 
+        severity="secondary"
+        [text]="true">
+      </p-button>
+
+      <p-button 
+        label="Allow Access" 
+        icon="pi pi-unlock"
+        (click)="allowImpersonation()" 
+        [loading]="processingImpersonation"
+        severity="warn">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

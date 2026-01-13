@@ -183,3 +183,93 @@
   }
   }
 </div>
+
+
+<!-- Unassigned Users Modal -->
+<p-dialog
+  [(visible)]="showAssignUserModal"
+  [modal]="true"
+  [style]="{ width: '48rem' }"
+  [draggable]="false"
+  header="Assign Users"
+  [breakpoints]="{ '1199px': '80vw', '768px': '90vw', '575px': '95vw' }"
+  [baseZIndex]="10000"
+  contentStyleClass="px-2 sm:px-4">
+
+  <p class="text-sm text-gray-500 mb-4 text-center sm:text-left">
+    These users are not assigned to any society.
+  </p>
+
+  <!-- Loading -->
+  @if (loadingUnassignedUsers) {
+    <div class="flex justify-center items-center py-12">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  }
+
+  <!-- Unassigned Users List -->
+  @if (!loadingUnassignedUsers && unAssignedUsers.length > 0) {
+    <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+      @for (user of unAssignedUsers; track user.id) {
+
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3
+                 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+
+          <!-- Left -->
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <p-avatar
+              [label]="getUserInitials(user.name)"
+              size="large"
+              [style]="{'background-color': '#6366f1', 'color': '#ffffff'}"
+              shape="circle">
+            </p-avatar>
+
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm truncate mb-1">{{ user.name }}</p>
+              <p class="text-xs text-gray-600 truncate">{{ user.email }}</p>
+              @if (user.phoneNumber) {
+                <p class="text-xs text-gray-500 truncate">{{ user.phoneNumber }}</p>
+              }
+            </div>
+          </div>
+
+          <!-- Right -->
+          <div class="w-full sm:w-auto">
+            <p-button
+              label="Add"
+              icon="pi pi-user-plus"
+              size="small"
+              class="w-full sm:w-auto"
+              (onClick)="assignUser(user.id)"
+              [disabled]="!user.id"
+              [loading]="loading"
+              severity="contrast">
+            </p-button>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+  <!-- No Unassigned Users -->
+  @if (!loadingUnassignedUsers && unAssignedUsers.length === 0) {
+    <div class="text-center py-12">
+      <i class="pi pi-check-circle text-5xl sm:text-6xl text-green-400 mb-4"></i>
+      <h3 class="text-base sm:text-lg font-bold mb-1">All Users Assigned</h3>
+      <p class="text-gray-500 text-sm">There are no unassigned users at the moment.</p>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="flex flex-col sm:flex-row justify-end gap-3 w-full mt-4">
+      <p-button
+        label="Close"
+        (click)="toggleAssignUserModal()"
+        severity="secondary"
+        class="w-full sm:w-auto px-4">
+      </p-button>
+    </div>
+  </ng-template>
+</p-dialog>

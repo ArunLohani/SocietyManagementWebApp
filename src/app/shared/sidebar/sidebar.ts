@@ -12,10 +12,13 @@ import {
   faUsers,
   faChartLine,
   faBars,
-  faXmark
+  faXmark,
+  faTicket,
+  faUserSecret
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../app/core/service/auth.service';
 import { MenuService } from '../../core/service/menu.service';
+import { ImpersonationSessionService } from '../../core/service/impersonation-session';
 
 @Component({
   selector: 'app-sidebar',
@@ -40,16 +43,19 @@ export class Sidebar {
   dashboardIcon = faChartLine;
   menuIcon = faBars;
   closeIcon = faXmark;
-
+  ticketIcon = faTicket
+  sessionIcon = faUserSecret
   menuItems: Menu[] = [];
 
   constructor(
     private authService: AuthService,
     private menuService: MenuService,
-    private router : Router
+    private router : Router,
+    private impersonationService : ImpersonationSessionService
   ) {
 
-    // Dynamic Menu
+   if(!authService.isUserSuperAdmin()){
+     // Dynamic Menu
     const userMenus: Menu = {
       label: 'Menus',
       route: '#',
@@ -63,20 +69,26 @@ export class Sidebar {
         res.data.forEach(menu => {
           userMenus.children?.push({
             label: menu.menuName,
-            route: `/menu/${menu.menuName.toLowerCase().replaceAll(' ', '_')}`,
+            route: menu.menuName == "Dashboard" ? "" : `/menu/${menu.menuName.toLowerCase().replaceAll(' ', '_')}`,
             icon: null
           });
         });
         this.menuItems.push(userMenus);
       }
     });
+   }
 
     if (authService.isUserSuperAdmin()) {
       this.menuItems.push({
         label: 'Society Management',
         route: '/s_admin/society',
         icon: this.society,
-      });
+      },
+      {
+          label: 'Ticket Management',
+          route: '/s_admin/ticket',
+          icon: this.ticketIcon,
+        });
     }
 
     if (authService.isUserAdmin()) {
@@ -95,10 +107,25 @@ export class Sidebar {
           label: 'Permission Management',
           route: '/admin/permission',
           icon: this.permissionIcon,
+        },
+      {
+          label: 'Ticket Management',
+          route: '/admin/ticket',
+          icon: this.ticketIcon,
+        },
+         {
+          label: 'Session Management',
+          route: '/admin/session',
+          icon: this.sessionIcon,
         }
       );
     }
   }
+
+  isImpersonating (){
+    return this.authService.getIsImpersonating();
+  }
+
 
   toggleMenu() {
     this.showMenu = !this.showMenu;
@@ -106,6 +133,20 @@ export class Sidebar {
 
   closeOnMobile() {
     this.closeMobile.emit();
+  }
+
+  endImpersonation(){
+    const sessionId = this.authService.getSessionId();
+    if(!sessionId) return;
+     this.impersonationService.endImpersonation(sessionId)
+    .subscribe({
+      next: () => {
+      window.location.href = '/';
+      },
+      error: (err) => {
+        console.error('Failed to exit impersonation', err);
+      }
+    });
   }
 
   logout() {
