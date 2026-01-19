@@ -234,7 +234,7 @@ export class ComplaintsManagerComponent implements OnInit {
   }
 
   viewDetail(complaintId: number) {
-    this.router.navigate(['/menu/complaints', complaintId]);
+    this.router.navigate(['/complaints', complaintId]);
   }
 
   reassign(complaintId: number) {

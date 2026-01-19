@@ -187,7 +187,7 @@ export class EventDetailComponent implements OnInit {
   }
 
   backToList() {
-    this.router.navigate(['/menu/events']);
+    this.router.navigate(['/events']);
   }
 
   getStatusSeverity(status: string): 'success' | 'warn' | 'danger' {

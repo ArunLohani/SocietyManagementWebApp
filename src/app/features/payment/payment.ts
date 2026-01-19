@@ -402,6 +402,6 @@ export class Payment implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/menu/dashboard']);
+    this.router.navigate(['/dashboard']);
   }
 }

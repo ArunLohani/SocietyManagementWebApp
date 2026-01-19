@@ -213,7 +213,7 @@ export class EventsManagerComponent implements OnInit {
   }
 
   goToEvent(eventId: number) {
-    this.router.navigate(['/menu/events', eventId]);
+    this.router.navigate(['/events', eventId]);
   }
 
   getStatusSeverity(status: string): "info" | "success" | "warn" | "danger" | "secondary" | "contrast" {

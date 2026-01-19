@@ -130,7 +130,7 @@ export class NoticeDetailComponent implements OnInit {
   }
 
   backToList() {
-    this.router.navigate(['/menu/notices']);
+    this.router.navigate(['/notices']);
   }
 
   getStatusSeverity(isExpired: boolean): 'danger' | 'success' {
