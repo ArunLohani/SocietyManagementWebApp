@@ -517,7 +517,7 @@ canRemoveMember(flat: Flat, member: FlatMember,flatType : string): boolean {
 
   // Navigation
   payMaintenance(flatId: number) {
-    this.router.navigate(['/menu/pay'], { queryParams: { flatId } });
+    this.router.navigate(['/pay'], { queryParams: { flatId } });
   }
 
   // Utility methods

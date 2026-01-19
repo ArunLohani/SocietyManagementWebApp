@@ -69,7 +69,7 @@ export class Sidebar {
         res.data.forEach(menu => {
           userMenus.children?.push({
             label: menu.menuName,
-            route: menu.menuName == "Dashboard" ? "" : `/menu/${menu.menuName.toLowerCase().replaceAll(' ', '_')}`,
+            route: menu.menuName == "Dashboard" ? "" : `/${menu.menuName.toLowerCase().replaceAll(' ', '_')}`,
             icon: null
           });
         });
@@ -81,12 +81,12 @@ export class Sidebar {
     if (authService.isUserSuperAdmin()) {
       this.menuItems.push({
         label: 'Society Management',
-        route: '/s_admin/society',
+        route: '/super_admin/society',
         icon: this.society,
       },
       {
           label: 'Ticket Management',
-          route: '/s_admin/ticket',
+          route: '/super_admin/ticket',
           icon: this.ticketIcon,
         });
     }

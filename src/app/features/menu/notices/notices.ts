@@ -184,7 +184,7 @@ export class NoticesManagerComponent implements OnInit {
   }
 
   goToNotice(id: number) {
-    this.router.navigate(['/menu/notices', id]);
+    this.router.navigate(['/notices', id]);
   }
 
   togglePublic(noticeId: number) {

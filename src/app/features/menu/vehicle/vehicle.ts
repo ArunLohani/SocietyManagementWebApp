@@ -310,7 +310,7 @@ export class VehiclesManagerComponent implements OnInit {
   }
 
   viewDetail(vehicleId: number) {
-    this.router.navigate(['/menu/vehicles', vehicleId]);
+    this.router.navigate(['/vehicles', vehicleId]);
   }
 
   getVehicleTypeLabel(type: string): string {

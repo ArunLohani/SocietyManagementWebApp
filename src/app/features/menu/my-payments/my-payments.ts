@@ -266,6 +266,6 @@ onTabChange(tabIndex: string | number | undefined) {
   }
 
   goBack() {
-    this.router.navigate(['/menu/dashboard']);
+    this.router.navigate(['/dashboard']);
   }
 }

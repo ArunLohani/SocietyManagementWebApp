@@ -53,7 +53,7 @@ export const routes: Routes = [
 
             },
             {
-                path: "menu",
+                path: "",
                 children: [
                       {
                         path: "dashboard",
@@ -142,14 +142,16 @@ export const routes: Routes = [
 
             },
             {
-                path: "s_admin",
+                path: "super_admin",
                 canActivate: [superAdminGuard],
                 children: [
                     {
                         path: "society",
-                        component: SuperAdminSocietyManager
+                        component: SuperAdminSocietyManager,
+                        canActivate: [superAdminGuard],
                     },{
                         path: "ticket",
+                        canActivate: [superAdminGuard],
                         component: SupportTicketsComponent
                     }
                 ]

@@ -189,7 +189,7 @@ this.tenantRoleMenuService.getPriority("Complaints").subscribe({
   }
 
   backToList() {
-    this.router.navigate(['/menu/complaints']);
+    this.router.navigate(['/complaints']);
   }
 
   getStatusSeverity(status: string): 'info'|'success' | 'info' | 'danger' | 'contrast' {
