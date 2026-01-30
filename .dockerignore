@@ -1,0 +1,27 @@
+# Node / Angular
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Angular build output
+dist
+
+# IDE / OS files
+.vscode
+.idea
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Env files (optional but recommended)
+.env
+.env.*
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# Test & coverage
+coverage
