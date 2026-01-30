@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { ApiResponse, Event, EventCreationRequest, EventResponse, EventFilter, Page, User } from '../../types/types';
 
 @Injectable({ providedIn: 'root' })

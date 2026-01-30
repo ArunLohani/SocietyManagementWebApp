@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { ApiResponse, Page, ParkingSlot, ParkingSlotFilter, ParkingSlotRegisterRequest, ParkingSlotStatus } from '../../types/types';
 import { Observable } from 'rxjs';
 

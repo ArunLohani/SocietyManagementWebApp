@@ -1,8 +1,8 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.development';
+import { Observable } from 'rxjs'
+import { environment } from '../../../environments/environment';
 import { ApiResponse, Action, Flat, FlatCreationRequest, FlatFilter, Page, Tenant, TenantCategoryPricing, TenantCategoryPricingResponse, TenantCategoryPricingRequest } from '../../types/types';
 
 @Injectable({

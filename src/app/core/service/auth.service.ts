@@ -12,7 +12,7 @@ import {
 } from '../../types/types';
 import { CookieService } from 'ngx-cookie-service';
 import { jwtDecode } from 'jwt-decode';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
 import { ProfileService } from './profile.service';
 
