@@ -1,0 +1,35 @@
+name : Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t socialfew2805/societymanagementwebapp:${GITHUB_SHA::7} \
+            -t socialfew2805/societymanagementwebapp:latest .
+      
+            - name: Login Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | \
+          docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push image
+        run: |
+          docker push socialfew2805/societymanagementwebapp:latest
+          docker push socialfew2805/societymanagementwebapp:${GITHUB_SHA::7}
+
+      - name: Trigger deployment
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.DEPLOY_TOKEN }}" \
+            https://api.github.com/repos/ArunLohani/SocietyManagementDeployment/dispatches \
+            -d '{"event_type":"deploy","client_payload":{"societymanagementwebapp":"latest"}}'

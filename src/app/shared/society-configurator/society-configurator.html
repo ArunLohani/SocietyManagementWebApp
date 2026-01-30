@@ -25,6 +25,16 @@
             [disabled]="!isValid()"
             severity="contrast">
           </p-button>
+
+            <p-button 
+          size="small"
+            label="Show Json" 
+            icon="pi pi-check"
+            (onClick)="toggleShowJson()"
+            [loading]="submitting()"
+            [disabled]="!isValid()"
+            severity="contrast">
+          </p-button>
         </div>
       </div>
     </div>
