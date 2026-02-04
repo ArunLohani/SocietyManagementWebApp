@@ -99,6 +99,7 @@ private loadUserProfile(): void {
     .pipe(takeUntil(this.destroy$))
     .subscribe({
       next: (res) => {
+        console.log('User profile loaded:', res.data);
         this.user = res.data;
 
         // ✅ Use UserDetails directly

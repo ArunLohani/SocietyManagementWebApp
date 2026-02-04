@@ -16,6 +16,7 @@ import { Notice, NoticeCreationRequest } from '../../../../types/types';
 import { AuthService } from '../../../../core/service/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { TenantRoleMenuService } from '../../../../core/service/tenant-role-menu.service';
+import { NoticeGraphqlService } from '../../../../core/service/graphql/notice-graphql.service';
 
 @Component({
   selector: 'app-notice-detail',
@@ -53,7 +54,8 @@ export class NoticeDetailComponent implements OnInit {
     private auth: AuthService,
     private router: Router,
     private toastrService : ToastrService,
-    private tenantRoleMenuService : TenantRoleMenuService
+    private tenantRoleMenuService : TenantRoleMenuService,
+    private noticeGraphqlService : NoticeGraphqlService
   ) { this.tenantRoleMenuService.getPriority("Notices").subscribe({
       next: (res) => {
         console.log(res)
@@ -77,13 +79,23 @@ export class NoticeDetailComponent implements OnInit {
 
   loadNotice() {
     this.loading = true;
-    this.noticesService.getNoticeById(this.noticeId).subscribe({
+    // this.noticesService.getNoticeById(this.noticeId).subscribe({
+    //   next: (res) => {
+    //     this.notice = res.data;
+    //     this.loading = false;
+    //   },
+    //   error: () => this.loading = false
+    // });
+
+    this.noticeGraphqlService.getNoticeById(this.noticeId).subscribe({
       next: (res) => {
-        this.notice = res.data;
+        console.log("Notice fetched via GraphQL:", res);
+        this.notice = res;
         this.loading = false;
       },
       error: () => this.loading = false
     });
+
   }
 
   enterEdit() {
